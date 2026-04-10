@@ -114,12 +114,17 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 #MainMenu                              { visibility: hidden; }
 footer                                 { visibility: hidden; }
 header                                 { visibility: hidden; }
+/* Ocultar elementos de Streamlit sin tocar el botón hamburger del sidebar */
 [data-testid="stDeployButton"]         { display: none !important; }
 [data-testid="stToolbar"]              { display: none !important; }
 [data-testid="stDecoration"]           { display: none !important; }
 [data-testid="stStatusWidget"]         { display: none !important; }
-.stAppHeader                           { display: none !important; }
-[data-testid="stHeader"]               { display: none !important; }
+/* Hacer el header transparente pero mantener el botón de toggle del sidebar */
+[data-testid="stHeader"] {
+    background: transparent !important;
+    border-bottom: none !important;
+}
+[data-testid="stHeader"]::before      { display: none !important; }
 
 /* ── APP ── */
 .stApp { background: var(--bg-app) !important; transition: background 0.45s ease; }
@@ -642,7 +647,7 @@ def main():
     if "s_mode" not in st.session_state:
         st.session_state.s_mode = "📁 File"
     source_mode = st.sidebar.segmented_control(
-        "", ["📁 File", "🗄️ Database"], key="s_mode",
+        "Connection", ["📁 File", "🗄️ Database"], key="s_mode",
         label_visibility="collapsed",
     )
     source = None
