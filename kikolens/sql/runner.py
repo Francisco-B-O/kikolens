@@ -6,6 +6,7 @@ def run_sql_query(filepath_or_df: any, query: str) -> pd.DataFrame:
     Executes a SQL query on a given DataFrame or file path using DuckDB.
     Uses an explicit connection and table registration for stability.
     """
+    con = None
     try:
         # 1. Validation: Ensure query is a SELECT/Read-only
         if not query.strip().upper().startswith(("SELECT", "WITH", "VALUES", "PRAGMA", "DESCRIBE")):

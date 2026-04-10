@@ -28,7 +28,10 @@ def run_discovery_engine(df: pd.DataFrame, max_rows: int = 5000, max_cols: int =
         # Find pairs with > 0.85 correlation
         high_corr = [column for column in upper.columns if any(upper[column] > 0.85)]
         for col in high_corr:
-            partner = upper[col][upper[col] > 0.85].index[0]
+            matches = upper[col][upper[col] > 0.85].index
+            if len(matches) == 0:
+                continue
+            partner = matches[0]
             score = upper[col][partner]
             insights.append({
                 "type": "🔗 Correlation Alert",

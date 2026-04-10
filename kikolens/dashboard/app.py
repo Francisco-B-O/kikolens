@@ -617,7 +617,9 @@ def insight_card(ins):
 #  MAIN
 # ─────────────────────────────────────────────────────────────────────────────
 def main():
+    # Inyectar CSS antes de cualquier widget para evitar flash
     dark = st.session_state.dark_mode
+    inject_css(dark)
 
     # ── SIDEBAR BRAND ──────────────────────────────────────────────────────
     st.sidebar.markdown("""
@@ -629,32 +631,27 @@ def main():
 
     # ── TOGGLE DARK/LIGHT ──────────────────────────────────────────────────
     st.sidebar.markdown('<span class="nav-label">Appearance</span>', unsafe_allow_html=True)
-    new_dark = st.sidebar.toggle(
+    st.sidebar.toggle(
         "🌙 Dark mode" if dark else "☀️ Light mode",
         value=dark,
         key="dark_mode",
     )
-    if new_dark != dark:
-        st.rerun()
-
-    # Inyectar CSS una vez conocemos el tema
-    inject_css(new_dark)
 
     # ── DATA SOURCE ────────────────────────────────────────────────────────
     st.sidebar.markdown('<span class="nav-label">Data Source</span>', unsafe_allow_html=True)
+    if "s_mode" not in st.session_state:
+        st.session_state.s_mode = "📁 File"
     source_mode = st.sidebar.segmented_control(
         "", ["📁 File", "🗄️ Database"], key="s_mode",
-        label_visibility="collapsed", default="📁 File",
+        label_visibility="collapsed",
     )
     source = None
 
     if source_mode == "📁 File":
-        st.sidebar.markdown('<div class="uploader-wrap">', unsafe_allow_html=True)
         source = st.sidebar.file_uploader(
             "Drop your file here", type=["csv", "xlsx"], key="u",
             help="CSV or Excel — max 200 MB",
         )
-        st.sidebar.markdown('</div>', unsafe_allow_html=True)
     else:
         db_type = st.sidebar.selectbox("Engine", ["PostgreSQL", "MySQL", "SQLite"])
         if db_type == "SQLite":
@@ -775,7 +772,7 @@ def main():
             tab_stats, tab_corr = st.tabs(["📊 Statistics", "🔗 Correlation"])
 
             with tab_stats:
-                cmap = "YlGn" if not new_dark else "Greens"
+                cmap = "YlGn" if not dark else "Greens"
                 st.dataframe(
                     basic_statistics(df).style.background_gradient(cmap=cmap, axis=0).format(precision=2),
                     use_container_width=True,
@@ -789,9 +786,9 @@ def main():
                 if corr.empty:
                     st.info("No numeric columns available for correlation analysis.")
                 else:
-                    cscale = ["#EF4444", "#050E08" if new_dark else "#F0FDF4", "#10B981"]
+                    cscale = ["#EF4444", "#050E08" if dark else "#F0FDF4", "#10B981"]
                     fig = px.imshow(corr, text_auto=".2f", color_continuous_scale=cscale, zmin=-1, zmax=1)
-                    fig.update_traces(textfont=dict(color="white" if new_dark else "#022C22", size=11))
+                    fig.update_traces(textfont=dict(color="white" if dark else "#022C22", size=11))
                     st.plotly_chart(style_chart(fig, height=500), use_container_width=True)
 
         # ══════════════════════════════════════════════════════════════════
@@ -841,7 +838,7 @@ def main():
                     if st.button("Apply Fix"):
                         if   s == "Mean":   v = df[t].mean()
                         elif s == "Median": v = df[t].median()
-                        elif s == "Mode":   v = df[t].mode()[0]
+                        elif s == "Mode":   mode_s = df[t].mode(); v = mode_s[0] if not mode_s.empty else 0
                         elif s == "Zero":   v = 0
                         else:               v = st.text_input("Fill value", "unknown")
                         st.session_state.df[t] = df[t].fillna(v)
@@ -852,7 +849,7 @@ def main():
 
             st.markdown('<hr class="kiko-divider">', unsafe_allow_html=True)
             st.caption("Preview — first 10 rows")
-            cmap_r = "Greens" if new_dark else "YlGn"
+            cmap_r = "Greens" if dark else "YlGn"
             st.dataframe(
                 df.head(10).style.background_gradient(cmap=cmap_r, axis=None),
                 use_container_width=True,
@@ -896,7 +893,7 @@ def main():
                         res = run_automl_analysis(df, target_col, manual_type=manual_type)
                     st.session_state.automl_res = res
 
-            if "automl_res" in st.session_state and st.session_state.automl_res["target"] == target_col:
+            if "automl_res" in st.session_state and st.session_state.automl_res.get("target") == target_col:
                 res = st.session_state.automl_res
 
                 st.markdown(
@@ -988,7 +985,7 @@ def main():
                 st.plotly_chart(style_chart(res["fig"], height=480), use_container_width=True)
                 st.markdown('<hr class="kiko-divider">', unsafe_allow_html=True)
                 st.caption("Cluster profiles")
-                cmap_c = "Greens" if new_dark else "YlGn"
+                cmap_c = "Greens" if dark else "YlGn"
                 st.dataframe(
                     res["profiles"].style.background_gradient(cmap=cmap_c),
                     use_container_width=True,
