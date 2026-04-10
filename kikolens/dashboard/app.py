@@ -106,8 +106,9 @@ LIGHT_VARS = """
 # ─────────────────────────────────────────────────────────────────────────────
 #  CSS COMPARTIDO (usa variables)
 # ─────────────────────────────────────────────────────────────────────────────
+FONT_IMPORT = "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');"
+
 SHARED_CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 * { box-sizing: border-box; }
@@ -123,7 +124,18 @@ footer                                 { visibility: hidden; }
     background: transparent !important;
     border-bottom: none !important;
 }
-[data-testid="stHeader"]::before      { display: none !important; }
+[data-testid="stHeader"]::before { display: none !important; }
+/* Forzar sidebar siempre visible — anular transform de colapso de Streamlit */
+section[data-testid="stSidebar"] {
+    transform: none !important;
+    min-width: 244px !important;
+    visibility: visible !important;
+    display: block !important;
+}
+/* Ocultar botones de colapsar/expandir (ya no hacen falta) */
+[data-testid="stSidebarCollapseButton"]                      { display: none !important; }
+[data-testid="stSidebar"] [data-testid="baseButton-headerNoPadding"] { display: none !important; }
+[data-testid="collapsedControl"]                             { display: none !important; }
 
 /* ── APP ── */
 .stApp { background: var(--bg-app) !important; transition: background 0.45s ease; }
@@ -558,7 +570,16 @@ if "dark_mode"            not in st.session_state: st.session_state.dark_mode = 
 # ─────────────────────────────────────────────────────────────────────────────
 def inject_css(dark: bool):
     vars_block = DARK_VARS if dark else LIGHT_VARS
-    st.markdown(f"<style>{vars_block}{SHARED_CSS}</style>", unsafe_allow_html=True)
+    st.markdown(f"<style>{FONT_IMPORT}{vars_block}{SHARED_CSS}</style>", unsafe_allow_html=True)
+    # Mantener sidebar siempre abierto
+    st.markdown("""
+    <script>
+    (function() {
+        // Limpiar localStorage para que Streamlit no recuerde estado colapsado
+        try { localStorage.clear(); } catch(e) {}
+    })();
+    </script>
+    """, unsafe_allow_html=True)
 
 
 def style_chart(fig, height=420):
@@ -736,12 +757,10 @@ def main():
 
             ctrl, plot_area = st.columns([1, 3])
             with ctrl:
-                st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
                 x         = st.selectbox("X Axis", df.columns, key="vx")
                 y         = st.selectbox("Y Axis", df.columns, index=min(1, len(df.columns) - 1), key="vy")
                 ctype     = st.radio("Chart Type", ["Scatter", "Bar", "Line", "Histogram", "Box"], key="vct")
                 color_dim = st.selectbox("Color By", [None] + list(df.columns), key="vcd")
-                st.markdown("</div>", unsafe_allow_html=True)
 
             with plot_area:
                 kwargs = dict(color=color_dim)
@@ -820,16 +839,13 @@ def main():
             c1, c2 = st.columns(2)
 
             with c1:
-                st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
                 st.markdown("#### 🗑️ Drop Columns")
                 cols = st.multiselect("Select columns to remove", df.columns)
                 if st.button("Remove Selected") and cols:
                     st.session_state.df = df.drop(columns=cols)
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
 
             with c2:
-                st.markdown('<div class="glass-panel">', unsafe_allow_html=True)
                 st.markdown("#### 🩹 Fill Missing Values")
                 null_cols = df.columns[df.isnull().any()].tolist()
                 if null_cols:
@@ -848,7 +864,6 @@ def main():
                         st.rerun()
                 else:
                     st.success("✅ No missing values in this dataset.")
-                st.markdown("</div>", unsafe_allow_html=True)
 
             st.markdown('<hr class="kiko-divider">', unsafe_allow_html=True)
             st.caption("Preview — first 10 rows")
