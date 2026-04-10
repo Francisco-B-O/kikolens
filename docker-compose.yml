@@ -10,16 +10,19 @@ services:
       - ollama
     restart: unless-stopped
     volumes:
-      # Persistir modelos exportados fuera del contenedor
       - ./kikolens_output:/app/kikolens_output
 
   ollama:
-    image: ollama/ollama:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
     container_name: kikolens_ollama
     ports:
       - "11434:11434"
+    environment:
+      # Cambia el modelo aquí si lo necesitas (ej: llama3.1, llama3.2:1b)
+      - OLLAMA_MODEL=llama3.2
     volumes:
-      # Persistir modelos de Ollama entre reinicios
       - ollama_data:/root/.ollama
     restart: unless-stopped
 
