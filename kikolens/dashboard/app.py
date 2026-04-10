@@ -638,7 +638,6 @@ def main():
     st.sidebar.markdown('<span class="nav-label">Appearance</span>', unsafe_allow_html=True)
     st.sidebar.toggle(
         "🌙 Dark mode" if dark else "☀️ Light mode",
-        value=dark,
         key="dark_mode",
     )
 
