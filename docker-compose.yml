@@ -1,0 +1,27 @@
+services:
+  kikolens:
+    build: .
+    container_name: kikolens_app
+    ports:
+      - "8501:8501"
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+    restart: unless-stopped
+    volumes:
+      # Persistir modelos exportados fuera del contenedor
+      - ./kikolens_output:/app/kikolens_output
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: kikolens_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      # Persistir modelos de Ollama entre reinicios
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
