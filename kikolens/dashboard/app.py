@@ -113,7 +113,6 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif !important; }
 * { box-sizing: border-box; }
 #MainMenu                              { visibility: hidden; }
 footer                                 { visibility: hidden; }
-header                                 { visibility: hidden; }
 /* Ocultar elementos de Streamlit sin tocar el botón hamburger del sidebar */
 [data-testid="stDeployButton"]         { display: none !important; }
 [data-testid="stToolbar"]              { display: none !important; }
