@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kikolens"
-version = "2.0.0"
+version = "1.0.0"
 description = "KikoLens AI: The Enterprise Data Intelligence Platform"
 readme = "README.md"
 authors = [
@@ -45,3 +45,6 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["kikolens*"]
+
+[tool.coverage.run]
+relative_files = true
