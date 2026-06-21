@@ -45,3 +45,6 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["kikolens*"]
+
+[tool.coverage.run]
+relative_files = true
