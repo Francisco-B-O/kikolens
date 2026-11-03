@@ -59,3 +59,62 @@ def test_unsupported_local_path_raises(tmp_path):
     bad_file.write_text("<root/>")
     with pytest.raises(ValueError, match="Unsupported"):
         load_data(str(bad_file))
+
+
+def test_parquet_roundtrip(tmp_path):
+    df = pd.DataFrame({"a": [1, 2], "b": ["x", "y"]})
+    path = tmp_path / "d.parquet"
+    df.to_parquet(path)
+    pd.testing.assert_frame_equal(load_data(str(path)), df)
+
+
+def test_tsv(tmp_path):
+    path = tmp_path / "d.tsv"
+    path.write_text("a\tb\n1\t2\n")
+    assert load_data(str(path)).shape == (1, 2)
+
+
+def test_uploaded_ndjson_and_parquet(tmp_path):
+    import io
+
+    class Upload(io.BytesIO):
+        def __init__(self, data, name):
+            super().__init__(data)
+            self.name = name
+
+    nd = Upload(b'{"a": 1}\n{"a": 2}\n', "x.ndjson")
+    assert load_data(nd)["a"].tolist() == [1, 2]
+
+    buf = io.BytesIO()
+    pd.DataFrame({"a": [1]}).to_parquet(buf)
+    assert len(load_data(Upload(buf.getvalue(), "x.parquet"))) == 1
+
+
+def test_url_download(monkeypatch):
+    import requests
+
+    class Resp:
+        content = b"a,b\n1,2\n3,4\n"
+
+        def raise_for_status(self):
+            pass
+
+    monkeypatch.setattr(requests, "get", lambda url, timeout: Resp())
+    assert load_data("https://example.com/data.csv").shape == (2, 2)
+
+
+def test_url_unsupported_format():
+    with pytest.raises(ValueError, match="Unsupported"):
+        load_data("https://example.com/page.html")
+
+
+def test_sqlite_table_with_odd_name(tmp_path):
+    import sqlite3
+
+    db = tmp_path / "t.db"
+    con = sqlite3.connect(db)
+    con.execute('CREATE TABLE "my table" (a INTEGER)')
+    con.execute('INSERT INTO "my table" VALUES (1)')
+    con.commit()
+    con.close()
+    assert len(load_data(f"sqlite:///{db.as_posix()}")) == 1

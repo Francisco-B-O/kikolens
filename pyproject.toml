@@ -5,17 +5,17 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "kikolens"
 version = "1.0.0"
-description = "KikoLens AI: The Enterprise Data Intelligence Platform"
+description = "Private, local-first data analysis with AutoML, neural networks and local LLMs"
 readme = "README.md"
 authors = [
-  { name = "KikoLens Team", email = "support@kikolens.ai" },
+  { name = "Francisco-B-O", email = "balonero18@gmail.com" },
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 dependencies = [
     "streamlit>=1.32.0",
     "pandas>=2.2.0",
@@ -30,7 +30,9 @@ dependencies = [
     "typer>=0.9.0",
     "rich>=13.7.0",
     "seaborn>=0.13.0",
-    "matplotlib>=3.8.0"
+    "matplotlib>=3.8.0",
+    "pyarrow>=15.0.0",
+    "tabulate>=0.9.0"
 ]
 
 [project.scripts]
