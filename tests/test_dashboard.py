@@ -11,7 +11,8 @@ from kikolens.pipeline.project import load_project
 
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
-         "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project"]
+         "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
+         "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
 
 @pytest.fixture(scope="module")
@@ -256,3 +257,37 @@ def test_predict_uses_a_model_trained_in_the_session(data, tmp_path, monkeypatch
     at.button(key="pd_save").click().run()
     assert_clean(at)
     assert list((tmp_path / "models").glob("*.klmodel"))
+
+
+def test_anomalies_find_and_remove(data):
+    at = open_page(data, "Anomalies")
+    assert_clean(at)
+    at.button(key="an_go").click().run()
+    assert_clean(at)
+    flagged = at.session_state["an_res"]["n_flagged"]
+    assert flagged >= 1
+    at.button(key="an_drop").click().run()
+    assert_clean(at)
+    assert len(at.session_state["df"]) == len(data) - flagged
+
+
+def test_experiments_tabs_render_without_errors(data):
+    at = open_page(data, "Experiments")
+    assert_clean(at)
+    at.button(key="ex_sgo").click().run()
+    assert_clean(at)
+    assert at.session_state["ex_screen"][1]["column"].tolist()
+
+
+def test_dimensions_and_compare_render(data):
+    assert_clean(open_page(data, "Dimensions"))
+    at = open_page(data, "Compare data")
+    assert_clean(at)
+    assert any("PSI" in c.value for c in at.caption)
+
+
+def test_sidebar_groups_follow_the_open_section(data):
+    at = open_page(data, "Anomalies")
+    assert at.session_state["nav_group"] == "Analysis"
+    at = open_page(data, "Project")
+    assert at.session_state["nav_group"] == "Share"

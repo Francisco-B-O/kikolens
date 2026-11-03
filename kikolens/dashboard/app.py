@@ -6,29 +6,25 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state, theme
-from kikolens.dashboard.views import (ask, clusters, explore, lab, models, neural, overview, patterns, predict, project, quality,
-                                      report, statistics, timeseries, transform)
+from kikolens.dashboard.views import (anomalies, ask, clusters, compare, dimensions, experiments, explore, lab, models,
+                                      neural, overview, patterns, predict, project, quality, report, statistics,
+                                      timeseries, transform)
 from kikolens.utils.loaders import load_data
 
 st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial_sidebar_state="expanded")
 
-PAGES = {
-    "Overview": overview,
-    "Explore": explore,
-    "Quality and cleaning": quality,
-    "Transform": transform,
-    "Patterns": patterns,
-    "Statistics": statistics,
-    "Ask": ask,
-    "Models": models,
-    "Model lab": lab,
-    "Neural network": neural,
-    "Predict": predict,
-    "Time series": timeseries,
-    "Segments": clusters,
-    "Report": report,
-    "Project": project,
+# Las secciones se agrupan por áreas para que la barra lateral no sea una lista interminable.
+GROUPS = {
+    "Data": {"Overview": overview, "Explore": explore, "Quality and cleaning": quality, "Transform": transform,
+             "Patterns": patterns, "Statistics": statistics, "Ask": ask},
+    "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions,
+                 "Compare data": compare, "Segments": clusters},
+    "Models": {"Models": models, "Model lab": lab, "Neural network": neural, "Time series": timeseries,
+               "Predict": predict},
+    "Share": {"Report": report, "Project": project},
 }
+PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
+GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}
 FILE_TYPES = ["csv", "tsv", "xlsx", "xls", "json", "ndjson", "jsonl", "parquet"]
 
 
@@ -86,6 +82,26 @@ def _welcome() -> None:
     )
 
 
+def _go_to_group() -> None:
+    st.session_state.nav = next(iter(GROUPS[st.session_state.nav_group]))
+
+
+def _navigation() -> None:
+    """Primero el área y debajo sus secciones. Si se abre una sección de otra área, el área se ajusta sola."""
+    current = st.session_state.get("nav")
+    if current in GROUP_OF:
+        st.session_state["nav_group"] = GROUP_OF[current]
+    elif "nav_group" not in st.session_state:
+        st.session_state["nav_group"] = "Data"
+    ui.label("Area", sidebar=True)
+    group = st.sidebar.radio("Area", list(GROUPS), key="nav_group", horizontal=True, label_visibility="collapsed",
+                             on_change=_go_to_group)
+    if st.session_state.get("nav") not in GROUPS[group]:
+        st.session_state["nav"] = next(iter(GROUPS[group]))
+    ui.label("Sections", sidebar=True)
+    st.sidebar.radio("Section", list(GROUPS[group]), key="nav", label_visibility="collapsed")
+
+
 def main() -> None:
     state.init()
     theme.inject()
@@ -100,8 +116,8 @@ def main() -> None:
         _welcome()
         return
 
-    ui.label("Sections", sidebar=True)
-    page = st.sidebar.radio("Section", list(PAGES), key="nav", label_visibility="collapsed")
+    _navigation()
+    page = st.session_state.nav
     st.sidebar.markdown(
         f'<div class="kl-file">{html.escape(os.path.basename(str(st.session_state.filename)))}<br>'
         f"{len(df):,} rows · {len(df.columns)} columns</div>",

@@ -257,6 +257,94 @@ def models_delete(name: str):
 
 
 @app.command()
+def anomalies(
+    source: str,
+    method: str = typer.Option("Isolation Forest", help="Isolation Forest, Local Outlier Factor, Robust z-score or Mahalanobis distance."),
+    share: float = typer.Option(2.0, help="Percentage of rows to flag."),
+    columns: Optional[str] = typer.Option(None, help="Comma-separated numeric columns; default is all."),
+    output: Optional[Path] = typer.Option(None, help="Write the flagged rows to this .csv or .parquet."),
+):
+    """Find the rows that do not look like the rest, and say why."""
+    from kikolens.analyze.anomalies import detect_anomalies
+
+    df = _load(source)
+    cols = [c.strip() for c in columns.split(",")] if columns else None
+    try:
+        result = detect_anomalies(df, cols, method, share / 100)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(result["summary"])
+    _print_frame(result["table"].reset_index(names="row").round(4), "Most unusual rows", max_rows=20)
+    if output:
+        _write_frame(result["table"].reset_index(names="row"), output)
+        console.print(f"Flagged rows saved to {output}")
+
+
+@app.command()
+def drift(reference: str, current: str, output: Optional[Path] = typer.Option(None, help="Write the report to a .csv.")):
+    """Compare two datasets and list the columns whose distribution changed."""
+    from kikolens.analyze.drift import compare_datasets
+
+    try:
+        result = compare_datasets(_load(reference), _load(current))
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"[bold]{result['summary']}[/bold]")
+    for name, cols in (("Only in the reference", result["only_in_reference"]), ("Only in the current", result["only_in_current"])):
+        if cols:
+            console.print(f"[yellow]{name}:[/yellow] {', '.join(map(str, cols))}")
+    table = result["table"]
+    _print_frame(table[["column", "type", "verdict", "psi", "p_value", "change"]].round(4), "Drift by column", max_rows=40)
+    if output:
+        _write_frame(table, output)
+        console.print(f"Report saved to {output}")
+    if result["level"] == "high":
+        raise typer.Exit(code=2)  # permite usar el comando como alarma en scripts y CI
+
+
+@app.command()
+def screen(source: str, target: str, alpha: float = typer.Option(0.05, help="Significance level.")):
+    """Test every column against a target and show which ones are reliably related to it."""
+    from kikolens.analyze.stattests import screen_associations
+
+    df = _load(source)
+    _check_target(df, target)
+    try:
+        table = screen_associations(df, target, alpha)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    related = int(table["related"].sum())
+    console.print(f"{related} of {len(table)} columns are related to [bold]{target}[/bold] "
+                  "(corrected for testing many columns).")
+    _print_frame(table.round(5), "Associations", max_rows=40)
+
+
+@app.command()
+def ab(
+    source: str, group: str, outcome: str,
+    control: str = typer.Option(..., help="The value of the group column that is the control."),
+    success: Optional[str] = typer.Option(None, help="For a two-valued outcome, the value that counts as success."),
+):
+    """Compare a control and a treatment group on an outcome (rates or averages)."""
+    from kikolens.analyze.stattests import ab_test
+
+    df = _load(source)
+    for col in (group, outcome):
+        _check_target(df, col)
+    try:
+        result = ab_test(df, group, outcome, control, success)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(result["conclusion"])
+    if result["needed_per_group"]:
+        console.print(f"[dim]Rows per group to reliably detect a gap this size: {result['needed_per_group']:,}[/dim]")
+
+
+@app.command()
 def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),
