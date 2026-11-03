@@ -66,3 +66,28 @@ def test_narrative_contains_model_name(regression_df):
     result = run_automl_analysis(regression_df, "target")
     assert result["selected_model_name"] if "selected_model_name" in result else True
     assert len(result["narrative"]) > 0
+
+
+def test_datetime_columns_become_numeric_features(regression_df):
+    from kikolens.analyze.automl import run_automl_analysis
+
+    df = regression_df.copy()
+    df["when"] = pd.date_range("2024-01-01", periods=len(df), freq="D")
+    res = run_automl_analysis(df, "target")
+    assert "when" not in res["columns"]
+    assert {"when_days", "when_month", "when_weekday"} <= set(res["columns"])
+
+
+def test_datetime_target_is_rejected(regression_df):
+    from kikolens.analyze.automl import run_automl_analysis
+
+    df = regression_df.copy()
+    df["when"] = pd.date_range("2024-01-01", periods=len(df), freq="D")
+    with pytest.raises(ValueError, match="date column"):
+        run_automl_analysis(df, "when")
+
+
+def test_target_with_too_many_classes_is_rejected():
+    df = pd.DataFrame({"a": np.arange(200.0), "label": [f"id{i}" for i in range(200)]})
+    with pytest.raises(ValueError, match="too many"):
+        run_automl_analysis(df, "label")

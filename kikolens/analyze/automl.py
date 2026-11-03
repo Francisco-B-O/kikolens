@@ -13,6 +13,11 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confus
 import plotly.express as px
 import plotly.graph_objects as go
 
+from kikolens.utils.dtypes import categorical_columns, is_text
+
+MAX_CLASSES = 50
+
+
 class AutoMLExplainer:
     def __init__(self, df: pd.DataFrame, target_col: str):
         self.df = df.copy()
@@ -64,16 +69,34 @@ class AutoMLExplainer:
                     self.model, self.selected_model_name = GradientBoostingClassifier(), "Gradient Boosting"
                     self.selection_rationale.append("Large dataset with complex boundaries. Gradient Boosting iteratively corrects errors for maximum accuracy.")
 
+    def _expand_datetime_columns(self):
+        """Los modelos no aceptan fechas: cada una pasa a días desde 1970, mes y día de la semana."""
+        for col in self.df.select_dtypes(include=["datetime", "datetimetz"]).columns:
+            stamps = self.df[col]
+            if getattr(stamps.dt, "tz", None) is not None:
+                stamps = stamps.dt.tz_localize(None)
+            self.df[f"{col}_days"] = (stamps - pd.Timestamp("1970-01-01")).dt.days
+            self.df[f"{col}_month"] = stamps.dt.month
+            self.df[f"{col}_weekday"] = stamps.dt.dayofweek
+            self.df.drop(columns=[col], inplace=True)
+
     def preprocess(self):
+        if pd.api.types.is_datetime64_any_dtype(self.df[self.target_col]):
+            raise ValueError("A date column cannot be used as the target. Choose a numeric or categorical column.")
         self.df.dropna(subset=[self.target_col], inplace=True)
-        cat_cols = self.df.select_dtypes(include=['object', 'category']).columns
+        if self.task_type == "classification" and self.df[self.target_col].nunique() > MAX_CLASSES:
+            raise ValueError(
+                f"'{self.target_col}' has {self.df[self.target_col].nunique():,} distinct values, too many to classify. "
+                "Choose a numeric column or one with fewer categories.")
+        self._expand_datetime_columns()
+        cat_cols = categorical_columns(self.df)
         for col in cat_cols:
             if col != self.target_col:
                 if self.df[col].nunique() < 50:
                     self.categorical_mappings[col] = self.df[col].dropna().unique().tolist()
                 else: self.df.drop(columns=[col], inplace=True)
 
-        if self.task_type == "classification" and self.df[self.target_col].dtype == 'object':
+        if self.task_type == "classification" and is_text(self.df[self.target_col]):
              le = LabelEncoder(); self.df[self.target_col] = le.fit_transform(self.df[self.target_col])
 
         valid_cat = [c for c in self.categorical_mappings.keys() if c in self.df.columns]
