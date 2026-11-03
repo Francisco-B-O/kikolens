@@ -36,3 +36,23 @@ def test_handles_missing_values():
     })
     result = run_clustering_analysis(df, n_clusters=2)
     assert isinstance(result["profiles"], pd.DataFrame)
+
+
+def test_suggest_k_scores_each_k():
+    import numpy as np
+    from kikolens.analyze.clustering import suggest_k
+
+    rng = np.random.default_rng(0)
+    blobs = np.vstack([rng.normal(0, 0.3, (60, 2)), rng.normal(5, 0.3, (60, 2)), rng.normal((0, 5), 0.3, (60, 2))])
+    scores = suggest_k(pd.DataFrame(blobs, columns=["a", "b"]), k_max=6)
+    assert scores["k"].tolist() == [2, 3, 4, 5, 6]
+    assert scores.loc[scores["silhouette"].idxmax(), "k"] == 3
+    assert scores["inertia"].is_monotonic_decreasing
+
+
+def test_suggest_k_requires_numeric_columns():
+    import pytest
+    from kikolens.analyze.clustering import suggest_k
+
+    with pytest.raises(ValueError):
+        suggest_k(pd.DataFrame({"a": ["x", "y"]}))

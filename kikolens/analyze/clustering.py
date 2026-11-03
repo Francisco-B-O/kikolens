@@ -59,3 +59,24 @@ def run_clustering_analysis(df: pd.DataFrame, n_clusters: int = 3):
         "n_clusters": n_clusters,
         "df_with_clusters": df_with_clusters
     }
+
+
+def suggest_k(df: pd.DataFrame, k_max: int = 8) -> pd.DataFrame:
+    """Inercia y coeficiente de silueta para k = 2..k_max (ayuda a elegir el número de grupos)."""
+    from sklearn.metrics import silhouette_score
+
+    numeric_df = df.select_dtypes(include=[np.number])
+    if numeric_df.empty:
+        raise ValueError("No numeric columns found for clustering.")
+    X = StandardScaler().fit_transform(SimpleImputer(strategy="median").fit_transform(numeric_df))
+    if len(X) > 3000:
+        X = X[np.random.default_rng(42).choice(len(X), 3000, replace=False)]
+    k_max = min(k_max, len(X) - 1)
+    if k_max < 2:
+        raise ValueError("Not enough rows to evaluate cluster counts.")
+    rows = []
+    for k in range(2, k_max + 1):
+        model = KMeans(n_clusters=k, random_state=42, n_init=10).fit(X)
+        rows.append({"k": k, "inertia": float(model.inertia_),
+                     "silhouette": float(silhouette_score(X, model.labels_))})
+    return pd.DataFrame(rows)
