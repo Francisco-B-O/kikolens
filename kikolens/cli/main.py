@@ -345,6 +345,36 @@ def ab(
 
 
 @app.command()
+def panel(
+    source: str,
+    definition: Optional[Path] = typer.Argument(None, help="A panel definition (.json). Without it a panel is suggested from the data."),
+    output: Path = typer.Option(Path("kikolens_output/panel.html"), help="Where to write the web page."),
+    save: Optional[Path] = typer.Option(None, help="Also write the panel definition to this .json."),
+):
+    """Build a one-page panel (metrics, charts, tables) from a file."""
+    from kikolens.analyze.panel import Panel, panel_html, suggest_panel
+    from kikolens.analyze.quality import infer_types
+
+    df, _ = infer_types(_load(source))
+    try:
+        loaded = Panel.from_json(definition.read_text(encoding="utf-8")) if definition else suggest_panel(df, Path(str(source)).stem)
+        _, results = loaded.evaluate(df)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    for tile, _, error in results:
+        if error:
+            console.print(f"[yellow]{tile.get('title') or tile['type']}: {error}[/yellow]")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(panel_html(df, loaded), encoding="utf-8")
+    console.print(f"Panel with {len(loaded.tiles)} tile(s) written to [bold]{output}[/bold]")
+    if save:
+        save.parent.mkdir(parents=True, exist_ok=True)
+        save.write_text(loaded.to_json(), encoding="utf-8")
+        console.print(f"Definition saved to {save}")
+
+
+@app.command()
 def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),

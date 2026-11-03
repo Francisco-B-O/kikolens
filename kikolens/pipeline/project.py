@@ -28,19 +28,22 @@ def _parquet(df: pd.DataFrame) -> bytes:
 
 
 def save_project(original: pd.DataFrame, recipe: Recipe, name: str = "project", datasets: dict | None = None,
-                 notes: str = "", source: str = "", models: dict | None = None) -> bytes:
+                 notes: str = "", source: str = "", models: dict | None = None, panel: str | None = None) -> bytes:
     """Empaqueta el trabajo en bytes. `models` es {nombre: bytes de joblib} y es opcional."""
     manifest = {
         "kikolens_project": FORMAT_VERSION, "kikolens_version": __version__, "name": name, "source": source,
         "created": datetime.now(timezone.utc).isoformat(timespec="seconds"), "notes": notes,
         "rows": int(len(original)), "columns": [str(c) for c in original.columns],
         "datasets": sorted((datasets or {}).keys()), "models": sorted((models or {}).keys()),
+        "has_panel": bool(panel),
     }
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("manifest.json", json.dumps(manifest, indent=2, ensure_ascii=False))
         zf.writestr("recipe.json", recipe.to_json())
         zf.writestr("data/original.parquet", _parquet(original))
+        if panel:
+            zf.writestr("panel.json", panel)
         for key, frame in (datasets or {}).items():
             zf.writestr(f"datasets/{key}.parquet", _parquet(frame))
         for key, blob in (models or {}).items():
@@ -74,5 +77,6 @@ def load_project(blob: bytes, load_models: bool = False) -> dict:
                     for n in sorted(names) if n.startswith("datasets/") and n.endswith(".parquet")}
         models = {n[len("models/"):-len(".joblib")]: _read(zf, n)
                   for n in sorted(names) if load_models and n.startswith("models/") and n.endswith(".joblib")}
+        panel = _read(zf, "panel.json").decode("utf-8") if "panel.json" in names else None
     return {"manifest": manifest, "original": original, "recipe": recipe, "datasets": datasets,
-            "notes": manifest.get("notes", ""), "models": models}
+            "notes": manifest.get("notes", ""), "models": models, "panel": panel}

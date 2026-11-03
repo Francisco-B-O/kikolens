@@ -7,7 +7,7 @@ import streamlit as st
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state, theme
 from kikolens.dashboard.views import (anomalies, ask, clusters, compare, dimensions, experiments, explore, lab, models,
-                                      neural, overview, patterns, predict, project, quality, report, statistics,
+                                      neural, overview, patterns, predict, project, quality, panel, report, statistics,
                                       timeseries, transform)
 from kikolens.utils.loaders import load_data
 
@@ -21,7 +21,7 @@ GROUPS = {
                  "Compare data": compare, "Segments": clusters},
     "Models": {"Models": models, "Model lab": lab, "Neural network": neural, "Time series": timeseries,
                "Predict": predict},
-    "Share": {"Report": report, "Project": project},
+    "Share": {"Panel": panel, "Report": report, "Project": project},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
 GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}

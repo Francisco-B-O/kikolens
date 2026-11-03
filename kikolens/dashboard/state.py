@@ -16,6 +16,7 @@ def init() -> None:
     st.session_state.setdefault("recipe", Recipe())
     st.session_state.setdefault("datasets", {})
     st.session_state.setdefault("notes", "")
+    st.session_state.setdefault("panel", None)
 
 
 def set_dataset(df, name: str) -> None:
@@ -27,6 +28,7 @@ def set_dataset(df, name: str) -> None:
     st.session_state.recipe = Recipe()
     st.session_state.datasets = {}
     st.session_state.notes = ""
+    st.session_state.panel = None
     invalidate_models()
 
 

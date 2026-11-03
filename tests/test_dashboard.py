@@ -12,7 +12,7 @@ from kikolens.pipeline.project import load_project
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
-         "Experiments", "Anomalies", "Dimensions", "Compare data"]
+         "Panel", "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
 
 @pytest.fixture(scope="module")
@@ -291,3 +291,13 @@ def test_sidebar_groups_follow_the_open_section(data):
     assert at.session_state["nav_group"] == "Analysis"
     at = open_page(data, "Project")
     assert at.session_state["nav_group"] == "Share"
+
+
+def test_panel_suggest_add_and_export(data):
+    at = open_page(data, "Panel")
+    assert_clean(at)
+    at.button(key="pn_suggest").click().run()
+    assert_clean(at)
+    assert len(at.session_state["panel"].tiles) >= 4
+    at.button(key="pn_add").click().run()
+    assert_clean(at)
