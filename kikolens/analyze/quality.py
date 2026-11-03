@@ -5,6 +5,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from kikolens.utils.dtypes import is_text, text_columns
+
 _NUMERIC_TEXT = re.compile(r"^\s*[-+]?(\d{1,3}(,\d{3})+|\d+)(\.\d+)?\s*%?\s*$")
 _BOOL_WORDS = {"true", "false", "yes", "no", "y", "n", "si", "sí", "0", "1"}
 
@@ -15,7 +17,7 @@ def _non_null_text(series: pd.Series) -> pd.Series:
 
 def looks_numeric_text(series: pd.Series, threshold: float = 0.95) -> bool:
     """Columna de texto cuyos valores son casi todos números ('1,200', '45%', ' 3.5 ')."""
-    if series.dtype != object:
+    if not is_text(series):
         return False
     text = _non_null_text(series)
     text = text[text != ""]
@@ -24,7 +26,7 @@ def looks_numeric_text(series: pd.Series, threshold: float = 0.95) -> bool:
 
 def looks_datetime_text(series: pd.Series, threshold: float = 0.9) -> bool:
     """Columna de texto que se interpreta como fecha en casi todas las filas."""
-    if series.dtype != object:
+    if not is_text(series):
         return False
     text = _non_null_text(series).head(500)
     if text.empty or text.map(lambda v: bool(_NUMERIC_TEXT.match(v))).mean() > 0.5:
@@ -36,7 +38,7 @@ def looks_datetime_text(series: pd.Series, threshold: float = 0.9) -> bool:
 
 
 def looks_boolean_text(series: pd.Series) -> bool:
-    if series.dtype != object:
+    if not is_text(series):
         return False
     values = set(_non_null_text(series).str.lower().unique())
     return 0 < len(values) <= 2 and values <= _BOOL_WORDS and not values <= {"0", "1"}
@@ -228,7 +230,7 @@ def clip_outliers(df, column, factor=1.5):
 
 def strip_whitespace(df):
     out = df.copy()
-    cols = out.select_dtypes(include="object").columns
+    cols = text_columns(out)
     for c in cols:
         out[c] = out[c].map(lambda v: v.strip() if isinstance(v, str) else v)
     return out, f"Trimmed whitespace in {len(cols)} text column(s)."

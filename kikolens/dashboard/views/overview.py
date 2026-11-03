@@ -3,6 +3,7 @@ import streamlit as st
 
 from kikolens.analyze.quality import profile_quality
 from kikolens.dashboard import components as ui
+from kikolens.utils.dtypes import categorical_columns
 
 TITLE = "Overview"
 SUBTITLE = "What is in this dataset, at a glance."
@@ -20,7 +21,7 @@ def render(df: pd.DataFrame) -> None:
 
     kinds = pd.Series({
         "Numeric": df.select_dtypes("number").shape[1],
-        "Text / categorical": df.select_dtypes(include=["object", "category", "string"]).shape[1],
+        "Text / categorical": len(categorical_columns(df)),
         "Date / time": df.select_dtypes(include=["datetime", "datetimetz"]).shape[1],
         "Boolean": df.select_dtypes("bool").shape[1],
     })

@@ -97,7 +97,7 @@ def test_auto_clean_then_undo_and_reset(data):
     assert pd.api.types.is_numeric_dtype(at.session_state["df"]["price"])
     assert len(at.session_state["history"]) == 1
     at.button(key="q_undo").click().run()
-    assert at.session_state["df"]["price"].dtype == object
+    assert not pd.api.types.is_numeric_dtype(at.session_state["df"]["price"])
     at.button(key="q_auto").click().run()
     at.button(key="q_reset").click().run()
     assert_clean(at)

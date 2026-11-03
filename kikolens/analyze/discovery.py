@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 
+from kikolens.utils.dtypes import categorical_columns
+
 
 def _detect_correlations(numeric_df, max_cols):
     insights = []
@@ -92,7 +94,7 @@ def _detect_ids(df_sample):
 def run_discovery_engine(df: pd.DataFrame, max_rows: int = 5000, max_cols: int = 50):
     df_sample = df.sample(n=max_rows, random_state=42) if len(df) > max_rows else df
     numeric_df = df_sample.select_dtypes(include=[np.number])
-    cat_df = df_sample.select_dtypes(include=["object", "category"])
+    cat_df = df_sample[categorical_columns(df_sample)]
 
     insights = []
     insights += _detect_correlations(numeric_df, max_cols)

@@ -13,6 +13,8 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confus
 import plotly.express as px
 import plotly.graph_objects as go
 
+from kikolens.utils.dtypes import categorical_columns, is_text
+
 MAX_CLASSES = 50
 
 
@@ -87,14 +89,14 @@ class AutoMLExplainer:
                 f"'{self.target_col}' has {self.df[self.target_col].nunique():,} distinct values, too many to classify. "
                 "Choose a numeric column or one with fewer categories.")
         self._expand_datetime_columns()
-        cat_cols = self.df.select_dtypes(include=['object', 'category']).columns
+        cat_cols = categorical_columns(self.df)
         for col in cat_cols:
             if col != self.target_col:
                 if self.df[col].nunique() < 50:
                     self.categorical_mappings[col] = self.df[col].dropna().unique().tolist()
                 else: self.df.drop(columns=[col], inplace=True)
 
-        if self.task_type == "classification" and self.df[self.target_col].dtype == 'object':
+        if self.task_type == "classification" and is_text(self.df[self.target_col]):
              le = LabelEncoder(); self.df[self.target_col] = le.fit_transform(self.df[self.target_col])
 
         valid_cat = [c for c in self.categorical_mappings.keys() if c in self.df.columns]
