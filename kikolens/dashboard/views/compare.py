@@ -69,6 +69,9 @@ def render(df: pd.DataFrame) -> None:
     ui.table(shown[["column", "type", "verdict", "PSI", "p-value", "change", "missing % (ref)", "missing % (now)"]].round(4),
              hide_index=True)
     st.caption("PSI below 0.1 is stable, 0.1 to 0.25 moderate, above 0.25 a real shift in the distribution.")
-    column = st.selectbox("Look at a column", table["column"].tolist(), key="cp_col")
-    ui.chart(dr.distribution_figure(reference, current, column), 360)
+    plottable = table.loc[table["type"].isin(["numeric", "category"]), "column"].tolist()
+    if plottable:
+        column = st.selectbox("Look at a column", plottable, key="cp_col")
+        ui.chart(dr.distribution_figure(reference, current, column), 360)
+    st.caption("Dates and columns that are different in every row (identifiers) are listed as info: they are expected to change.")
     ui.download_csv(table, "drift_report.csv", "Download report")

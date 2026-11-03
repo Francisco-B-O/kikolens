@@ -321,3 +321,27 @@ def test_cli_screen_and_ab(csv_files):
     out = runner.invoke(app, ["ab", csv_files[0], "c", "conv", "--control", "u"])
     assert out.exit_code == 0 and "reliably higher" in out.output
     assert runner.invoke(app, ["ab", csv_files[0], "g", "conv", "--control", "x"]).exit_code == 1
+
+
+# ── Drift con tipos guardados como texto ─────────────────────────────────────
+def test_drift_reads_text_dates_numbers_and_skips_identifiers():
+    rng = np.random.default_rng(0)
+    n = 400
+    raw = pd.DataFrame({"date": pd.date_range("2023-01-01", periods=n).strftime("%Y-%m-%d"),
+                        "price": [f"{v:,}" for v in rng.integers(1000, 5000, n)],
+                        "id": [f"c{i}" for i in range(n)], "ch": rng.choice(["a", "b"], n)})
+    result = dr.compare_datasets(raw.iloc[:200], raw.iloc[200:])
+    table = result["table"].set_index("column")
+    assert table.loc["price", "type"] == "numeric" and table.loc["price", "verdict"] == "stable"
+    assert table.loc["date", "type"] == "date" and table.loc["date", "verdict"] == "info"
+    assert table.loc["id", "type"] == "identifier" and table.loc["id", "verdict"] == "info"
+    assert result["drifted"] == 0 and result["level"] == "low" and "of 2 columns" in result["summary"]
+    assert dr.distribution_figure(raw.iloc[:200], raw.iloc[200:], "price").layout.barmode == "overlay"
+
+
+def test_drift_catches_a_shift_hidden_in_text_numbers():
+    rng = np.random.default_rng(0)
+    before = pd.DataFrame({"price": [f"{v:,}" for v in rng.integers(1000, 3000, 300)]})
+    after = pd.DataFrame({"price": [f"{v:,}" for v in rng.integers(2500, 6000, 300)]})
+    row = dr.compare_datasets(before, after)["table"].iloc[0]
+    assert row["type"] == "numeric" and row["verdict"] == "drift"

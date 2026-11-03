@@ -5,6 +5,8 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy import stats
 
+from kikolens.analyze.quality import convert_type, infer_types
+
 PSI_MODERATE = 0.1
 PSI_HIGH = 0.25
 EPS = 1e-4
@@ -42,20 +44,31 @@ def psi_categorical(reference: pd.Series, current: pd.Series) -> float:
     return float(np.sum((q - p) * np.log(q / p)))
 
 
-def _verdict(psi: float, p_value: float | None) -> str:
+def _verdict(psi: float, p_value: float) -> str:
     if np.isnan(psi):
         return "no data"
     if psi >= PSI_HIGH:
         return "drift"
-    if psi >= PSI_MODERATE or (p_value is not None and p_value < 0.001 and psi >= PSI_MODERATE / 2):
+    if psi >= PSI_MODERATE or (not np.isnan(p_value) and p_value < 0.001 and psi >= PSI_MODERATE / 2):
         return "moderate"
     return "stable"
+
+
+def align_types(reference: pd.DataFrame, current: pd.DataFrame) -> tuple:
+    """Fechas y números guardados como texto pasan a su tipo real, y la columna se trata igual en ambos datasets."""
+    reference, converted = infer_types(reference)
+    current, already = infer_types(current)
+    for col, kind in converted:
+        if col in current.columns and (col, kind) not in already:
+            current, _ = convert_type(current, col, kind)
+    return reference, current
 
 
 def compare_datasets(reference: pd.DataFrame, current: pd.DataFrame) -> dict:
     """Compara las columnas comunes. Devuelve una tabla por columna y un resumen de cambios de estructura."""
     if reference.empty or current.empty:
         raise ValueError("Both datasets need at least one row.")
+    reference, current = align_types(reference, current)
     common = [c for c in reference.columns if c in current.columns]
     if not common:
         raise ValueError("The two datasets have no columns in common.")
@@ -65,28 +78,32 @@ def compare_datasets(reference: pd.DataFrame, current: pd.DataFrame) -> dict:
         row = {"column": col, "missing % (ref)": ref.isna().mean() * 100, "missing % (now)": cur.isna().mean() * 100}
         if _numeric(ref) and _numeric(cur):
             r, c = ref.dropna().astype(float), cur.dropna().astype(float)
-            p = float(stats.ks_2samp(r, c).pvalue) if len(r) and len(c) else None
+            p = float(stats.ks_2samp(r, c).pvalue) if len(r) and len(c) else float("nan")
             psi = psi_numeric(ref, cur)
             std = r.std()
             row.update(type="numeric", psi=psi, p_value=p,
                        change=f"mean {r.mean():.4g} to {c.mean():.4g}" if len(r) and len(c) else "",
                        shift=float((c.mean() - r.mean()) / std) if std and len(c) else 0.0)
         elif pd.api.types.is_datetime64_any_dtype(ref) or pd.api.types.is_datetime64_any_dtype(cur):
-            row.update(type="date", psi=float("nan"), p_value=None, shift=0.0,
-                       change=f"{ref.min()} to {ref.max()}  >  {cur.min()} to {cur.max()}")
+            row.update(type="date", psi=float("nan"), p_value=float("nan"), shift=0.0,
+                       change=f"{str(ref.min())[:10]} to {str(ref.max())[:10]}  >  {str(cur.min())[:10]} to {str(cur.max())[:10]}")
         else:
-            if ref.nunique() > MAX_CATEGORIES * 10:
+            if ref.nunique() > 20 and ref.nunique() > 0.5 * max(ref.notna().sum(), 1):
+                row.update(type="identifier", psi=float("nan"), p_value=float("nan"), shift=0.0,
+                           change="a different value in almost every row")
+                row["verdict"] = "info"
+                rows.append(row)
                 continue
             new = sorted(set(cur.dropna().astype(str)) - set(ref.dropna().astype(str)))
             gone = sorted(set(ref.dropna().astype(str)) - set(cur.dropna().astype(str)))
             table = pd.concat([ref.dropna().astype(str).value_counts(), cur.dropna().astype(str).value_counts()],
                               axis=1, keys=["ref", "cur"]).fillna(0)
-            p = None
+            p = float("nan")
             if 2 <= len(table) <= MAX_CATEGORIES * 4 and table.to_numpy().sum() > 0:
                 try:
                     p = float(stats.chi2_contingency(table.T.to_numpy())[1])
                 except ValueError:
-                    p = None
+                    p = float("nan")
             psi = psi_categorical(ref, cur)
             notes = []
             if new:
@@ -94,30 +111,32 @@ def compare_datasets(reference: pd.DataFrame, current: pd.DataFrame) -> dict:
             if gone:
                 notes.append(f"gone: {', '.join(gone[:4])}")
             row.update(type="category", psi=psi, p_value=p, change="; ".join(notes), shift=0.0)
-        row["verdict"] = _verdict(row["psi"], row["p_value"])
+        row["verdict"] = "info" if row["type"] == "date" else _verdict(row["psi"], row["p_value"])
         if abs(row["missing % (now)"] - row["missing % (ref)"]) >= 10 and row["verdict"] == "stable":
             row["verdict"] = "moderate"
             row["change"] = (row["change"] + "; " if row["change"] else "") + "share of empty values changed"
         rows.append(row)
     table = pd.DataFrame(rows)
-    order = {"drift": 0, "moderate": 1, "stable": 2, "no data": 3}
+    order = {"drift": 0, "moderate": 1, "stable": 2, "info": 3, "no data": 4}
     table = table.sort_values(["verdict", "psi"], key=lambda s: s.map(order) if s.name == "verdict" else -s.fillna(-1),
                               ignore_index=True)
     drifted = int((table["verdict"] == "drift").sum())
     moderate = int((table["verdict"] == "moderate").sum())
+    tested = int(table["verdict"].isin(["drift", "moderate", "stable"]).sum())
     only_ref = [c for c in reference.columns if c not in current.columns]
     only_cur = [c for c in current.columns if c not in reference.columns]
     type_changes = [c for c in common if _numeric(reference[c]) != _numeric(current[c])]
-    share = (drifted + 0.5 * moderate) / max(len(table), 1)
+    share = (drifted + 0.5 * moderate) / max(tested, 1)
     level = "high" if share >= 0.3 or drifted >= 3 else "medium" if share >= 0.1 else "low"
     return {"table": table, "drifted": drifted, "moderate": moderate, "stable": int((table["verdict"] == "stable").sum()),
             "only_in_reference": only_ref, "only_in_current": only_cur, "type_changes": type_changes,
             "rows": (len(reference), len(current)), "level": level,
-            "summary": f"{drifted} of {len(table)} columns drifted and {moderate} changed moderately "
+            "summary": f"{drifted} of {tested} columns drifted and {moderate} changed moderately "
                        f"({len(reference):,} reference rows against {len(current):,} now)."}
 
 
 def distribution_figure(reference: pd.DataFrame, current: pd.DataFrame, column: str) -> go.Figure:
+    reference, current = align_types(reference, current)
     ref, cur = reference[column], current[column]
     fig = go.Figure()
     if _numeric(ref) and _numeric(cur):
