@@ -307,3 +307,16 @@ def test_panel_suggest_add_and_export(data):
     assert len(at.session_state["panel"].tiles) >= 4
     at.button(key="pn_add").click().run()
     assert_clean(at)
+
+
+def test_quality_smart_fill_and_extra_checks(data):
+    at = open_page(data, "Quality and cleaning")
+    assert_clean(at)
+    at.selectbox(key="q_op").set_value("Smart fill (KNN, iterative, by group)").run()
+    at.button(key="q_apply_sf").click().run()
+    assert_clean(at)
+    assert at.session_state["df"]["z"].isna().sum() == 0
+    assert [s.op for s in at.session_state["recipe"].steps] == ["impute_advanced"]
+    at.button(key="q_rl_suggest").click().run()
+    assert_clean(at)
+    assert len(at.session_state["rules"].rules) > 0

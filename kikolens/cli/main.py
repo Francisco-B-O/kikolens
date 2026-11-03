@@ -396,6 +396,7 @@ def monitor_create(
     recipe: Optional[Path] = typer.Option(None, help="Recipe (.json) to apply to every check."),
     model: Optional[str] = typer.Option(None, help="Saved model to score each check with."),
     webhook: Optional[str] = typer.Option(None, help="http(s) address to notify when a check raises an alert."),
+    rules: Optional[Path] = typer.Option(None, help="Validation rules (.json) to check on every run."),
     drift_level: str = typer.Option("high", help="Alert when drift reaches this level: medium or high."),
     quality_drop: float = typer.Option(10.0, help="Alert when the quality score falls by this many points."),
 ):
@@ -406,7 +407,8 @@ def monitor_create(
     try:
         loaded = Recipe.from_json(recipe.read_text(encoding="utf-8")) if recipe else None
         mon = create_monitor(name, source, _load(baseline) if baseline else None, loaded, model,
-                             {"drift_level": drift_level, "quality_drop": quality_drop}, webhook)
+                             {"drift_level": drift_level, "quality_drop": quality_drop}, webhook,
+                             rules=rules.read_text(encoding="utf-8") if rules else None)
     except (OSError, ValueError) as e:
         console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
@@ -521,6 +523,33 @@ def text(
     except ValueError as e:
         console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
+
+
+@app.command()
+def validate(
+    source: str,
+    rules: Optional[Path] = typer.Argument(None, help="A rules file (.json). Without it the rules suggested by the data are used."),
+    save: Optional[Path] = typer.Option(None, help="Write the rules used to this .json."),
+):
+    """Check a dataset against validation rules. Exit code 2 when a rule is broken."""
+    from kikolens.analyze.quality import infer_types
+    from kikolens.analyze.rules import RuleSet, describe, suggest_rules
+
+    df, _ = infer_types(_load(source))
+    try:
+        rule_set = RuleSet.from_json(rules.read_text(encoding="utf-8")) if rules else suggest_rules(df)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    result = rule_set.validate(df)
+    _print_frame(result["table"].drop(columns="id").round(2), "Rules", max_rows=100)
+    console.print(f"{result['summary']} {result['rows_with_problems']:,} row(s) have at least one problem.")
+    if save:
+        save.parent.mkdir(parents=True, exist_ok=True)
+        save.write_text(rule_set.to_json(), encoding="utf-8")
+        console.print(f"Rules saved to {save}")
+    if not result["passed"]:
+        raise typer.Exit(code=2)
 
 
 @app.command()

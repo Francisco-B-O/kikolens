@@ -17,6 +17,7 @@ def init() -> None:
     st.session_state.setdefault("datasets", {})
     st.session_state.setdefault("notes", "")
     st.session_state.setdefault("panel", None)
+    st.session_state.setdefault("rules", None)
 
 
 def set_dataset(df, name: str) -> None:

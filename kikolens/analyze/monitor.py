@@ -16,6 +16,7 @@ import pandas as pd
 from kikolens.analyze.drift import compare_datasets
 from kikolens.analyze.predict import input_warnings, load_bundle, predict_frame, resolve_model
 from kikolens.analyze.quality import infer_types, profile_quality
+from kikolens.analyze.rules import RuleSet
 from kikolens.config import home_dir
 from kikolens.pipeline.recipe import Recipe
 from kikolens.utils.loaders import load_data
@@ -43,6 +44,7 @@ class Monitor:
     model: str | None = None           # nombre o ruta de un modelo guardado
     thresholds: dict = field(default_factory=lambda: dict(DEFAULT_THRESHOLDS))
     webhook: str | None = None
+    rules: str | None = None            # JSON de reglas de validación
     created: str = ""
     baseline_quality: float | None = None
 
@@ -63,7 +65,7 @@ def _prepare(df: pd.DataFrame, recipe_json: str | None) -> pd.DataFrame:
 
 def create_monitor(name: str, source: str, baseline: pd.DataFrame | None = None, recipe: Recipe | None = None,
                    model: str | None = None, thresholds: dict | None = None, webhook: str | None = None,
-                   directory=None) -> Monitor:
+                   directory=None, rules: str | None = None) -> Monitor:
     """Crea un monitor. La línea base (por defecto, el propio `source`) se guarda como Parquet dentro del monitor."""
     if webhook and not re.match(r"^https?://", webhook):
         raise ValueError("The webhook must be an http(s) address.")
@@ -73,10 +75,12 @@ def create_monitor(name: str, source: str, baseline: pd.DataFrame | None = None,
         raise ValueError(f"Thresholds: unknown {sorted(unknown)} or drift_level not in {LEVELS}.")
     if model:
         resolve_model(model)  # falla pronto si no existe
+    if rules:
+        RuleSet.from_json(rules)  # falla pronto si no son reglas válidas
     if baseline is None:
         baseline = load_data(source)
     mon = Monitor(name=name, source=str(source), recipe=recipe.to_json() if recipe is not None and len(recipe) else None,
-                  model=model, thresholds=merged, webhook=webhook,
+                  model=model, thresholds=merged, webhook=webhook, rules=rules,
                   created=datetime.now(timezone.utc).isoformat(timespec="seconds"))
     prepared, _ = infer_types(_prepare(baseline, mon.recipe))
     mon.baseline_quality = float(profile_quality(prepared)["score"])
@@ -182,6 +186,15 @@ def run_check(mon: Monitor, data: pd.DataFrame | None = None, directory=None, no
         _alert(alerts, "medium", f"The number of rows changed from {prev['rows']:,} to {len(df):,}.")
     if len(df) == 0:
         _alert(alerts, "high", "The data has no rows.")
+
+    if mon.rules:
+        check = RuleSet.from_json(mon.rules).validate(df)
+        record["rules_broken"] = check["broken"]
+        for _, r in check["table"].iterrows():
+            if r["error"]:
+                _alert(alerts, "medium", f"Rule could not be checked ({r['rule']}): {r['error']}")
+            elif r["violations"]:
+                _alert(alerts, "high", f"Rule broken: {r['rule']} ({int(r['violations']):,} rows).")
 
     baseline = pd.read_parquet(folder / "baseline.parquet")
     try:
