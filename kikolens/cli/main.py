@@ -496,6 +496,34 @@ def monitor_delete(name: str):
 
 
 @app.command()
+def text(
+    source: str,
+    column: str,
+    group: Optional[str] = typer.Option(None, help="Also show the terms that distinguish each group of this column."),
+    ngram: int = typer.Option(1, help="1 words, 2 pairs of words, 3 triples."),
+    themes: int = typer.Option(0, help="Group the texts into this many themes (0 skips it)."),
+    top: int = typer.Option(15, help="Terms to list."),
+):
+    """Key terms, groups and themes of a free-text column."""
+    from kikolens.analyze import text as tx
+
+    df = _load(source)
+    _check_target(df, column)
+    try:
+        info = tx.text_stats(df[column])
+        console.print(f"{info['rows'] - info['empty']:,} texts · {info['mean_words']:.1f} words each · language {info['language']}")
+        _print_frame(tx.top_terms(df[column], top, ngram).round(4), "Most common terms")
+        if group:
+            _check_target(df, group)
+            _print_frame(tx.terms_by_group(df, column, group).round(3), f"Terms that distinguish each {group}", max_rows=40)
+        if themes:
+            _print_frame(tx.cluster_texts(df[column], themes)["summary"].round(3), "Themes")
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@app.command()
 def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),

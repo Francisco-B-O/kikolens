@@ -12,7 +12,7 @@ from kikolens.pipeline.project import load_project
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
-         "Panel", "Monitoring", "Experiments", "Anomalies", "Dimensions", "Compare data"]
+         "Panel", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
 
 @pytest.fixture(scope="module")

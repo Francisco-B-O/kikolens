@@ -8,7 +8,7 @@ from kikolens.dashboard import components as ui
 from kikolens.dashboard import state, theme
 from kikolens.dashboard.views import (anomalies, ask, clusters, compare, dimensions, experiments, explore, lab, models, monitoring,
                                       neural, overview, patterns, predict, project, quality, panel, report, statistics,
-                                      timeseries, transform)
+                                      text, timeseries, transform)
 from kikolens.utils.loaders import load_data
 
 st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial_sidebar_state="expanded")
@@ -18,7 +18,8 @@ GROUPS = {
     "Data": {"Overview": overview, "Explore": explore, "Quality and cleaning": quality, "Transform": transform,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions,
-                 "Compare data": compare, "Segments": clusters},
+                 "Compare data": compare, "Segments": clusters,
+                 "Text": text},
     "Models": {"Models": models, "Model lab": lab, "Neural network": neural, "Time series": timeseries,
                "Predict": predict, "Monitoring": monitoring},
     "Share": {"Panel": panel, "Report": report, "Project": project},
