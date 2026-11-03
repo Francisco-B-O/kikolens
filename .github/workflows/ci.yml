@@ -36,6 +36,32 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
+  package:
+    name: Build package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Build the wheel
+        run: |
+          pip install build
+          python -m build
+
+      - name: Install the wheel and run the command line
+        run: |
+          pip install dist/*.whl
+          kikolens --help
+          kikolens models
+          kikolens monitor list
+
   sonar:
     name: SonarCloud
     runs-on: ubuntu-latest
