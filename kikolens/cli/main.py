@@ -8,6 +8,7 @@ import typer
 from rich.console import Console
 from rich.table import Table
 
+from kikolens.config import streamlit_flags
 from kikolens.utils.loaders import load_data
 
 app = typer.Typer(help="KikoLens: private, local-first data analysis.", no_args_is_help=True)
@@ -47,7 +48,8 @@ def start(port: int = typer.Option(8501, help="Port for the dashboard.")):
         console.print(f"[red]Dashboard not found at {app_path}[/red]")
         raise typer.Exit(code=1)
     try:
-        subprocess.run([sys.executable, "-m", "streamlit", "run", str(app_path), "--server.port", str(port)], check=True)
+        subprocess.run([sys.executable, "-m", "streamlit", "run", str(app_path), "--server.port", str(port),
+                        *streamlit_flags()], check=True)
     except KeyboardInterrupt:
         console.print("\n[yellow]Stopped.[/yellow]")
     except subprocess.CalledProcessError as e:

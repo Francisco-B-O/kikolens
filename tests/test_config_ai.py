@@ -85,3 +85,21 @@ def test_insights_success_and_timeout(monkeypatch, df):
 
     monkeypatch.setattr(requests, "post", timeout)
     assert "Timeout" in get_ai_insights(df)
+
+
+def test_streamlit_config_file_matches_options():
+    import tomllib
+    from pathlib import Path
+
+    def flatten(d, prefix=""):
+        for k, v in d.items():
+            yield from flatten(v, f"{prefix}{k}.") if isinstance(v, dict) else [(f"{prefix}{k}", v)]
+
+    toml = tomllib.loads((Path(__file__).parent.parent / ".streamlit" / "config.toml").read_text(encoding="utf-8"))
+    assert dict(flatten(toml)) == config.STREAMLIT_OPTIONS
+
+
+def test_streamlit_flags_are_pairs():
+    flags = config.streamlit_flags()
+    assert len(flags) == 2 * len(config.STREAMLIT_OPTIONS)
+    assert flags[flags.index("--browser.gatherUsageStats") + 1] == "false"
