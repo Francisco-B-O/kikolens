@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kikolens"
-version = "1.0.0"
+version = "1.1.0"
 description = "Private, local-first data analysis with AutoML, neural networks and local LLMs"
 readme = "README.md"
 authors = [
@@ -42,6 +42,9 @@ kikolens = "kikolens.cli.main:cli"
 dev = [
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
+]
+docs = [
+    "playwright>=1.45",
 ]
 
 [tool.setuptools.packages.find]

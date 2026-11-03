@@ -2,6 +2,15 @@
 
 Private, local-first data analysis. Load a dataset, check its quality, clean it, explore it, train models (including neural networks), forecast time series and export a report. Nothing leaves your machine: language-model features use [Ollama](https://ollama.com/) running locally.
 
+![Time series forecast](docs/images/timeseries-light.png)
+
+<table>
+  <tr>
+    <td><img src="docs/images/quality-light.png" alt="Quality and cleaning"></td>
+    <td><img src="docs/images/neural-dark.png" alt="Neural network, dark theme"></td>
+  </tr>
+</table>
+
 ## Features
 
 | Area | What it does |
@@ -17,6 +26,14 @@ Private, local-first data analysis. Load a dataset, check its quality, clean it,
 | **Time series** | Date detection, resampling, trend and seasonality, and a forecast with a 95% range that is backtested against a naive baseline. |
 | **Segments** | k-means clustering with a silhouette-based hint for the number of groups. |
 | **Report** | A single self-contained HTML page (print it to PDF from the browser). |
+
+## Try it
+
+`examples/sales_demo.csv` is a synthetic sales dataset with deliberate flaws (missing values, duplicates, prices stored as text) and a weekly pattern. `examples/report.html` is the report generated from it.
+
+```bash
+kikolens start        # then drop examples/sales_demo.csv into the sidebar
+```
 
 ## Install
 
@@ -83,12 +100,20 @@ The first start downloads the model (about 2 GB) into the `ollama_data` volume. 
 * Forecasts use a linear trend plus Fourier seasonality. They are checked on held-out data and the dashboard says when they do not beat repeating the last value.
 * Only load `.pkl` model files you created yourself; unpickling can execute code.
 
+## Documentation
+
+* [Dashboard guide](docs/dashboard.md): every section, with screenshots
+* [Command line reference](docs/cli.md)
+* [How the models work](docs/models.md): preprocessing, AutoML, neural networks, forecasting
+
 ## Development
 
 ```bash
 pip install -e ".[dev]"
 pytest tests/ -v
 ```
+
+The screenshots in `docs/images` are regenerated with `pip install -e ".[docs]" && python docs/make_screenshots.py`.
 
 Work happens on feature branches; changes reach `develop` and then `main` through pull requests that pass CI.
 
