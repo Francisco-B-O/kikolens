@@ -6,8 +6,8 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state, theme
-from kikolens.dashboard.views import (ask, clusters, explore, lab, models, neural, overview, patterns, quality,
-                                      report, statistics, timeseries)
+from kikolens.dashboard.views import (ask, clusters, explore, lab, models, neural, overview, patterns, project, quality,
+                                      report, statistics, timeseries, transform)
 from kikolens.utils.loaders import load_data
 
 st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial_sidebar_state="expanded")
@@ -16,6 +16,7 @@ PAGES = {
     "Overview": overview,
     "Explore": explore,
     "Quality and cleaning": quality,
+    "Transform": transform,
     "Patterns": patterns,
     "Statistics": statistics,
     "Ask": ask,
@@ -25,6 +26,7 @@ PAGES = {
     "Time series": timeseries,
     "Segments": clusters,
     "Report": report,
+    "Project": project,
 }
 FILE_TYPES = ["csv", "tsv", "xlsx", "xls", "json", "ndjson", "jsonl", "parquet"]
 

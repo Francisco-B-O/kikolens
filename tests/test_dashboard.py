@@ -7,10 +7,11 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 import kikolens.dashboard.app as dashboard_app
+from kikolens.pipeline.project import load_project
 
 APP = str(Path(dashboard_app.__file__))
-PAGES = ["Overview", "Explore", "Quality and cleaning", "Patterns", "Statistics", "Ask", "Models",
-         "Neural network", "Time series", "Segments", "Report"]
+PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
+         "Model lab", "Neural network", "Time series", "Segments", "Report", "Project"]
 
 
 @pytest.fixture(scope="module")
@@ -192,3 +193,43 @@ def test_model_lab_reports_bad_target(data):
     at.button(key="lab_run").click().run()
     assert_clean(at)
     assert "lab_res" not in at.session_state
+
+
+def test_transform_records_steps_and_undo_removes_them(data):
+    at = open_page(data, "Transform")
+    assert_clean(at)
+    at.text_input(key="tf_a_name").set_value("double")
+    at.text_input(key="tf_a_expr").set_value("x * 2")
+    at.button(key="tf_a_go").click().run()
+    assert_clean(at)
+    assert "double" in at.session_state["df"].columns
+    assert [s.op for s in at.session_state["recipe"].steps] == ["add_column"]
+    at.button(key="tf_undo").click().run()
+    assert "double" not in at.session_state["df"].columns
+    assert len(at.session_state["recipe"]) == 0
+
+
+def test_transform_shows_error_for_bad_formula(data):
+    at = open_page(data, "Transform")
+    at.text_input(key="tf_a_name").set_value("bad")
+    at.text_input(key="tf_a_expr").set_value("__import__('os')")
+    at.button(key="tf_a_go").click().run()
+    assert_clean(at)
+    assert "bad" not in at.session_state["df"].columns
+    assert any("allowed" in m.value for m in at.markdown)
+
+
+def test_auto_clean_is_one_undo_but_many_recipe_steps(data):
+    at = open_page(data, "Quality and cleaning")
+    at.button(key="q_auto").click().run()
+    assert len(at.session_state["recipe"]) >= 1
+    at.button(key="q_undo").click().run()
+    assert len(at.session_state["recipe"]) == 0
+
+
+def test_project_page_prepares_file(data):
+    at = open_page(data, "Project")
+    assert_clean(at)
+    at.button(key="pj_build").click().run()
+    assert_clean(at)
+    assert load_project(at.session_state["pj_blob"])["manifest"]["rows"] == len(data)

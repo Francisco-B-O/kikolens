@@ -199,24 +199,101 @@ def forecast(
 
 
 @app.command()
-def clean(source: str, output: Path = typer.Option(..., help="Where to write the cleaned file (.csv or .parquet).")):
+def clean(
+    source: str,
+    output: Path = typer.Option(..., help="Where to write the cleaned file (.csv or .parquet)."),
+    save_recipe: Optional[Path] = typer.Option(None, help="Also save the cleaning steps as a recipe (.json)."),
+):
     """Apply safe automatic cleaning and save the result."""
-    from kikolens.analyze.quality import auto_clean, profile_quality
+    from kikolens.analyze.quality import auto_clean_steps, profile_quality
+    from kikolens.pipeline.recipe import Recipe
 
     df = _load(source)
     before = profile_quality(df)["score"]
-    cleaned, log = auto_clean(df)
-    for line in log:
-        console.print(f"  • {line}")
+    cleaned, steps = auto_clean_steps(df)
+    for _, _, message in steps:
+        console.print(f"  • {message}")
+    _write_frame(cleaned, output)
+    if save_recipe:
+        recipe = Recipe()
+        for op, params, message in steps:
+            recipe.add(op, params, message)
+        save_recipe.parent.mkdir(parents=True, exist_ok=True)
+        save_recipe.write_text(recipe.to_json(), encoding="utf-8")
+        console.print(f"Recipe saved to {save_recipe}")
+    console.print(f"Quality score {before:.0f} → {profile_quality(cleaned)['score']:.0f}. Saved to {output}")
+
+
+def _write_frame(df: pd.DataFrame, output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
-    if output.suffix.lower() == ".parquet":
-        cleaned.to_parquet(output, index=False)
-    elif output.suffix.lower() == ".csv":
-        cleaned.to_csv(output, index=False)
+    suffix = output.suffix.lower()
+    if suffix == ".parquet":
+        df.to_parquet(output, index=False)
+    elif suffix == ".csv":
+        df.to_csv(output, index=False)
     else:
         console.print("[red]Output must end in .csv or .parquet[/red]")
         raise typer.Exit(code=1)
-    console.print(f"Quality score {before:.0f} → {profile_quality(cleaned)['score']:.0f}. Saved to {output}")
+
+
+@app.command()
+def apply(
+    source: str,
+    recipe: Path = typer.Argument(..., help="Recipe (.json) saved from the dashboard or `clean --save-recipe`."),
+    output: Path = typer.Option(..., help="Where to write the result (.csv or .parquet)."),
+    dataset: Optional[list[str]] = typer.Option(None, "--dataset", "-d", help="Extra dataset as name=path, for join steps."),
+):
+    """Repeat a saved recipe on a new file."""
+    from kikolens.pipeline.recipe import Recipe
+
+    try:
+        loaded = Recipe.from_json(recipe.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        console.print(f"[red]Could not read the recipe:[/red] {e}")
+        raise typer.Exit(code=1)
+    extras = {}
+    for item in dataset or []:
+        name, _, path = item.partition("=")
+        if not path:
+            console.print(f"[red]--dataset expects name=path, got '{item}'.[/red]")
+            raise typer.Exit(code=1)
+        extras[name] = _load(path)
+    try:
+        result, log = loaded.apply(_load(source), extras)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    for line in log:
+        console.print(f"  • {line}")
+    _write_frame(result, output)
+    console.print(f"{len(result):,} rows × {len(result.columns)} columns saved to {output}")
+
+
+@app.command()
+def project(file: Path, output: Optional[Path] = typer.Option(None, help="Write the processed data (.csv or .parquet).")):
+    """Show what a .kikolens project contains, and optionally export its processed data."""
+    from kikolens.pipeline.project import load_project
+
+    try:
+        content = load_project(file.read_bytes())
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    info = content["manifest"]
+    console.print(f"[bold]{info['name']}[/bold]  saved {info['created']}  ·  {info['rows']:,} rows × {len(info['columns'])} columns")
+    if content["notes"]:
+        console.print(f"Notes: {content['notes']}")
+    steps = content["recipe"].describe()
+    if len(steps):
+        _print_frame(steps, "Recipe")
+    if output:
+        try:
+            result, _ = content["recipe"].apply(content["original"], content["datasets"])
+        except ValueError as e:
+            console.print(f"[red]{e}[/red]")
+            raise typer.Exit(code=1)
+        _write_frame(result, output)
+        console.print(f"Processed data saved to {output}")
 
 
 @app.command()
