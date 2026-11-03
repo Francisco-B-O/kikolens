@@ -1,252 +1,97 @@
-# 💎 KikoLens: The Ultimate AI-Powered Data Intelligence Suite
+# KikoLens
 
-<div align="center">
+Private, local-first data analysis. Load a dataset, check its quality, clean it, explore it, train models (including neural networks), forecast time series and export a report. Nothing leaves your machine: language-model features use [Ollama](https://ollama.com/) running locally.
 
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
-[![Ollama Local AI](https://img.shields.io/badge/AI-Ollama%20Local-orange.svg?style=for-the-badge&logo=openai&logoColor=white)](https://ollama.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge)](https://github.com/psf/black)
+## Features
 
-<h3><i>Data intelligence, redefined for the terminal.</i></h3>
+| Area | What it does |
+| :--- | :--- |
+| **Data loading** | CSV, TSV, Excel, JSON / NDJSON, Parquet, `http(s)` links, and SQLite / PostgreSQL / MySQL. |
+| **Quality and cleaning** | Quality score, detection of missing values, duplicates, constant columns, text that is really numbers or dates, and outliers. Every fix is undoable; the original file is never touched. |
+| **Explore** | Scatter, line, bar, histogram, box, violin and density charts with column filters. |
+| **Patterns** | Automatic detection of strong correlations, outliers, dominant categories and identifier columns. |
+| **Statistics** | Summary table, per-column distributions, correlation matrix and strongest relationships. |
+| **Ask** | Question the data in plain language (a local model writes the SQL) or run your own read-only SQL. |
+| **Models** | AutoML for regression and classification with a written rationale, feature importance, row explanations and a what-if simulator. |
+| **Neural network** | Configurable multilayer perceptron: layers, activation, optimizer, learning rate, regularization, early stopping. Shows the architecture, the training curve, permutation importance, and compares against the classical model. |
+| **Time series** | Date detection, resampling, trend and seasonality, and a forecast with a 95% range that is backtested against a naive baseline. |
+| **Segments** | k-means clustering with a silhouette-based hint for the number of groups. |
+| **Report** | A single self-contained HTML page (print it to PDF from the browser). |
 
-</div>
+## Install
 
----
+Requires Python 3.12 or newer.
 
-## 🌟 Introduction
-
-**KikoLens** is a high-performance, privacy-first intelligence engine designed for modern data scientists, engineers, and analysts. By seamlessly integrating **local Large Language Models (LLMs)** via Ollama, KikoLens transforms raw data into professional, interactive, and actionable intelligence—all without your data ever leaving your machine.
-
-Whether you need to generate a full executive report, clean a messy dataset, or ask questions in plain English, KikoLens empowers you to do it all from the command line with unparalleled speed and style.
-
-### ✨ Key Features
-*   **🛡️ 100% Private & Local**: Zero data egress. All AI analysis is performed on your hardware using Ollama.
-*   **🚀 Universal Data Loader**: Native support for CSV, JSON, Excel, Parquet, and SQL Databases (PostgreSQL, MySQL, SQLite).
-*   **📊 Executive-Grade Reporting**: One-click generation of unified HTML reports with glassmorphism UI, interactive charts, and AI narratives.
-*   **🧠 Cognitive Automation**: Automated machine learning (AutoML) for predictive modeling and feature importance analysis.
-*   **💬 Natural Language Interface**: Chat with your data using the `ask` command to generate SQL and get answers instantly.
-*   **🧼 Intelligent Cleaning**: AI-driven diagnostics that not only find errors but write the Python code to fix them.
-
----
-
-## 🛠️ Installation & Setup
-
-### 1. System Requirements
-*   **Python 3.12+**
-*   **Ollama Runtime**: Required for AI features. [Download Ollama](https://ollama.com/)
-*   **Git**: For cloning the repository.
-
-### 2. Initialize AI Model
-KikoLens requires a local LLM to function. We recommend `llama3.1` for the best balance of speed and intelligence.
 ```bash
-ollama pull llama3.1
-```
-
-### 3. Install KikoLens
-Clone the repository and install it in editable mode to get immediate access to the CLI.
-```bash
-git clone https://github.com/Francisco-B-O/KikoLens.git
+git clone https://github.com/Francisco-B-O/kikolens.git
 cd kikolens
 pip install -e .
 ```
 
----
-
-## 🚀 The Command Suite
-
-KikoLens provides a comprehensive suite of commands to handle every stage of the data lifecycle.
-
-### 🏆 `report`: The 360° Intelligence Dossier
-The flagship command. Generates a unified, high-fidelity HTML report containing statistics, correlations, AI insights, visualizations, and a cleaning plan.
+For the language-model features, install Ollama and pull a model:
 
 ```bash
-kikolens report <FILEPATH> [OPTIONS]
+ollama pull llama3.2
 ```
-| Option | Description | Default |
+
+KikoLens reads these environment variables:
+
+| Variable | Default | Purpose |
 | :--- | :--- | :--- |
-| `--target <COLUMN>` | Specify a target column to trigger **AutoML** predictive analysis. | `None` |
-| `--model <NAME>` | Choose the local Ollama model to use for insights. | `llama3.1` |
-| `--output-dir <PATH>` | Custom directory for report output. | `./kikolens_output` |
+| `OLLAMA_HOST` | `http://localhost:11434` | Where Ollama is running. |
+| `OLLAMA_MODEL` | `llama3.2` | Model used for summaries and plain-language questions. |
+| `OLLAMA_TIMEOUT` | `120` | Seconds to wait for the model. |
 
-**Example:**
-```bash
-kikolens report data/sales_2024.csv --target "revenue" --model llama3.1
-```
+Everything except plain-language questions and written summaries works without Ollama.
 
----
-
-### 🧠 `ask`: Natural Language Querying
-Ask questions about your data in plain English. KikoLens translates your question into optimized SQL, executes it, and presents the results.
+## Dashboard
 
 ```bash
-kikolens ask <FILEPATH> "<QUESTION>" [OPTIONS]
-```
-**Example:**
-```bash
-kikolens ask data/users.db "Who are the top 5 customers by lifetime value?"
+kikolens start            # opens http://localhost:8501
+kikolens start --port 9000
 ```
 
----
+The dashboard follows the light or dark theme chosen in Streamlit's settings menu.
 
-### 🤖 `predict`: AutoML & Predictive Narrative
-Train a machine learning model on your data automatically. Returns a detailed narrative on model performance, feature importance, and metrics.
+## Command line
 
 ```bash
-kikolens predict <FILEPATH> <TARGET_COLUMN>
-```
-**Example:**
-```bash
-kikolens predict data/churn.csv "churn_status"
-```
-
----
-
-### 🧼 `suggest`: AI Data Health Check
-Get an expert cleaning strategy. KikoLens analyzes your dataset for missing values, outliers, and inconsistencies, then generates a cleaning plan.
-
-```bash
-kikolens suggest <FILEPATH> [OPTIONS]
-```
-**Example:**
-```bash
-kikolens suggest data/raw_leads.json
+kikolens analyze data.csv                         # statistics and quality summary
+kikolens sql data.csv "SELECT region, SUM(units) FROM df GROUP BY region"
+kikolens ask data.csv "Which region sold the most?"
+kikolens predict data.csv revenue                 # AutoML
+kikolens predict data.csv revenue --nn --layers "64, 32" --save model.pkl
+kikolens forecast data.csv date revenue --horizon 30
+kikolens clean data.csv --output clean.parquet    # safe automatic cleaning
+kikolens report data.csv --target revenue --nn --output report.html
 ```
 
----
+In SQL the data is always the table `df`. Only read-only queries run; writes, multiple statements and file-reading functions are rejected.
 
-### 📊 `visualize`: The Visual Gallery
-Instantly generate a suite of high-resolution plots, including Histograms, Boxplots, Correlation Heatmaps, and PCA projections.
+## Docker
 
 ```bash
-kikolens visualize <FILEPATH> [OPTIONS]
-```
-| Option | Description |
-| :--- | :--- |
-| `--all` | Generate the comprehensive suite of all available plot types. |
-| `--export <FORMAT>` | Export the gallery summary to `html` or `md`. |
-
-**Example:**
-```bash
-kikolens visualize data/housing.csv --all --export html
+docker-compose up -d      # dashboard on :8501, Ollama on :11434
 ```
 
----
+The first start downloads the model (about 2 GB) into the `ollama_data` volume. Change the model with `OLLAMA_MODEL=llama3.1 docker-compose up -d`.
 
-### 💻 `serve`: The Pro Web GUI
-Prefer a visual interface? Launch the interactive Streamlit-based dashboard for real-time exploration and filtering.
+## Notes on the models
+
+* Dates are turned into numeric features (days since 1970, month, weekday) before training.
+* Neural networks use scikit-learn's `MLPRegressor` / `MLPClassifier`; regression targets are standardized internally and predictions are returned in the original scale.
+* Forecasts use a linear trend plus Fourier seasonality. They are checked on held-out data and the dashboard says when they do not beat repeating the last value.
+* Only load `.pkl` model files you created yourself; unpickling can execute code.
+
+## Development
 
 ```bash
-kikolens serve [FILEPATH]
-```
-**Example:**
-```bash
-kikolens serve data/marketing.xlsx
+pip install -e ".[dev]"
+pytest tests/ -v
 ```
 
----
+Work happens on feature branches; changes reach `develop` and then `main` through pull requests that pass CI.
 
-### 🔍 `analyze`: Deep Statistical Profiling
-Execute a surgical strike of statistical analysis with optional AI insights and cleaning.
+## License
 
-```bash
-kikolens analyze <FILEPATH> [OPTIONS]
-```
-| Option | Description |
-| :--- | :--- |
-| `--clean` | Apply automated data cleaning before analysis. |
-| `--plots` | Generate basic statistical plots. |
-| `--insights` | Request AI-driven insights on the statistical profile. |
-| `--export <FORMAT>` | Export results to `html`, `md`, or `json`. |
-
----
-
-### 🩺 `diagnose`: Structural Diagnostics
-Perform a technical health check on your dataset, identifying data types, missing values, duplicates, and memory usage.
-
-```bash
-kikolens diagnose <FILEPATH> [OPTIONS]
-```
-
----
-
-### 🔌 `sql`: Direct Database Interaction
-Run raw SQL queries against your local files (treated as tables) or connected remote databases.
-
-```bash
-kikolens sql <FILEPATH> "<QUERY>" [OPTIONS]
-```
-**Example:**
-```bash
-kikolens sql data.csv "SELECT * FROM data WHERE age > 30 ORDER BY income DESC"
-```
-
----
-
-### 💡 `ai-insight`: Pure Cognitive Analysis
-Focus exclusively on getting AI-driven qualitative insights about your dataset without the heavy statistical reporting.
-
-```bash
-kikolens ai-insight <FILEPATH> [OPTIONS]
-```
-
----
-
-### 📚 `explain`: The Knowledge Library
-Understand complex statistical terms instantly. Uses the built-in glossary or queries the AI for novel concepts.
-
-```bash
-kikolens explain "<TERM>"
-```
-**Example:**
-```bash
-kikolens explain "heteroscedasticity"
-```
-
----
-
-## 🔌 Data Connectivity
-
-KikoLens features a **Universal Loader** that automatically detects and handles various data sources:
-
-| Source Type | Syntax / Examples |
-| :--- | :--- |
-| **Local Files** | `data.csv`, `records.json`, `sheet.xlsx`, `archive.parquet` |
-| **PostgreSQL** | `postgresql://user:password@localhost:5432/dbname` |
-| **MySQL** | `mysql://user:password@localhost:3306/dbname` |
-| **SQLite** | `sqlite:///data.db` |
-| **Web URL** | `https://example.com/data.csv` |
-
----
-
-## 📂 Output Structure
-
-By default, KikoLens creates a `kikolens_output` directory in your current workspace:
-
-```text
-kikolens_output/
-├── data_source_KIKOLENS_REPORT.html  # The Master Report
-├── visualize/                        # High-res PNG plots
-│   ├── correlation_heatmap.png
-│   ├── pca_projection.png
-│   └── ...
-├── data_source_kikolens_automl.md    # Predictive modeling results
-└── ...
-```
-
----
-
-## 🤝 Contributing
-
-We welcome contributions from the community!
-1.  Fork the repository.
-2.  Create a feature branch (`git checkout -b feature/AmazingFeature`).
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  Push to the branch (`git push origin feature/AmazingFeature`).
-5.  Open a Pull Request.
-
----
-
-<div align="center">
-  <p><b>KikoLens</b> is an open-source project licensed under the MIT License.</p>
-  <p><i>Empowering data professionals with local AI.</i></p>
-</div>
+MIT

@@ -14,3 +14,4 @@ venv/
 dist/
 build/
 Dockerfile.ollama
+!README.md

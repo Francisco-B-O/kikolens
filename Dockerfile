@@ -9,8 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar solo lo necesario para instalar dependencias primero (mejor cache)
-COPY pyproject.toml .
+COPY pyproject.toml README.md ./
 COPY kikolens/ ./kikolens/
+COPY .streamlit/ ./.streamlit/
 
 # Instalar el proyecto y todas sus dependencias
 RUN pip install --no-cache-dir -e .
@@ -20,6 +21,7 @@ EXPOSE 8501
 
 # URL de Ollama (sobreescribible via docker-compose o docker run -e)
 ENV OLLAMA_HOST=http://ollama:11434
+ENV OLLAMA_MODEL=llama3.2
 
 # Arrancar el dashboard directamente
 CMD ["streamlit", "run", "kikolens/dashboard/app.py", \
