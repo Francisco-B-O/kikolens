@@ -185,6 +185,12 @@ def test_model_lab_runs_end_to_end(data):
     at.button(key="lab_predict").click().run()
     assert_clean(at)
     assert any(m.label == "Prediction" for m in at.metric)
+    at.button(key="lab_shap_row").click().run()
+    assert_clean(at)
+    assert at.session_state["lab_shap"][1]["table"].shape[0] >= 2
+    at.button(key="lab_pair").click().run()
+    assert_clean(at)
+    assert "lab_pair_res" in at.session_state
 
 
 def test_model_lab_reports_bad_target(data):

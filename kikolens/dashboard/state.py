@@ -3,7 +3,7 @@ import streamlit as st
 
 from kikolens.pipeline.recipe import Recipe, apply_operation
 
-MODEL_KEYS = ("automl_res", "nn_res", "lab_res", "ts_res", "cluster_res", "chat_history", "pd_result")
+MODEL_KEYS = ("automl_res", "nn_res", "lab_res", "lab_pair_res", "lab_shap", "lab_shap_global", "ts_res", "cluster_res", "chat_history", "pd_result")
 MAX_HISTORY = 20
 
 
