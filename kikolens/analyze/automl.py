@@ -31,6 +31,7 @@ class AutoMLExplainer:
         self.categorical_mappings = {}
         self.metrics = {}
         self.plots = {}
+        self.target_classes = None
 
     def analyze_task(self, manual_type: str = None):
         target = self.df[self.target_col]
@@ -90,6 +91,7 @@ class AutoMLExplainer:
 
         if self.task_type == "classification" and is_text(self.df[self.target_col]):
              le = LabelEncoder(); self.df[self.target_col] = le.fit_transform(self.df[self.target_col])
+             self.target_classes = le.classes_.tolist()
 
         valid_cat = [c for c in self.categorical_mappings.keys() if c in self.df.columns]
         if valid_cat: self.df = pd.get_dummies(self.df, columns=valid_cat, drop_first=True)
@@ -159,5 +161,5 @@ def run_automl_analysis(df: pd.DataFrame, target_col: str, manual_type: str = No
         "model": explainer.model, "imputer": imputer, "scaler": scaler,
         "columns": explainer.training_columns, "categorical_mappings": explainer.categorical_mappings,
         "task_type": explainer.task_type, "feature_importance": explainer.feature_importance, 
-        "target": target_col, "plots": explainer.plots
+        "target": target_col, "plots": explainer.plots, "classes": explainer.target_classes
     }

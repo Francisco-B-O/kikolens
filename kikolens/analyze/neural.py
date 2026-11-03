@@ -182,7 +182,7 @@ def run_neural_network(
     return {
         "metrics": metrics, "narrative": narrative, "model": model, "imputer": imputer, "scaler": scaler,
         "columns": explainer.training_columns, "categorical_mappings": explainer.categorical_mappings,
-        "task_type": task, "feature_importance": importance, "target": target_col,
+        "task_type": task, "feature_importance": importance, "target": target_col, "classes": explainer.target_classes,
         "plots": {"performance": perf, "importance": imp_fig,
                   "training": _training_figure(net, task), "architecture": architecture_figure(sizes)},
         "n_parameters": n_params, "n_iter": int(net.n_iter_), "architecture": sizes,

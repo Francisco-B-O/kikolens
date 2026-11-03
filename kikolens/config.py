@@ -1,5 +1,6 @@
 """Configuración compartida de KikoLens (se lee del entorno en cada llamada)."""
 import os
+from pathlib import Path
 
 DEFAULT_MODEL = "llama3.2"
 DEFAULT_HOST = "http://localhost:11434"
@@ -22,6 +23,11 @@ def ollama_timeout(default: int = 120) -> int:
         return int(os.getenv("OLLAMA_TIMEOUT", default))
     except ValueError:
         return default
+
+
+def home_dir() -> Path:
+    """Carpeta de datos del usuario (registro de modelos). Se puede cambiar con KIKOLENS_HOME."""
+    return Path(os.getenv("KIKOLENS_HOME") or Path.home() / ".kikolens")
 
 
 # Opciones de Streamlit: las usa `kikolens start` y están reflejadas en .streamlit/config.toml.
