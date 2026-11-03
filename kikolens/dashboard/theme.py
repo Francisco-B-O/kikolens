@@ -1,4 +1,5 @@
 """Tema editorial: papel cálido, tinta oscura y un único acento. Sigue el tema claro/oscuro de Streamlit."""
+import plotly.express as px
 import streamlit as st
 
 PALETTES = {
@@ -93,17 +94,19 @@ hr {{ border-color:var(--line); }}
 
 
 def inject() -> None:
-    st.markdown(f"<style>{_css(palette())}</style>", unsafe_allow_html=True)
+    p = palette()
+    px.defaults.color_discrete_sequence = p["colorway"]  # Plotly Express fija el color de cada traza al crearla
+    st.markdown(f"<style>{_css(p)}</style>", unsafe_allow_html=True)
 
 
 def style_chart(fig, height: int = 420):
     """Aplica la paleta del tema a una figura de Plotly."""
     p = palette()
-    axis = dict(gridcolor=p["line"], zerolinecolor=p["line"], linecolor=p["line"], tickfont=dict(color=p["muted"]))
+    axis = dict(automargin=True, title_standoff=8, gridcolor=p["line"], zerolinecolor=p["line"], linecolor=p["line"], tickfont=dict(color=p["muted"]))
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color=p["ink"], family="system-ui, sans-serif", size=12),
-        title=dict(font=dict(family="Georgia, serif", size=15), x=0, xanchor="left"),
+        title=dict(text=fig.layout.title.text or "", font=dict(family="Georgia, serif", size=15), x=0, xanchor="left"),
         xaxis=axis, yaxis=axis, colorway=p["colorway"], height=height,
         margin=dict(l=8, r=8, t=48, b=8),
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=p["muted"])),

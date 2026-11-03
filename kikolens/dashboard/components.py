@@ -35,7 +35,7 @@ def label(text: str, sidebar: bool = False) -> None:
 
 
 def chart(fig, height: int = 420, key=None) -> None:
-    st.plotly_chart(style_chart(fig, height), width="stretch", key=key)
+    st.plotly_chart(style_chart(fig, height), width="stretch", theme=None, key=key)
 
 
 def table(df, height=None, **kwargs) -> None:

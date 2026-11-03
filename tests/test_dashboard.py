@@ -159,3 +159,12 @@ def test_explore_every_chart_type(data):
         at.selectbox(key="ex_kind").set_value(kind)
         at.run()
         assert_clean(at)
+
+
+def test_style_chart_never_leaves_title_undefined():
+    import plotly.express as px
+
+    from kikolens.dashboard.theme import style_chart
+
+    fig = style_chart(px.line(pd.DataFrame({"a": [1, 2, 3], "b": [3, 1, 2]}), x="a", y="b"))
+    assert fig.layout.title.text == ""

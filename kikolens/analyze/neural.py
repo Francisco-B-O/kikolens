@@ -90,7 +90,8 @@ def _training_figure(model, task) -> go.Figure:
         label = "Validation R2" if task == "regression" else "Validation accuracy"
         fig.add_trace(go.Scatter(y=val, mode="lines", name=label, yaxis="y2"))
         fig.update_layout(yaxis2=dict(overlaying="y", side="right", showgrid=False))
-    fig.update_layout(title="Training progress", xaxis_title="Epoch", yaxis_title="Loss")
+    fig.update_layout(title="Training progress", xaxis_title="Epoch", yaxis_title="Loss",
+                      legend=dict(orientation="h", y=-0.25))
     return fig
 
 
