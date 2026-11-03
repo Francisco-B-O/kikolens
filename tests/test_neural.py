@@ -73,3 +73,10 @@ def test_architecture_figure_caps_nodes():
     fig = architecture_figure([100, 64, 1], max_nodes=10)
     assert len(fig.data) == 4
     assert len(fig.data[1].x) == 10
+
+
+def test_neural_network_handles_dates(learnable_regression):
+    df = learnable_regression.copy()
+    df["when"] = pd.date_range("2024-01-01", periods=len(df), freq="D")
+    res = run_neural_network(df, "y", hidden_layers=(8,), max_iter=50)
+    assert "when_days" in res["columns"]
