@@ -11,11 +11,10 @@ SUBTITLE = "Find what is wrong with the data, fix it, and undo anything."
 
 def _run(df, op, **params):
     try:
-        new_df, message = q.apply_operation(df, op, **params)
+        state.run_operation(op, **params)
     except ValueError as e:
         ui.note(str(e), "high")
         return
-    state.apply_change(new_df, message)
     st.rerun()
 
 
@@ -98,8 +97,8 @@ def render(df: pd.DataFrame) -> None:
         st.markdown("#### Fix")
         a, b, c = st.columns(3)
         if a.button("Auto-clean", key="q_auto", type="primary", help="Trim text, drop duplicates, fix types, drop constant columns."):
-            new_df, log = q.auto_clean(df)
-            state.apply_change(new_df, "Auto-clean: " + " ".join(log))
+            new_df, steps = q.auto_clean_steps(df)
+            state.apply_steps(new_df, steps, "Auto-clean: " + " ".join(m for _, _, m in steps))
             st.rerun()
         if b.button("Undo", key="q_undo", disabled=not state.can_undo()):
             state.undo()

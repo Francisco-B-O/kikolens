@@ -40,6 +40,19 @@ def _check_target(df: pd.DataFrame, target: str) -> None:
         raise typer.Exit(code=1)
 
 
+def _keep_model(res: dict, df: pd.DataFrame, save: Optional[Path], register: Optional[str]) -> None:
+    """Guarda el modelo como paquete reutilizable: en una ruta (--save) y/o en el registro (--register)."""
+    from kikolens.analyze.predict import build_bundle, save_bundle
+
+    if not save and not register:
+        return
+    bundle = build_bundle(res, df, name=register)
+    if save:
+        console.print(f"Model saved to {save_bundle(bundle, path=save)}")
+    if register:
+        console.print(f"Model registered as {save_bundle(bundle).name}. Use it with: kikolens score data.csv {register}")
+
+
 @app.command()
 def start(port: int = typer.Option(8501, help="Port for the dashboard.")):
     """Launch the interactive dashboard."""
@@ -108,11 +121,10 @@ def predict(
     target: str,
     nn: bool = typer.Option(False, "--nn", help="Train a neural network instead of AutoML."),
     layers: str = typer.Option("64, 32", help="Hidden layer sizes for --nn."),
-    save: Optional[Path] = typer.Option(None, help="Save the trained model to this .pkl path."),
+    save: Optional[Path] = typer.Option(None, help="Save the model package to this path (.klmodel)."),
+    register: Optional[str] = typer.Option(None, help="Also keep it in your saved models under this name."),
 ):
     """Train a predictive model on a target column."""
-    import joblib
-
     df = _load(source)
     _check_target(df, target)
     try:
@@ -130,10 +142,206 @@ def predict(
     _print_frame(pd.DataFrame([result["metrics"]]), "Test metrics")
     top = pd.DataFrame(list(result["feature_importance"].items())[:10], columns=["feature", "importance"])
     _print_frame(top, "Top features")
-    if save:
-        save.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(result["model"], save)
-        console.print(f"Model saved to {save}")
+    _keep_model(result, df, save, register)
+
+
+@app.command()
+def lab(
+    source: str,
+    target: str,
+    folds: int = typer.Option(5, help="Cross-validation folds (3-10)."),
+    tune: bool = typer.Option(True, help="Tune the best model."),
+    models: Optional[str] = typer.Option(None, help="Comma-separated model names; default is all."),
+    balance: bool = typer.Option(False, "--balance", help="Weight rarer classes more (classification)."),
+    exclude: Optional[str] = typer.Option(None, help="Comma-separated columns to leave out."),
+    save: Optional[Path] = typer.Option(None, help="Save the best model package to this path (.klmodel)."),
+    register: Optional[str] = typer.Option(None, help="Also keep it in your saved models under this name."),
+):
+    """Compare many models with cross-validation, tune the best and check for data leaks."""
+    from kikolens.analyze.modellab import run_model_lab
+
+    df = _load(source)
+    _check_target(df, target)
+    names = [m.strip() for m in models.split(",")] if models else None
+    drop = [c.strip() for c in exclude.split(",")] if exclude else []
+    try:
+        with console.status("Comparing models..."):
+            res = run_model_lab(df, target, models=names, folds=folds, tune=tune, balance=balance, drop=drop)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+    board = res["leaderboard"]
+    _print_frame(board[[c for c in board.columns if not c.endswith("std") and c != "total time (s)"]].round(4), "Leaderboard")
+    console.print(res["narrative"])
+    for leak in res["leakage"]:
+        console.print(f"[red]Possible data leak:[/red] {leak['message']}")
+    _print_frame(pd.DataFrame(list(res["feature_importance"].items())[:10], columns=["feature", "importance"]).round(4),
+                 "Top features")
+    _keep_model(res, df, save, register)
+
+
+@app.command()
+def score(
+    source: str,
+    model: str = typer.Argument(..., help="A model file (.klmodel) or the name of a saved model."),
+    output: Path = typer.Option(Path("kikolens_output/predictions.csv"), help="Where to write the predictions."),
+    raw: bool = typer.Option(False, "--raw", help="The file is uncleaned: repeat the cleaning steps used in training first."),
+):
+    """Predict new data with a saved model. Opens a model file, so use only models you trust."""
+    from kikolens.analyze.predict import input_warnings, load_bundle, predict_frame, resolve_model
+
+    df = _load(source)
+    try:
+        bundle = load_bundle(resolve_model(model))
+        result, report = predict_frame(bundle, df, apply_recipe=raw)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    for severity, message in input_warnings(report):
+        color = {"high": "red", "medium": "yellow"}.get(severity, "dim")
+        console.print(f"[{color}]{message}[/{color}]")
+    _write_frame(result, output)
+    console.print(f"{len(result):,} predictions of '{bundle['target']}' saved to {output}")
+
+
+models_app = typer.Typer(help="Manage the models you have saved.", no_args_is_help=False)
+app.add_typer(models_app, name="models")
+
+
+@models_app.callback(invoke_without_command=True)
+def models_list(ctx: typer.Context):
+    """List saved models (run `kikolens models info NAME` for details)."""
+    from kikolens.analyze.predict import list_models, models_dir
+
+    if ctx.invoked_subcommand:
+        return
+    frame = list_models()
+    if frame.empty:
+        console.print("No saved models yet. Create one with: kikolens lab data.csv target --register my-model")
+        return
+    _print_frame(frame[["file", "target", "algorithm", "score"]], f"Models in {models_dir()}")
+
+
+@models_app.command("info")
+def models_info(name: str, card: Optional[Path] = typer.Option(None, help="Write the model card (Markdown) to this file.")):
+    """Show what a saved model predicts, how well, and which columns it expects."""
+    from kikolens.analyze.predict import load_bundle, metadata, model_card, resolve_model
+
+    try:
+        bundle = load_bundle(resolve_model(name))
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    meta = metadata(bundle)
+    console.print(f"[bold]{meta['name']}[/bold]  {meta['label']}  ·  predicts {meta['target']} ({meta['task']})  ·  "
+                  f"{meta['rows_trained']:,} training rows")
+    _print_frame(pd.DataFrame([meta["metrics"]]), "Test metrics")
+    _print_frame(pd.DataFrame(list(meta["inputs"].items()), columns=["input column", "type"]), "Expected inputs")
+    if card:
+        card.parent.mkdir(parents=True, exist_ok=True)
+        card.write_text(model_card(bundle), encoding="utf-8")
+        console.print(f"Model card written to {card}")
+
+
+@models_app.command("delete")
+def models_delete(name: str):
+    """Delete a saved model."""
+    from kikolens.analyze.predict import delete_model
+
+    try:
+        console.print(f"Deleted {delete_model(name).name}")
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def anomalies(
+    source: str,
+    method: str = typer.Option("Isolation Forest", help="Isolation Forest, Local Outlier Factor, Robust z-score or Mahalanobis distance."),
+    share: float = typer.Option(2.0, help="Percentage of rows to flag."),
+    columns: Optional[str] = typer.Option(None, help="Comma-separated numeric columns; default is all."),
+    output: Optional[Path] = typer.Option(None, help="Write the flagged rows to this .csv or .parquet."),
+):
+    """Find the rows that do not look like the rest, and say why."""
+    from kikolens.analyze.anomalies import detect_anomalies
+
+    df = _load(source)
+    cols = [c.strip() for c in columns.split(",")] if columns else None
+    try:
+        result = detect_anomalies(df, cols, method, share / 100)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(result["summary"])
+    _print_frame(result["table"].reset_index(names="row").round(4), "Most unusual rows", max_rows=20)
+    if output:
+        _write_frame(result["table"].reset_index(names="row"), output)
+        console.print(f"Flagged rows saved to {output}")
+
+
+@app.command()
+def drift(reference: str, current: str, output: Optional[Path] = typer.Option(None, help="Write the report to a .csv.")):
+    """Compare two datasets and list the columns whose distribution changed."""
+    from kikolens.analyze.drift import compare_datasets
+
+    try:
+        result = compare_datasets(_load(reference), _load(current))
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"[bold]{result['summary']}[/bold]")
+    for name, cols in (("Only in the reference", result["only_in_reference"]), ("Only in the current", result["only_in_current"])):
+        if cols:
+            console.print(f"[yellow]{name}:[/yellow] {', '.join(map(str, cols))}")
+    table = result["table"]
+    _print_frame(table[["column", "type", "verdict", "psi", "p_value", "change"]].round(4), "Drift by column", max_rows=40)
+    if output:
+        _write_frame(table, output)
+        console.print(f"Report saved to {output}")
+    if result["level"] == "high":
+        raise typer.Exit(code=2)  # permite usar el comando como alarma en scripts y CI
+
+
+@app.command()
+def screen(source: str, target: str, alpha: float = typer.Option(0.05, help="Significance level.")):
+    """Test every column against a target and show which ones are reliably related to it."""
+    from kikolens.analyze.stattests import screen_associations
+
+    df = _load(source)
+    _check_target(df, target)
+    try:
+        table = screen_associations(df, target, alpha)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    related = int(table["related"].sum())
+    console.print(f"{related} of {len(table)} columns are related to [bold]{target}[/bold] "
+                  "(corrected for testing many columns).")
+    _print_frame(table.round(5), "Associations", max_rows=40)
+
+
+@app.command()
+def ab(
+    source: str, group: str, outcome: str,
+    control: str = typer.Option(..., help="The value of the group column that is the control."),
+    success: Optional[str] = typer.Option(None, help="For a two-valued outcome, the value that counts as success."),
+):
+    """Compare a control and a treatment group on an outcome (rates or averages)."""
+    from kikolens.analyze.stattests import ab_test
+
+    df = _load(source)
+    for col in (group, outcome):
+        _check_target(df, col)
+    try:
+        result = ab_test(df, group, outcome, control, success)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(result["conclusion"])
+    if result["needed_per_group"]:
+        console.print(f"[dim]Rows per group to reliably detect a gap this size: {result['needed_per_group']:,}[/dim]")
 
 
 @app.command()
@@ -159,24 +367,100 @@ def forecast(
 
 
 @app.command()
-def clean(source: str, output: Path = typer.Option(..., help="Where to write the cleaned file (.csv or .parquet).")):
+def clean(
+    source: str,
+    output: Path = typer.Option(..., help="Where to write the cleaned file (.csv or .parquet)."),
+    save_recipe: Optional[Path] = typer.Option(None, help="Also save the cleaning steps as a recipe (.json)."),
+):
     """Apply safe automatic cleaning and save the result."""
-    from kikolens.analyze.quality import auto_clean, profile_quality
+    from kikolens.analyze.quality import auto_clean_steps, profile_quality
+    from kikolens.pipeline.recipe import Recipe
 
     df = _load(source)
     before = profile_quality(df)["score"]
-    cleaned, log = auto_clean(df)
-    for line in log:
-        console.print(f"  • {line}")
+    cleaned, steps = auto_clean_steps(df)
+    for _, _, message in steps:
+        console.print(f"  • {message}")
+    _write_frame(cleaned, output)
+    if save_recipe:
+        recipe = Recipe()
+        for op, params, message in steps:
+            recipe.add(op, params, message)
+        save_recipe.parent.mkdir(parents=True, exist_ok=True)
+        save_recipe.write_text(recipe.to_json(), encoding="utf-8")
+        console.print(f"Recipe saved to {save_recipe}")
+    console.print(f"Quality score {before:.0f} → {profile_quality(cleaned)['score']:.0f}. Saved to {output}")
+
+
+def _write_frame(df: pd.DataFrame, output: Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
-    if output.suffix.lower() == ".parquet":
-        cleaned.to_parquet(output, index=False)
-    elif output.suffix.lower() == ".csv":
-        cleaned.to_csv(output, index=False)
+    suffix = output.suffix.lower()
+    if suffix == ".parquet":
+        df.to_parquet(output, index=False)
+    elif suffix == ".csv":
+        df.to_csv(output, index=False)
     else:
         console.print("[red]Output must end in .csv or .parquet[/red]")
         raise typer.Exit(code=1)
-    console.print(f"Quality score {before:.0f} → {profile_quality(cleaned)['score']:.0f}. Saved to {output}")
+
+
+@app.command()
+def apply(
+    source: str,
+    recipe: Path = typer.Argument(..., help="Recipe (.json) saved from the dashboard or `clean --save-recipe`."),
+    output: Path = typer.Option(..., help="Where to write the result (.csv or .parquet)."),
+    dataset: Optional[list[str]] = typer.Option(None, "--dataset", "-d", help="Extra dataset for join steps: a path, or name=path."),
+):
+    """Repeat a saved recipe on a new file."""
+    from kikolens.pipeline.recipe import Recipe
+
+    try:
+        loaded = Recipe.from_json(recipe.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        console.print(f"[red]Could not read the recipe:[/red] {e}")
+        raise typer.Exit(code=1)
+    extras = {}
+    for item in dataset or []:
+        name, sep, path = item.partition("=")
+        if not sep:  # sin nombre: se usa el del archivo, que es como el dashboard registra los datasets que se suben
+            name, path = Path(item).name, item
+        extras[name] = _load(path)
+    try:
+        result, log = loaded.apply(_load(source), extras)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    for line in log:
+        console.print(f"  • {line}")
+    _write_frame(result, output)
+    console.print(f"{len(result):,} rows × {len(result.columns)} columns saved to {output}")
+
+
+@app.command()
+def project(file: Path, output: Optional[Path] = typer.Option(None, help="Write the processed data (.csv or .parquet).")):
+    """Show what a .kikolens project contains, and optionally export its processed data."""
+    from kikolens.pipeline.project import load_project
+
+    try:
+        content = load_project(file.read_bytes())
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    info = content["manifest"]
+    console.print(f"[bold]{info['name']}[/bold]  saved {info['created']}  ·  {info['rows']:,} rows × {len(info['columns'])} columns")
+    if content["notes"]:
+        console.print(f"Notes: {content['notes']}")
+    steps = content["recipe"].describe()
+    if len(steps):
+        _print_frame(steps, "Recipe")
+    if output:
+        try:
+            result, _ = content["recipe"].apply(content["original"], content["datasets"])
+        except ValueError as e:
+            console.print(f"[red]{e}[/red]")
+            raise typer.Exit(code=1)
+        _write_frame(result, output)
+        console.print(f"Processed data saved to {output}")
 
 
 @app.command()

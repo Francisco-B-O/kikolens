@@ -251,6 +251,18 @@ def standardize_column_names(df):
     return out, "Standardized column names to snake_case."
 
 
+def infer_types(df: pd.DataFrame):
+    """Para modelar: las columnas de texto que en realidad son números o fechas pasan a su tipo real.
+    Devuelve (copia, [(columna, tipo)]). El dataset original no se toca."""
+    out, converted = df, []
+    for col in text_columns(df):
+        kind = "numeric" if looks_numeric_text(df[col]) else "datetime" if looks_datetime_text(df[col]) else None
+        if kind:
+            out, _ = convert_type(out, col, kind)
+            converted.append((col, kind))
+    return out, converted
+
+
 OPERATIONS = {
     "drop_duplicates": drop_duplicates,
     "drop_columns": drop_columns,
@@ -264,24 +276,33 @@ OPERATIONS = {
 }
 
 
-def apply_operation(df: pd.DataFrame, name: str, **params):
+def apply_operation(df: pd.DataFrame, name: str, /, **params):
     """Ejecuta una operación por nombre. Devuelve (nuevo_df, mensaje); el original no se modifica."""
     if name not in OPERATIONS:
         raise ValueError(f"Unknown cleaning operation '{name}'.")
     return OPERATIONS[name](df, **params)
 
 
-def auto_clean(df: pd.DataFrame):
-    """Aplica las correcciones seguras: espacios, duplicados, tipos mal inferidos y columnas constantes."""
-    log = []
+def auto_clean_steps(df: pd.DataFrame):
+    """Las correcciones seguras como pasos reproducibles. Devuelve (df, [(operación, parámetros, mensaje)])."""
+    steps = []
+
+    def run(frame, name, **params):
+        frame, msg = apply_operation(frame, name, **params)
+        steps.append((name, params, msg))
+        return frame
+
     for name in ("strip_whitespace", "drop_duplicates"):
-        df, msg = apply_operation(df, name)
-        log.append(msg)
+        df = run(df, name)
     for col in list(df.columns):
         kind = suspected_type(df[col])
         if kind:
-            df, msg = convert_type(df, col, kind)
-            log.append(msg)
-    df, msg = drop_constant_columns(df)
-    log.append(msg)
-    return df, log
+            df = run(df, "convert_type", column=col, target=kind)
+    df = run(df, "drop_constant_columns")
+    return df, steps
+
+
+def auto_clean(df: pd.DataFrame):
+    """Aplica las correcciones seguras: espacios, duplicados, tipos mal inferidos y columnas constantes."""
+    df, steps = auto_clean_steps(df)
+    return df, [msg for _, _, msg in steps]

@@ -7,10 +7,12 @@ import pytest
 from streamlit.testing.v1 import AppTest
 
 import kikolens.dashboard.app as dashboard_app
+from kikolens.pipeline.project import load_project
 
 APP = str(Path(dashboard_app.__file__))
-PAGES = ["Overview", "Explore", "Quality and cleaning", "Patterns", "Statistics", "Ask", "Models",
-         "Neural network", "Time series", "Segments", "Report"]
+PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
+         "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
+         "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
 
 @pytest.fixture(scope="module")
@@ -168,3 +170,124 @@ def test_style_chart_never_leaves_title_undefined():
 
     fig = style_chart(px.line(pd.DataFrame({"a": [1, 2, 3], "b": [3, 1, 2]}), x="a", y="b"))
     assert fig.layout.title.text == ""
+
+
+def test_model_lab_runs_end_to_end(data):
+    at = open_page(data, "Model lab")
+    at.selectbox(key="lab_target").set_value("y")
+    at.run()
+    at.multiselect(key="lab_models_regression").set_value(["Baseline (mean)", "Ridge", "Decision Tree"])
+    at.slider(key="lab_folds").set_value(3)
+    at.checkbox(key="lab_tune").set_value(False)
+    at.button(key="lab_run").click().run()
+    assert_clean(at)
+    assert at.session_state["lab_res"]["task_type"] == "regression"
+    at.button(key="lab_predict").click().run()
+    assert_clean(at)
+    assert any(m.label == "Prediction" for m in at.metric)
+
+
+def test_model_lab_reports_bad_target(data):
+    at = open_page(data, "Model lab")
+    at.selectbox(key="lab_target").set_value("date")
+    at.run()
+    at.button(key="lab_run").click().run()
+    assert_clean(at)
+    assert "lab_res" not in at.session_state
+
+
+def test_transform_records_steps_and_undo_removes_them(data):
+    at = open_page(data, "Transform")
+    assert_clean(at)
+    at.text_input(key="tf_a_name").set_value("double")
+    at.text_input(key="tf_a_expr").set_value("x * 2")
+    at.button(key="tf_a_go").click().run()
+    assert_clean(at)
+    assert "double" in at.session_state["df"].columns
+    assert [s.op for s in at.session_state["recipe"].steps] == ["add_column"]
+    at.button(key="tf_undo").click().run()
+    assert "double" not in at.session_state["df"].columns
+    assert len(at.session_state["recipe"]) == 0
+
+
+def test_transform_shows_error_for_bad_formula(data):
+    at = open_page(data, "Transform")
+    at.text_input(key="tf_a_name").set_value("bad")
+    at.text_input(key="tf_a_expr").set_value("__import__('os')")
+    at.button(key="tf_a_go").click().run()
+    assert_clean(at)
+    assert "bad" not in at.session_state["df"].columns
+    assert any("allowed" in m.value for m in at.markdown)
+
+
+def test_auto_clean_is_one_undo_but_many_recipe_steps(data):
+    at = open_page(data, "Quality and cleaning")
+    at.button(key="q_auto").click().run()
+    assert len(at.session_state["recipe"]) >= 1
+    at.button(key="q_undo").click().run()
+    assert len(at.session_state["recipe"]) == 0
+
+
+def test_project_page_prepares_file(data):
+    at = open_page(data, "Project")
+    assert_clean(at)
+    at.button(key="pj_build").click().run()
+    assert_clean(at)
+    assert load_project(at.session_state["pj_blob"])["manifest"]["rows"] == len(data)
+
+
+def test_predict_without_a_model_explains_what_to_do(data):
+    at = open_page(data, "Predict")
+    assert_clean(at)
+    assert any("Train a model first" in m.value for m in at.markdown)
+
+
+def test_predict_uses_a_model_trained_in_the_session(data, tmp_path, monkeypatch):
+    monkeypatch.setenv("KIKOLENS_HOME", str(tmp_path))
+    from kikolens.analyze.automl import run_automl_analysis
+    frame = data.drop(columns=["date"])
+    at = open_page(frame, "Predict", automl_res=run_automl_analysis(frame, "y"))
+    assert_clean(at)
+    at.button(key="pd_go").click().run()
+    assert_clean(at)
+    out = at.session_state["pd_result"][0]
+    assert "predicted_y" in out.columns and len(out) == len(frame)
+    at.button(key="pd_one").click().run()
+    assert_clean(at)
+    at.button(key="pd_save").click().run()
+    assert_clean(at)
+    assert list((tmp_path / "models").glob("*.klmodel"))
+
+
+def test_anomalies_find_and_remove(data):
+    at = open_page(data, "Anomalies")
+    assert_clean(at)
+    at.button(key="an_go").click().run()
+    assert_clean(at)
+    flagged = at.session_state["an_res"]["n_flagged"]
+    assert flagged >= 1
+    at.button(key="an_drop").click().run()
+    assert_clean(at)
+    assert len(at.session_state["df"]) == len(data) - flagged
+
+
+def test_experiments_tabs_render_without_errors(data):
+    at = open_page(data, "Experiments")
+    assert_clean(at)
+    at.button(key="ex_sgo").click().run()
+    assert_clean(at)
+    assert at.session_state["ex_screen"][1]["column"].tolist()
+
+
+def test_dimensions_and_compare_render(data):
+    assert_clean(open_page(data, "Dimensions"))
+    at = open_page(data, "Compare data")
+    assert_clean(at)
+    assert any("PSI" in c.value for c in at.caption)
+
+
+def test_sidebar_groups_follow_the_open_section(data):
+    at = open_page(data, "Anomalies")
+    assert at.session_state["nav_group"] == "Analysis"
+    at = open_page(data, "Project")
+    assert at.session_state["nav_group"] == "Share"

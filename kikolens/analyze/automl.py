@@ -13,14 +13,16 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confus
 import plotly.express as px
 import plotly.graph_objects as go
 
-from kikolens.utils.dtypes import categorical_columns, is_text
+from kikolens.analyze.quality import infer_types
+from kikolens.utils.dtypes import categorical_columns, expand_datetime_columns, is_text
 
 MAX_CLASSES = 50
 
 
 class AutoMLExplainer:
     def __init__(self, df: pd.DataFrame, target_col: str):
-        self.df = df.copy()
+        self.df, self.converted = infer_types(df)
+        self.df = self.df.copy()
         self.target_col = target_col
         self.task_type = "unknown"
         self.selected_model_name = ""
@@ -31,6 +33,7 @@ class AutoMLExplainer:
         self.categorical_mappings = {}
         self.metrics = {}
         self.plots = {}
+        self.target_classes = None
 
     def analyze_task(self, manual_type: str = None):
         target = self.df[self.target_col]
@@ -70,15 +73,7 @@ class AutoMLExplainer:
                     self.selection_rationale.append("Large dataset with complex boundaries. Gradient Boosting iteratively corrects errors for maximum accuracy.")
 
     def _expand_datetime_columns(self):
-        """Los modelos no aceptan fechas: cada una pasa a días desde 1970, mes y día de la semana."""
-        for col in self.df.select_dtypes(include=["datetime", "datetimetz"]).columns:
-            stamps = self.df[col]
-            if getattr(stamps.dt, "tz", None) is not None:
-                stamps = stamps.dt.tz_localize(None)
-            self.df[f"{col}_days"] = (stamps - pd.Timestamp("1970-01-01")).dt.days
-            self.df[f"{col}_month"] = stamps.dt.month
-            self.df[f"{col}_weekday"] = stamps.dt.dayofweek
-            self.df.drop(columns=[col], inplace=True)
+        self.df = expand_datetime_columns(self.df)
 
     def preprocess(self):
         if pd.api.types.is_datetime64_any_dtype(self.df[self.target_col]):
@@ -98,6 +93,7 @@ class AutoMLExplainer:
 
         if self.task_type == "classification" and is_text(self.df[self.target_col]):
              le = LabelEncoder(); self.df[self.target_col] = le.fit_transform(self.df[self.target_col])
+             self.target_classes = le.classes_.tolist()
 
         valid_cat = [c for c in self.categorical_mappings.keys() if c in self.df.columns]
         if valid_cat: self.df = pd.get_dummies(self.df, columns=valid_cat, drop_first=True)
@@ -167,5 +163,5 @@ def run_automl_analysis(df: pd.DataFrame, target_col: str, manual_type: str = No
         "model": explainer.model, "imputer": imputer, "scaler": scaler,
         "columns": explainer.training_columns, "categorical_mappings": explainer.categorical_mappings,
         "task_type": explainer.task_type, "feature_importance": explainer.feature_importance, 
-        "target": target_col, "plots": explainer.plots
+        "target": target_col, "plots": explainer.plots, "classes": explainer.target_classes
     }
