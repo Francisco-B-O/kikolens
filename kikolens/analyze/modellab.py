@@ -30,6 +30,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
+from kikolens.analyze.quality import infer_types
 from kikolens.utils.dtypes import categorical_columns, expand_datetime_columns
 
 MAX_CLASSES = 50
@@ -48,6 +49,7 @@ def prepare_xy(df: pd.DataFrame, target: str, drop=(), task=None):
     """Separa X e y. Devuelve (X, y, info) con las columnas descartadas y el motivo."""
     if target not in df.columns:
         raise ValueError(f"Target column '{target}' not found.")
+    df, converted = infer_types(df)
     if pd.api.types.is_datetime64_any_dtype(df[target]):
         raise ValueError("A date column cannot be used as the target. Choose a numeric or categorical column.")
 
@@ -82,7 +84,7 @@ def prepare_xy(df: pd.DataFrame, target: str, drop=(), task=None):
             X = X.drop(columns=[col])
     if X.shape[1] == 0:
         raise ValueError("No usable feature columns remain.")
-    return X, y, {"task": task, "dropped": dropped}
+    return X, y, {"task": task, "dropped": dropped, "converted": converted}
 
 
 def build_preprocessor(X: pd.DataFrame) -> ColumnTransformer:
@@ -487,10 +489,18 @@ def run_model_lab(df, target, models=None, folds=5, tune=True, n_iter=20, test_s
         "model": pipe, "tuning": tuning, "metrics": metrics, "primary_metric": primary,
         "baseline_cv": float(board.loc[board["model"] == baseline_name, primary].iloc[0]) if baseline_name else None,
         "feature_importance": importance, "leakage": notes, "dropped": info["dropped"], "balance": balance_info,
-        "plots": plots, "folds": folds, "n_train": len(X_train), "n_test": len(X_test),
+        "converted": info["converted"], "plots": plots, "folds": folds, "n_train": len(X_train), "n_test": len(X_test),
         "features": list(X.columns), "X_train": X_train, "X_test": X_test, "y_test": y_test,
-        "narrative": _narrative(task, target, best_name, metrics, primary, board, tuning, notes, balance_info, len(X_train), folds),
+        "narrative": _narrative(task, target, best_name, metrics, primary, board, tuning, notes, balance_info, len(X_train), folds)
+        + _converted_note(info["converted"]),
     }
+
+
+def _converted_note(converted) -> str:
+    if not converted:
+        return ""
+    names = {"numeric": "numbers", "datetime": "dates"}
+    return "\n\nRead as " + ", ".join(f"{names[kind]}: {col}" for col, kind in converted) + " (they were stored as text)."
 
 
 def _narrative(task, target, best, metrics, primary, board, tuning, leakage, balance, n_train, folds) -> str:

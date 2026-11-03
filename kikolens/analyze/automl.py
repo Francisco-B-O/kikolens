@@ -13,6 +13,7 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confus
 import plotly.express as px
 import plotly.graph_objects as go
 
+from kikolens.analyze.quality import infer_types
 from kikolens.utils.dtypes import categorical_columns, expand_datetime_columns, is_text
 
 MAX_CLASSES = 50
@@ -20,7 +21,8 @@ MAX_CLASSES = 50
 
 class AutoMLExplainer:
     def __init__(self, df: pd.DataFrame, target_col: str):
-        self.df = df.copy()
+        self.df, self.converted = infer_types(df)
+        self.df = self.df.copy()
         self.target_col = target_col
         self.task_type = "unknown"
         self.selected_model_name = ""

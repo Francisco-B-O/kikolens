@@ -158,3 +158,22 @@ def test_cli_project_info_and_export(tmp_path, messy):
     assert result.exit_code == 0 and "remember me" in result.output
     assert "total" in pd.read_csv(tmp_path / "x.csv").columns
     assert runner.invoke(app, ["project", str(tmp_path / "missing.kikolens")]).exit_code == 1
+
+
+def test_cli_apply_names_extra_datasets_by_file_name(tmp_path, messy):
+    source, lookup = tmp_path / "a.csv", tmp_path / "labels.csv"
+    messy.to_csv(source, index=False)
+    pd.DataFrame({"qty": [1, 2, 3, 4], "label": list("wxyz")}).to_csv(lookup, index=False)
+    recipe = Recipe()
+    recipe.add("merge_datasets", {"on": ["qty"], "how": "left", "other": "labels.csv"}, "join")   # como lo guarda el dashboard
+    path = tmp_path / "r.json"
+    path.write_text(recipe.to_json())
+    out = tmp_path / "o.csv"
+    assert runner.invoke(app, ["apply", str(source), str(path), "--output", str(out)]).exit_code == 1
+    result = runner.invoke(app, ["apply", str(source), str(path), "--output", str(out), "-d", str(lookup)])
+    assert result.exit_code == 0, result.output
+    assert "label" in pd.read_csv(out).columns
+    aliased = Recipe()
+    aliased.add("merge_datasets", {"on": ["qty"], "how": "left", "other": "tags"}, "join")
+    path.write_text(aliased.to_json())
+    assert runner.invoke(app, ["apply", str(source), str(path), "--output", str(out), "-d", f"tags={lookup}"]).exit_code == 0

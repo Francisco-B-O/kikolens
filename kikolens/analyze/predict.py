@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from kikolens import __version__
+from kikolens.analyze.quality import infer_types
 from kikolens.config import home_dir
 from kikolens.pipeline.recipe import Recipe
 from kikolens.utils.dtypes import expand_datetime_columns
@@ -61,6 +62,7 @@ def build_bundle(res: dict, df: pd.DataFrame, name: str | None = None, recipe: R
     """Empaqueta el resultado de AutoML, del laboratorio o de la red neuronal para usarlo más tarde.
     `df` es el dataset con el que se entrenó (tal cual entró al modelo, con sus columnas originales)."""
     target, task = res["target"], res["task_type"]
+    df, _ = infer_types(df)  # los modelos se entrenan con esos tipos, y el esquema debe describirlos igual
     if "pipeline" in res:
         kind, model_columns, mappings = "pipeline", list(res["features"]), {}
         estimator = res["pipeline"]
@@ -155,6 +157,15 @@ def prepare_inputs(bundle: dict, new_df: pd.DataFrame):
         elif info["kind"] == "numeric":
             span = (info["max"] - info["min"]) or abs(info["max"]) or 1.0
             outside = int(((value < info["min"] - 0.05 * span) | (value > info["max"] + 0.05 * span)).sum())
+            if outside:
+                report["out_of_range"][col] = outside
+        else:  # fechas: lo habitual es predecir un periodo posterior al entrenamiento
+            first, last = pd.Timestamp(info["min"]), pd.Timestamp(info["max"])
+            if first.tzinfo is not None:
+                first, last = first.tz_localize(None), last.tz_localize(None)
+            stamps = value.dt.tz_localize(None) if getattr(value.dt, "tz", None) is not None else value
+            margin = (last - first) * 0.05
+            outside = int(((stamps < first - margin) | (stamps > last + margin)).sum())
             if outside:
                 report["out_of_range"][col] = outside
     return frame, report

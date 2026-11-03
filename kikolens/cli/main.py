@@ -220,7 +220,7 @@ def models_list(ctx: typer.Context):
     if frame.empty:
         console.print("No saved models yet. Create one with: kikolens lab data.csv target --register my-model")
         return
-    _print_frame(frame.drop(columns="created"), f"Models in {models_dir()}")
+    _print_frame(frame[["file", "target", "algorithm", "score"]], f"Models in {models_dir()}")
 
 
 @models_app.command("info")
@@ -409,7 +409,7 @@ def apply(
     source: str,
     recipe: Path = typer.Argument(..., help="Recipe (.json) saved from the dashboard or `clean --save-recipe`."),
     output: Path = typer.Option(..., help="Where to write the result (.csv or .parquet)."),
-    dataset: Optional[list[str]] = typer.Option(None, "--dataset", "-d", help="Extra dataset as name=path, for join steps."),
+    dataset: Optional[list[str]] = typer.Option(None, "--dataset", "-d", help="Extra dataset for join steps: a path, or name=path."),
 ):
     """Repeat a saved recipe on a new file."""
     from kikolens.pipeline.recipe import Recipe
@@ -421,10 +421,9 @@ def apply(
         raise typer.Exit(code=1)
     extras = {}
     for item in dataset or []:
-        name, _, path = item.partition("=")
-        if not path:
-            console.print(f"[red]--dataset expects name=path, got '{item}'.[/red]")
-            raise typer.Exit(code=1)
+        name, sep, path = item.partition("=")
+        if not sep:  # sin nombre: se usa el del archivo, que es como el dashboard registra los datasets que se suben
+            name, path = Path(item).name, item
         extras[name] = _load(path)
     try:
         result, log = loaded.apply(_load(source), extras)

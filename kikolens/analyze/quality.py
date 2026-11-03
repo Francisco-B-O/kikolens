@@ -251,6 +251,18 @@ def standardize_column_names(df):
     return out, "Standardized column names to snake_case."
 
 
+def infer_types(df: pd.DataFrame):
+    """Para modelar: las columnas de texto que en realidad son números o fechas pasan a su tipo real.
+    Devuelve (copia, [(columna, tipo)]). El dataset original no se toca."""
+    out, converted = df, []
+    for col in text_columns(df):
+        kind = "numeric" if looks_numeric_text(df[col]) else "datetime" if looks_datetime_text(df[col]) else None
+        if kind:
+            out, _ = convert_type(out, col, kind)
+            converted.append((col, kind))
+    return out, converted
+
+
 OPERATIONS = {
     "drop_duplicates": drop_duplicates,
     "drop_columns": drop_columns,

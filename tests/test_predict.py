@@ -211,3 +211,29 @@ def test_cli_predict_saves_a_scoreable_package(tmp_path, data):
     bad = tmp_path / "other.csv"
     pd.DataFrame({"q": [1, 2]}).to_csv(bad, index=False)
     assert runner.invoke(app, ["score", str(bad), str(package)]).exit_code == 1
+
+
+def test_dates_after_the_training_period_are_flagged(lab_bundle, data):
+    bundle, _ = lab_bundle
+    later = new_rows(data, 10).assign(date=pd.date_range("2030-01-01", periods=10))
+    _, report = pr.predict_frame(bundle, later)
+    assert report["out_of_range"].get("date") == 10
+    inside = pr.predict_frame(bundle, new_rows(data, 10))[1]
+    assert "date" not in inside["out_of_range"]
+
+
+def test_models_use_dates_and_numbers_stored_as_text(data):
+    from kikolens.analyze.quality import infer_types
+    frame = data.drop(columns=["label", "flag", "g"]).assign(date=lambda d: d["date"].dt.strftime("%Y-%m-%d"),
+                                                             price=lambda d: [f"{v:,.0f}" for v in (d["z"] * 400 + 3000)])
+    typed, converted = infer_types(frame)
+    assert dict(converted) == {"date": "datetime", "price": "numeric"}
+    assert pd.api.types.is_datetime64_any_dtype(typed["date"]) and pd.api.types.is_numeric_dtype(typed["price"])
+    assert frame["date"].dtype == object   # el original no cambia
+    res = run_model_lab(frame, "y", models=["Ridge"], folds=3, tune=False)
+    assert res["converted"] == converted and "Read as dates: date" in res["narrative"]
+    assert "date_days" in res["features"] and "price" in res["features"]
+    bundle = pr.build_bundle(res, frame)
+    assert bundle["schema"]["date"]["kind"] == "datetime" and bundle["schema"]["price"]["kind"] == "numeric"
+    out, report = pr.predict_frame(bundle, frame.head(5).drop(columns="y"))   # el mismo texto de entrada
+    assert out["predicted_y"].notna().all() and report["coerced"] == {}
