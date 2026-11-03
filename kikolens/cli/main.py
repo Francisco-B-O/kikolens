@@ -40,6 +40,19 @@ def _check_target(df: pd.DataFrame, target: str) -> None:
         raise typer.Exit(code=1)
 
 
+def _keep_model(res: dict, df: pd.DataFrame, save: Optional[Path], register: Optional[str]) -> None:
+    """Guarda el modelo como paquete reutilizable: en una ruta (--save) y/o en el registro (--register)."""
+    from kikolens.analyze.predict import build_bundle, save_bundle
+
+    if not save and not register:
+        return
+    bundle = build_bundle(res, df, name=register)
+    if save:
+        console.print(f"Model saved to {save_bundle(bundle, path=save)}")
+    if register:
+        console.print(f"Model registered as {save_bundle(bundle).name}. Use it with: kikolens score data.csv {register}")
+
+
 @app.command()
 def start(port: int = typer.Option(8501, help="Port for the dashboard.")):
     """Launch the interactive dashboard."""
@@ -108,11 +121,10 @@ def predict(
     target: str,
     nn: bool = typer.Option(False, "--nn", help="Train a neural network instead of AutoML."),
     layers: str = typer.Option("64, 32", help="Hidden layer sizes for --nn."),
-    save: Optional[Path] = typer.Option(None, help="Save the trained model to this .pkl path."),
+    save: Optional[Path] = typer.Option(None, help="Save the model package to this path (.klmodel)."),
+    register: Optional[str] = typer.Option(None, help="Also keep it in your saved models under this name."),
 ):
     """Train a predictive model on a target column."""
-    import joblib
-
     df = _load(source)
     _check_target(df, target)
     try:
@@ -130,10 +142,7 @@ def predict(
     _print_frame(pd.DataFrame([result["metrics"]]), "Test metrics")
     top = pd.DataFrame(list(result["feature_importance"].items())[:10], columns=["feature", "importance"])
     _print_frame(top, "Top features")
-    if save:
-        save.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(result["model"], save)
-        console.print(f"Model saved to {save}")
+    _keep_model(result, df, save, register)
 
 
 @app.command()
@@ -145,11 +154,10 @@ def lab(
     models: Optional[str] = typer.Option(None, help="Comma-separated model names; default is all."),
     balance: bool = typer.Option(False, "--balance", help="Weight rarer classes more (classification)."),
     exclude: Optional[str] = typer.Option(None, help="Comma-separated columns to leave out."),
-    save: Optional[Path] = typer.Option(None, help="Save the best pipeline to this .pkl path."),
+    save: Optional[Path] = typer.Option(None, help="Save the best model package to this path (.klmodel)."),
+    register: Optional[str] = typer.Option(None, help="Also keep it in your saved models under this name."),
 ):
     """Compare many models with cross-validation, tune the best and check for data leaks."""
-    import joblib
-
     from kikolens.analyze.modellab import run_model_lab
 
     df = _load(source)
@@ -170,10 +178,82 @@ def lab(
         console.print(f"[red]Possible data leak:[/red] {leak['message']}")
     _print_frame(pd.DataFrame(list(res["feature_importance"].items())[:10], columns=["feature", "importance"]).round(4),
                  "Top features")
-    if save:
-        save.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump(res["pipeline"], save)
-        console.print(f"Pipeline saved to {save}")
+    _keep_model(res, df, save, register)
+
+
+@app.command()
+def score(
+    source: str,
+    model: str = typer.Argument(..., help="A model file (.klmodel) or the name of a saved model."),
+    output: Path = typer.Option(Path("kikolens_output/predictions.csv"), help="Where to write the predictions."),
+    raw: bool = typer.Option(False, "--raw", help="The file is uncleaned: repeat the cleaning steps used in training first."),
+):
+    """Predict new data with a saved model. Opens a model file, so use only models you trust."""
+    from kikolens.analyze.predict import input_warnings, load_bundle, predict_frame, resolve_model
+
+    df = _load(source)
+    try:
+        bundle = load_bundle(resolve_model(model))
+        result, report = predict_frame(bundle, df, apply_recipe=raw)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    for severity, message in input_warnings(report):
+        color = {"high": "red", "medium": "yellow"}.get(severity, "dim")
+        console.print(f"[{color}]{message}[/{color}]")
+    _write_frame(result, output)
+    console.print(f"{len(result):,} predictions of '{bundle['target']}' saved to {output}")
+
+
+models_app = typer.Typer(help="Manage the models you have saved.", no_args_is_help=False)
+app.add_typer(models_app, name="models")
+
+
+@models_app.callback(invoke_without_command=True)
+def models_list(ctx: typer.Context):
+    """List saved models (run `kikolens models info NAME` for details)."""
+    from kikolens.analyze.predict import list_models, models_dir
+
+    if ctx.invoked_subcommand:
+        return
+    frame = list_models()
+    if frame.empty:
+        console.print("No saved models yet. Create one with: kikolens lab data.csv target --register my-model")
+        return
+    _print_frame(frame.drop(columns="created"), f"Models in {models_dir()}")
+
+
+@models_app.command("info")
+def models_info(name: str, card: Optional[Path] = typer.Option(None, help="Write the model card (Markdown) to this file.")):
+    """Show what a saved model predicts, how well, and which columns it expects."""
+    from kikolens.analyze.predict import load_bundle, metadata, model_card, resolve_model
+
+    try:
+        bundle = load_bundle(resolve_model(name))
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    meta = metadata(bundle)
+    console.print(f"[bold]{meta['name']}[/bold]  {meta['label']}  ·  predicts {meta['target']} ({meta['task']})  ·  "
+                  f"{meta['rows_trained']:,} training rows")
+    _print_frame(pd.DataFrame([meta["metrics"]]), "Test metrics")
+    _print_frame(pd.DataFrame(list(meta["inputs"].items()), columns=["input column", "type"]), "Expected inputs")
+    if card:
+        card.parent.mkdir(parents=True, exist_ok=True)
+        card.write_text(model_card(bundle), encoding="utf-8")
+        console.print(f"Model card written to {card}")
+
+
+@models_app.command("delete")
+def models_delete(name: str):
+    """Delete a saved model."""
+    from kikolens.analyze.predict import delete_model
+
+    try:
+        console.print(f"Deleted {delete_model(name).name}")
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
 
 
 @app.command()

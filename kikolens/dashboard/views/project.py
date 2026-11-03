@@ -5,6 +5,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 
+from kikolens.analyze.predict import build_bundle
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state
 from kikolens.pipeline.project import EXTENSION, load_project, save_project
@@ -22,13 +23,18 @@ def _name() -> str:
 
 
 def _model_blobs() -> dict:
+    """Modelos entrenados en la sesión como paquetes completos (listos para predecir con datos nuevos)."""
     blobs = {}
     for key, label in MODEL_SOURCES.items():
         res = st.session_state.get(key)
-        if res and "model" in res:
+        if res and "model" in res and res.get("target") in st.session_state.df.columns:
+            try:
+                bundle = build_bundle(res, st.session_state.df, name=f"{label} for {res['target']}",
+                                      recipe=st.session_state.recipe)
+            except (ValueError, KeyError):
+                continue
             buffer = io.BytesIO()
-            joblib.dump({"model": res["model"], "target": res.get("target"), "task_type": res.get("task_type"),
-                         "features": res.get("features") or res.get("columns")}, buffer)
+            joblib.dump(bundle, buffer)
             blobs[label] = buffer.getvalue()
     return blobs
 
@@ -75,6 +81,7 @@ def _open_tab() -> None:
             return
         if project["models"]:
             st.session_state.restored_models = {k: joblib.load(io.BytesIO(v)) for k, v in project["models"].items()}
+            ui.note("Models restored. Find them in Predict.", "ok")
         st.rerun()
 
 

@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 
 from kikolens.analyze import modellab as lab
+from kikolens.analyze.predict import EXTENSION, build_bundle
 from kikolens.dashboard import components as ui
 
 TITLE = "Model lab"
@@ -147,9 +148,9 @@ def render(df: pd.DataFrame) -> None:
     _warnings(res)
 
     buffer = io.BytesIO()
-    joblib.dump(res["pipeline"], buffer)
-    st.download_button("Download model (.pkl)", buffer.getvalue(), f"{res['target']}_lab_model.pkl", key="lab_export",
-                       help="The file is a full pipeline: it accepts raw rows with the original columns.")
+    joblib.dump(build_bundle(res, df, name=f"{res['best_model']} for {res['target']}", recipe=st.session_state.recipe), buffer)
+    st.download_button("Download model package", buffer.getvalue(), f"{res['target']}_lab{EXTENSION}", key="lab_export",
+                       help="Includes the expected columns and ranges. Use it in the Predict page or with: kikolens score")
 
     tabs = st.tabs(["Leaderboard", "Diagnostics", "Explain", "Try it"])
     with tabs[0]:

@@ -11,7 +11,7 @@ from kikolens.pipeline.project import load_project
 
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
-         "Model lab", "Neural network", "Time series", "Segments", "Report", "Project"]
+         "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project"]
 
 
 @pytest.fixture(scope="module")
@@ -233,3 +233,26 @@ def test_project_page_prepares_file(data):
     at.button(key="pj_build").click().run()
     assert_clean(at)
     assert load_project(at.session_state["pj_blob"])["manifest"]["rows"] == len(data)
+
+
+def test_predict_without_a_model_explains_what_to_do(data):
+    at = open_page(data, "Predict")
+    assert_clean(at)
+    assert any("Train a model first" in m.value for m in at.markdown)
+
+
+def test_predict_uses_a_model_trained_in_the_session(data, tmp_path, monkeypatch):
+    monkeypatch.setenv("KIKOLENS_HOME", str(tmp_path))
+    from kikolens.analyze.automl import run_automl_analysis
+    frame = data.drop(columns=["date"])
+    at = open_page(frame, "Predict", automl_res=run_automl_analysis(frame, "y"))
+    assert_clean(at)
+    at.button(key="pd_go").click().run()
+    assert_clean(at)
+    out = at.session_state["pd_result"][0]
+    assert "predicted_y" in out.columns and len(out) == len(frame)
+    at.button(key="pd_one").click().run()
+    assert_clean(at)
+    at.button(key="pd_save").click().run()
+    assert_clean(at)
+    assert list((tmp_path / "models").glob("*.klmodel"))
