@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
+from kikolens.analyze import forecasting as fx
 from kikolens.analyze import timeseries as ts
 from kikolens.dashboard import components as ui
 from kikolens.dashboard.theme import palette
@@ -84,3 +85,59 @@ def render(df: pd.DataFrame) -> None:
         table = forecast.rename_axis("date").reset_index()
         ui.table(table.round(4), hide_index=True)
         ui.download_csv(table, "forecast.csv", "Download forecast (CSV)")
+
+    st.divider()
+    _advanced(df, series, date_col, value_col, agg, horizon)
+
+
+def _advanced(df: pd.DataFrame, series: pd.Series, date_col: str, value_col: str, agg: str, horizon: int) -> None:
+    st.markdown("#### Go further")
+    a, b, c = st.tabs(["Compare models", "Changes in the series", "One forecast per group"])
+    with a:
+        st.caption("Each model is trained on the past and tested on the stretch that follows, several times. The most accurate wins.")
+        events = st.text_input("Special dates (optional, comma separated, e.g. 2024-11-29, 2024-12-24)", key="ts_events")
+        if st.button("Compare models", key="ts_compare", type="primary"):
+            try:
+                dates = [d.strip() for d in events.split(",") if d.strip()]
+                with st.spinner("Testing the models..."):
+                    st.session_state.ts_models = (value_col, fx.forecast_models(series, horizon, events=pd.to_datetime(dates) if dates else None))
+            except (ValueError, TypeError) as e:
+                ui.note(str(e), "high")
+        cached = st.session_state.get("ts_models")
+        if cached and cached[0] == value_col:
+            res = cached[1]
+            ui.note(res["summary"], "ok" if res["beats_naive"] else "medium")
+            ui.chart(fx.forecast_figure(series, res), 420)
+            ui.table(res["leaderboard"].round(4), hide_index=True)
+            table = res["forecast"].rename_axis("date").reset_index()
+            ui.download_csv(table, "forecast_best_model.csv", "Download this forecast (CSV)")
+    with b:
+        sensitivity = st.slider("Sensitivity", 0.3, 3.0, 1.0, 0.1, key="ts_sens", help="Lower finds more changes.")
+        try:
+            points = fx.detect_changepoints(series, 5, sensitivity=sensitivity)
+        except ValueError as e:
+            ui.note(str(e), "low")
+        else:
+            ui.note(f"{len(points)} change(s) found." if points else "No clear level shift or trend change.", "medium" if points else "ok")
+            ui.chart(fx.changepoint_figure(series, points), 340)
+            if points:
+                ui.table(pd.DataFrame(points).round(3), hide_index=True)
+    with c:
+        groups = [col for col in df.columns if col not in (date_col, value_col) and 2 <= df[col].nunique() <= 60]
+        if not groups:
+            ui.note("This needs a column that splits the rows into groups (such as a region or a product).", "low")
+        else:
+            group = st.selectbox("Group by", groups, key="ts_group")
+            if st.button("Forecast every group", key="ts_by_group"):
+                try:
+                    with st.spinner("Forecasting each group..."):
+                        st.session_state.ts_groups = (group, fx.forecast_by_group(df, date_col, value_col, group, horizon, agg=agg))
+                except ValueError as e:
+                    ui.note(str(e), "high")
+            cached = st.session_state.get("ts_groups")
+            if cached and cached[0] == group:
+                res = cached[1]
+                ui.table(res["summary"].round(3), hide_index=True)
+                if len(res["skipped"]):
+                    ui.note(f"{len(res['skipped'])} group(s) had too little data and were skipped.", "low")
+                ui.download_csv(res["forecast"], "forecast_by_group.csv", "Download all forecasts (CSV)")

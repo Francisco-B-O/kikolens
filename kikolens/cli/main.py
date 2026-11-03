@@ -557,21 +557,46 @@ def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),
     freq: Optional[str] = typer.Option(None, help="Resample frequency: h, D, W, MS, QS, YS."),
+    compare: bool = typer.Option(False, "--compare", help="Compare several models with rolling-origin tests and use the best."),
+    changes: bool = typer.Option(False, "--changes", help="List level shifts and trend changes in the series."),
+    by: Optional[str] = typer.Option(None, "--by", help="Forecast each value of this column separately."),
+    agg: str = typer.Option("mean", help="How to combine rows in the same period: mean, sum, median, min, max, count."),
 ):
     """Forecast a numeric column over time."""
+    from kikolens.analyze import forecasting as fx
     from kikolens.analyze import timeseries as ts
 
     df = _load(source)
     try:
-        series = ts.prepare_series(df, date, value, freq=freq)
-        result = ts.forecast(series, horizon=horizon)
+        if by:
+            _check_target(df, by)
+            res = fx.forecast_by_group(df, date, value, by, horizon, freq, agg)
+            _print_frame(res["summary"].round(3), f"Forecast by {by}", max_rows=40)
+            for _, row in res["skipped"].iterrows():
+                console.print(f"[yellow]Skipped {row['group']}: {row['reason']}[/yellow]")
+            _print_frame(res["forecast"].round(3), "Forecast", max_rows=40)
+            return
+        series = ts.prepare_series(df, date, value, freq=freq, agg=agg)
+        if compare:
+            best = fx.forecast_models(series, horizon)
+            console.print(best["summary"])
+            _print_frame(best["leaderboard"].round(4), "Model comparison")
+            _print_frame(best["forecast"].round(4).rename_axis("date").reset_index(), "Forecast")
+        else:
+            result = ts.forecast(series, horizon=horizon)
+            summary = ts.trend_summary(series)
+            console.print(f"Trend: [bold]{summary['direction']}[/bold]  ·  seasonal period: {result['period'] or 'none'}")
+            _print_frame(pd.DataFrame([result["metrics"]]), "Backtest")
+            _print_frame(result["forecast"].rename_axis("date").reset_index(), "Forecast")
+        if changes:
+            points = fx.detect_changepoints(series)
+            if points:
+                _print_frame(pd.DataFrame(points).round(3), "Changes in the series")
+            else:
+                console.print("No level shifts or trend changes found.")
     except ValueError as e:
         console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
-    summary = ts.trend_summary(series)
-    console.print(f"Trend: [bold]{summary['direction']}[/bold]  ·  seasonal period: {result['period'] or 'none'}")
-    _print_frame(pd.DataFrame([result["metrics"]]), "Backtest")
-    _print_frame(result["forecast"].rename_axis("date").reset_index(), "Forecast")
 
 
 @app.command()

@@ -320,3 +320,15 @@ def test_quality_smart_fill_and_extra_checks(data):
     at.button(key="q_rl_suggest").click().run()
     assert_clean(at)
     assert len(at.session_state["rules"].rules) > 0
+
+
+def test_time_series_compare_models_and_groups(data):
+    at = open_page(data, "Time series")
+    at.selectbox(key="ts_value").set_value("y")
+    at.button(key="ts_go").click().run()
+    assert_clean(at)
+    at.button(key="ts_compare").click().run()
+    assert_clean(at)
+    assert at.session_state["ts_models"][1]["best"]
+    at.button(key="ts_by_group").click().run()
+    assert_clean(at)
