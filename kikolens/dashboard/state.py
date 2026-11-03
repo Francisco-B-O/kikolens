@@ -1,7 +1,7 @@
 """Estado de la sesión: dataset de trabajo, historial de limpieza y resultados de modelos."""
 import streamlit as st
 
-MODEL_KEYS = ("automl_res", "nn_res", "ts_res", "cluster_res", "chat_history")
+MODEL_KEYS = ("automl_res", "nn_res", "lab_res", "ts_res", "cluster_res", "chat_history")
 MAX_HISTORY = 20
 
 

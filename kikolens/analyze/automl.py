@@ -13,7 +13,7 @@ from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confus
 import plotly.express as px
 import plotly.graph_objects as go
 
-from kikolens.utils.dtypes import categorical_columns, is_text
+from kikolens.utils.dtypes import categorical_columns, expand_datetime_columns, is_text
 
 MAX_CLASSES = 50
 
@@ -70,15 +70,7 @@ class AutoMLExplainer:
                     self.selection_rationale.append("Large dataset with complex boundaries. Gradient Boosting iteratively corrects errors for maximum accuracy.")
 
     def _expand_datetime_columns(self):
-        """Los modelos no aceptan fechas: cada una pasa a días desde 1970, mes y día de la semana."""
-        for col in self.df.select_dtypes(include=["datetime", "datetimetz"]).columns:
-            stamps = self.df[col]
-            if getattr(stamps.dt, "tz", None) is not None:
-                stamps = stamps.dt.tz_localize(None)
-            self.df[f"{col}_days"] = (stamps - pd.Timestamp("1970-01-01")).dt.days
-            self.df[f"{col}_month"] = stamps.dt.month
-            self.df[f"{col}_weekday"] = stamps.dt.dayofweek
-            self.df.drop(columns=[col], inplace=True)
+        self.df = expand_datetime_columns(self.df)
 
     def preprocess(self):
         if pd.api.types.is_datetime64_any_dtype(self.df[self.target_col]):

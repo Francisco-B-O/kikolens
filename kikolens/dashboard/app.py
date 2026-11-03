@@ -6,7 +6,7 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state, theme
-from kikolens.dashboard.views import (ask, clusters, explore, models, neural, overview, patterns, quality,
+from kikolens.dashboard.views import (ask, clusters, explore, lab, models, neural, overview, patterns, quality,
                                       report, statistics, timeseries)
 from kikolens.utils.loaders import load_data
 
@@ -20,6 +20,7 @@ PAGES = {
     "Statistics": statistics,
     "Ask": ask,
     "Models": models,
+    "Model lab": lab,
     "Neural network": neural,
     "Time series": timeseries,
     "Segments": clusters,
