@@ -10,6 +10,7 @@ from kikolens.analyze.modellab import run_model_lab
 from kikolens.analyze.neural import run_neural_network
 from kikolens.cli.main import app
 from kikolens.pipeline.recipe import Recipe
+from kikolens.utils.dtypes import is_text
 
 runner = CliRunner()
 
@@ -229,7 +230,7 @@ def test_models_use_dates_and_numbers_stored_as_text(data):
     typed, converted = infer_types(frame)
     assert dict(converted) == {"date": "datetime", "price": "numeric"}
     assert pd.api.types.is_datetime64_any_dtype(typed["date"]) and pd.api.types.is_numeric_dtype(typed["price"])
-    assert frame["date"].dtype == object   # el original no cambia
+    assert is_text(frame["date"])   # el original no cambia (object en pandas 2, str en pandas 3)
     res = run_model_lab(frame, "y", models=["Ridge"], folds=3, tune=False)
     assert res["converted"] == converted and "Read as dates: date" in res["narrative"]
     assert "date_days" in res["features"] and "price" in res["features"]
