@@ -374,6 +374,127 @@ def panel(
         console.print(f"Definition saved to {save}")
 
 
+monitor_app = typer.Typer(help="Watch a data source over time and get alerts.", no_args_is_help=True)
+app.add_typer(monitor_app, name="monitor")
+
+
+def _monitor(name: str):
+    from kikolens.analyze.monitor import load_monitor
+
+    try:
+        return load_monitor(name)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@monitor_app.command("create")
+def monitor_create(
+    name: str,
+    source: str,
+    baseline: Optional[str] = typer.Option(None, help="Data to compare against; default is the source as it is now."),
+    recipe: Optional[Path] = typer.Option(None, help="Recipe (.json) to apply to every check."),
+    model: Optional[str] = typer.Option(None, help="Saved model to score each check with."),
+    webhook: Optional[str] = typer.Option(None, help="http(s) address to notify when a check raises an alert."),
+    drift_level: str = typer.Option("high", help="Alert when drift reaches this level: medium or high."),
+    quality_drop: float = typer.Option(10.0, help="Alert when the quality score falls by this many points."),
+):
+    """Create a monitor for SOURCE using a baseline."""
+    from kikolens.analyze.monitor import create_monitor
+    from kikolens.pipeline.recipe import Recipe
+
+    try:
+        loaded = Recipe.from_json(recipe.read_text(encoding="utf-8")) if recipe else None
+        mon = create_monitor(name, source, _load(baseline) if baseline else None, loaded, model,
+                             {"drift_level": drift_level, "quality_drop": quality_drop}, webhook)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"Monitor [bold]{mon.name}[/bold] created. Baseline quality {mon.baseline_quality:.0f}/100. "
+                  f"Run it with: kikolens monitor run \"{mon.name}\"")
+
+
+@monitor_app.command("run")
+def monitor_run(name: str, source: Optional[str] = typer.Option(None, help="Check this file instead of the watched source.")):
+    """Run one check. Exit code 0 when fine, 2 on alerts, 1 when the data could not be read."""
+    from kikolens.analyze.monitor import run_check
+
+    mon = _monitor(name)
+    record = run_check(mon, _load(source) if source else None)
+    colour = {"ok": "green", "warning": "yellow", "alert": "red", "failed": "red"}[record["status"]]
+    console.print(f"[{colour}]{record['status'].upper()}[/{colour}] {mon.name}: {record.get('rows', 0):,} rows")
+    for a in record["alerts"]:
+        console.print(f"  [{a['severity']}] {a['message']}")
+    raise typer.Exit(code={"ok": 0, "warning": 0, "alert": 2, "failed": 1}[record["status"]])
+
+
+@monitor_app.command("list")
+def monitor_list():
+    """List the monitors."""
+    from kikolens.analyze.monitor import list_monitors
+
+    frame = list_monitors()
+    if frame.empty:
+        console.print("No monitors yet. Create one with: kikolens monitor create NAME SOURCE")
+        return
+    _print_frame(frame, "Monitors")
+
+
+@monitor_app.command("history")
+def monitor_history(name: str, last: int = typer.Option(20, help="How many checks to show.")):
+    """Show the past checks of a monitor."""
+    from kikolens.analyze.monitor import history
+
+    _monitor(name)
+    frame = history(name)
+    if frame.empty:
+        console.print("Nothing checked yet.")
+        return
+    _print_frame(frame.tail(last).round(3), f"History of {name}", max_rows=last)
+
+
+@monitor_app.command("watch")
+def monitor_watch(name: str, interval: float = typer.Option(300.0, help="Seconds between looks at the file.")):
+    """Keep running and check every time the watched file changes. Stop with Ctrl+C."""
+    from kikolens.analyze.monitor import watch
+
+    mon = _monitor(name)
+    console.print(f"Watching {mon.source} every {interval:g}s. Ctrl+C to stop.")
+
+    def show(record):
+        console.print(f"{record['time']} {record['status'].upper()} ({len(record['alerts'])} alert(s))")
+
+    try:
+        watch(mon, interval, on_run=show)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Stopped.[/yellow]")
+
+
+@monitor_app.command("schedule")
+def monitor_schedule(name: str, every: str = typer.Option("daily", help="hourly, daily or weekly.")):
+    """Print the cron and Windows commands that run the check on a schedule (nothing is installed)."""
+    from kikolens.analyze.monitor import schedule_hint
+
+    try:
+        console.print(schedule_hint(_monitor(name), every), markup=False)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@monitor_app.command("delete")
+def monitor_delete(name: str):
+    """Delete a monitor and its history."""
+    from kikolens.analyze.monitor import delete_monitor
+
+    _monitor(name)
+    delete_monitor(name)
+    console.print(f"Deleted {name}")
+
+
 @app.command()
 def forecast(
     source: str, date: str, value: str,
