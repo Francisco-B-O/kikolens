@@ -12,7 +12,7 @@ from kikolens.pipeline.project import load_project
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
-         "Panel", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data"]
+         "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
 
 @pytest.fixture(scope="module")
@@ -332,3 +332,17 @@ def test_time_series_compare_models_and_groups(data):
     assert at.session_state["ts_models"][1]["best"]
     at.button(key="ts_by_group").click().run()
     assert_clean(at)
+
+
+def test_pasting_a_table_loads_it():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.selectbox(key="source_mode").set_value("Paste").run()
+    at.text_area(key="paste_text").set_value("a,b\n1,2\n3,4\n5,6").run()
+    assert_clean(at)
+    assert at.session_state["df"].shape == (3, 2)
+
+
+def test_export_page_offers_every_route(data):
+    at = open_page(data, "Export")
+    assert_clean(at)
+    assert [t.label for t in at.tabs] == ["Files", "Excel workbook", "Database"]

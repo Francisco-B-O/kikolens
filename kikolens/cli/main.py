@@ -553,6 +553,58 @@ def validate(
 
 
 @app.command()
+def export(
+    source: str,
+    output: Path = typer.Argument(..., help="Where to write: .csv, .tsv, .xlsx, .json, .ndjson, .parquet or .feather."),
+    recipe: Optional[Path] = typer.Option(None, help="Apply this recipe before exporting."),
+    workbook: bool = typer.Option(False, "--workbook", help="For .xlsx: add quality, statistics and recipe sheets."),
+):
+    """Convert a dataset to another format, optionally as an analysis workbook."""
+    from kikolens.pipeline.recipe import Recipe
+
+    df = _load(source)
+    loaded = None
+    try:
+        if recipe:
+            loaded = Recipe.from_json(recipe.read_text(encoding="utf-8"))
+            df, _ = loaded.apply(df)
+        if workbook:
+            if output.suffix.lower() != ".xlsx":
+                raise ValueError("--workbook needs an output ending in .xlsx")
+            from kikolens.report.workbook import build_analysis_workbook
+
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(build_analysis_workbook(df, Path(str(source)).stem, loaded))
+        else:
+            from kikolens.utils.writers import write_frame
+
+            write_frame(df, output)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"{len(df):,} rows × {len(df.columns)} columns written to [bold]{output}[/bold]")
+
+
+@app.command("to-db")
+def to_db(
+    source: str,
+    database: str = typer.Argument(..., help="Database address, e.g. sqlite:///results.db or postgresql://user:pass@host/db"),
+    table: str = typer.Argument(..., help="Table to write."),
+    if_exists: str = typer.Option("fail", help="fail (default), append or replace."),
+):
+    """Write a dataset into a database table. It never overwrites unless you say `--if-exists replace`."""
+    from kikolens.utils.writers import write_database
+
+    df = _load(source)
+    try:
+        n = write_database(df, database, table, if_exists)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"{n:,} rows written to table [bold]{table}[/bold].")
+
+
+@app.command()
 def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),
@@ -626,14 +678,12 @@ def clean(
 
 
 def _write_frame(df: pd.DataFrame, output: Path) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    suffix = output.suffix.lower()
-    if suffix == ".parquet":
-        df.to_parquet(output, index=False)
-    elif suffix == ".csv":
-        df.to_csv(output, index=False)
-    else:
-        console.print("[red]Output must end in .csv or .parquet[/red]")
+    from kikolens.utils.writers import write_frame
+
+    try:
+        write_frame(df, output)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
 
 
