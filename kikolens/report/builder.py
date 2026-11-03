@@ -80,9 +80,14 @@ def _model_section(result: dict, title: str, charts: _Charts) -> str:
     imp_df = pd.DataFrame(importance, columns=["feature", "importance"]).set_index("feature")
     figs = "".join(charts.render(f) for key, f in result.get("plots", {}).items() if key in ("performance", "training"))
     narrative = _esc(result.get("narrative", "")).replace("###", "").replace("**", "").replace("`", "")
+    board = result.get("leaderboard")
+    leaderboard = ""
+    if board is not None:
+        cols = [c for c in board.columns if not c.endswith("std") and c != "total time (s)"]
+        leaderboard = f"<h3>Model comparison (cross-validated)</h3>{_table(board[cols].round(4), index=False)}"
     return (f"<h2>{_esc(title)}</h2><p class='muted'>Target: {_esc(result.get('target', ''))} · "
             f"Task: {_esc(result.get('task_type', ''))}</p><div class='kpis'>{metrics}</div>"
-            f"<div class='ai'>{narrative.strip()}</div><h3>Most influential features</h3>{_table(imp_df)}{figs}")
+            f"<div class='ai'>{narrative.strip()}</div>{leaderboard}<h3>Most influential features</h3>{_table(imp_df)}{figs}")
 
 
 def build_report(df: pd.DataFrame, name: str = "dataset", models: dict | None = None,

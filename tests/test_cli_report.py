@@ -99,3 +99,12 @@ def test_cli_report(csv_path, tmp_path):
     out = runner.invoke(app, ["report", csv_path, "--output", str(target), "--target", "y"])
     assert out.exit_code == 0 and target.exists()
     assert "AutoML" in target.read_text(encoding="utf-8")
+
+
+def test_cli_lab(csv_path, tmp_path):
+    saved = tmp_path / "lab.pkl"
+    out = runner.invoke(app, ["lab", csv_path, "y", "--folds", "3", "--no-tune", "--models", "Baseline (mean),Ridge",
+                              "--save", str(saved)])
+    assert out.exit_code == 0 and "Leaderboard" in out.output and saved.exists()
+    assert runner.invoke(app, ["lab", csv_path, "nope"]).exit_code == 1
+    assert runner.invoke(app, ["lab", csv_path, "y", "--folds", "2"]).exit_code == 1

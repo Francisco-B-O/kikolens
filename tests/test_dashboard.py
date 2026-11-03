@@ -168,3 +168,27 @@ def test_style_chart_never_leaves_title_undefined():
 
     fig = style_chart(px.line(pd.DataFrame({"a": [1, 2, 3], "b": [3, 1, 2]}), x="a", y="b"))
     assert fig.layout.title.text == ""
+
+
+def test_model_lab_runs_end_to_end(data):
+    at = open_page(data, "Model lab")
+    at.selectbox(key="lab_target").set_value("y")
+    at.run()
+    at.multiselect(key="lab_models_regression").set_value(["Baseline (mean)", "Ridge", "Decision Tree"])
+    at.slider(key="lab_folds").set_value(3)
+    at.checkbox(key="lab_tune").set_value(False)
+    at.button(key="lab_run").click().run()
+    assert_clean(at)
+    assert at.session_state["lab_res"]["task_type"] == "regression"
+    at.button(key="lab_predict").click().run()
+    assert_clean(at)
+    assert any(m.label == "Prediction" for m in at.metric)
+
+
+def test_model_lab_reports_bad_target(data):
+    at = open_page(data, "Model lab")
+    at.selectbox(key="lab_target").set_value("date")
+    at.run()
+    at.button(key="lab_run").click().run()
+    assert_clean(at)
+    assert "lab_res" not in at.session_state

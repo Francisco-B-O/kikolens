@@ -137,6 +137,46 @@ def predict(
 
 
 @app.command()
+def lab(
+    source: str,
+    target: str,
+    folds: int = typer.Option(5, help="Cross-validation folds (3-10)."),
+    tune: bool = typer.Option(True, help="Tune the best model."),
+    models: Optional[str] = typer.Option(None, help="Comma-separated model names; default is all."),
+    balance: bool = typer.Option(False, "--balance", help="Weight rarer classes more (classification)."),
+    exclude: Optional[str] = typer.Option(None, help="Comma-separated columns to leave out."),
+    save: Optional[Path] = typer.Option(None, help="Save the best pipeline to this .pkl path."),
+):
+    """Compare many models with cross-validation, tune the best and check for data leaks."""
+    import joblib
+
+    from kikolens.analyze.modellab import run_model_lab
+
+    df = _load(source)
+    _check_target(df, target)
+    names = [m.strip() for m in models.split(",")] if models else None
+    drop = [c.strip() for c in exclude.split(",")] if exclude else []
+    try:
+        with console.status("Comparing models..."):
+            res = run_model_lab(df, target, models=names, folds=folds, tune=tune, balance=balance, drop=drop)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+    board = res["leaderboard"]
+    _print_frame(board[[c for c in board.columns if not c.endswith("std") and c != "total time (s)"]].round(4), "Leaderboard")
+    console.print(res["narrative"])
+    for leak in res["leakage"]:
+        console.print(f"[red]Possible data leak:[/red] {leak['message']}")
+    _print_frame(pd.DataFrame(list(res["feature_importance"].items())[:10], columns=["feature", "importance"]).round(4),
+                 "Top features")
+    if save:
+        save.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump(res["pipeline"], save)
+        console.print(f"Pipeline saved to {save}")
+
+
+@app.command()
 def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),

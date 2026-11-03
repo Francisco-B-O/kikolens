@@ -17,6 +17,8 @@ def render(df: pd.DataFrame) -> None:
     if include_models:
         if "automl_res" in st.session_state:
             available["Classical model"] = st.session_state.automl_res
+        if "lab_res" in st.session_state:
+            available["Model lab"] = st.session_state.lab_res
         if "nn_res" in st.session_state:
             available["Neural network"] = st.session_state.nn_res
         st.caption("Models included: " + (", ".join(available) if available else "none yet. Train one first."))
