@@ -66,7 +66,7 @@ def _leaderboard(res: dict) -> None:
     ui.chart(res["plots"]["leaderboard"], 120 + 34 * len(res["leaderboard"]))
     board = res["leaderboard"].copy()
     shown = [c for c in board.columns if not c.endswith("std") and c != "total time (s)"]
-    ui.table(board[shown].round(4), hide_index=True)
+    ui.heat_table(board[shown].round(4), [c for c in shown if c not in ("model", "status", "fit time (s)")], hide_index=True)
     if res["tuning"]:
         t = res["tuning"]
         verdict = "improved" if t["improved"] else "did not improve"

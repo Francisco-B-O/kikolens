@@ -5,18 +5,19 @@ from urllib.parse import quote
 import streamlit as st
 
 from kikolens.dashboard import components as ui
+from kikolens import demo
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
-                                      features, health, impact, lab, linkage, models, monitoring, survival,
+                                      features, gallery, health, home, impact, lab, linkage, models, monitoring, survival,
                                       neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
-                                      text, timeseries, transform)
+                                      story, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
 st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial_sidebar_state="expanded")
 
 # Las secciones se agrupan por áreas para que la barra lateral no sea una lista interminable.
 GROUPS = {
-    "Data": {"Overview": overview, "Autopilot": autopilot, "Explore": explore, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
+    "Data": {"Home": home, "Overview": overview, "Data story": story, "Autopilot": autopilot, "Explore": explore, "Chart gallery": gallery, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
              "Match records": linkage,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
@@ -109,6 +110,10 @@ def _load_if_new(source, name, options=None) -> bool:
     return True
 
 
+def _load_demo(name: str) -> None:
+    state.set_dataset(demo.load_demo(name), f"{name} (example).csv")
+
+
 def _welcome() -> None:
     t = i18n.t
     steps = ("Choose a file, a link or a database in the sidebar.", "Check the quality of the data and fix what is wrong.",
@@ -119,6 +124,11 @@ def _welcome() -> None:
         f'<ol class="kl-steps">{"".join(f"<li>{html.escape(t(step))}</li>" for step in steps)}</ol></div>',
         unsafe_allow_html=True,
     )
+    st.markdown(f'<div style="text-align:center;margin-top:1.2rem" class="kl-label">{html.escape(t("Or try an example"))}</div>', unsafe_allow_html=True)
+    columns = st.columns(len(demo.GENERATORS))
+    for column, name in zip(columns, demo.GENERATORS):
+        column.button(t(name.capitalize()), key=f"demo_{name}", on_click=_load_demo, args=(name,), width="stretch",
+                      help=t(demo.DESCRIPTIONS[name]))
 
 
 def _go_to_group() -> None:
