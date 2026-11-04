@@ -490,4 +490,63 @@ ES = {
     "One panel per group": "Un panel por grupo",
     "Hover over the chart for details. Use the camera icon in its corner to save it as an image.":
         "Pasa el ratón por el gráfico para ver detalles. Usa el icono de la cámara de su esquina para guardarlo como imagen.",
+    "Sequential tests": "Pruebas secuenciales", "Segment explorer": "Explorador de segmentos", "Recommendations": "Recomendaciones",
+    "Feature selection": "Selección de variables", "Forecast with drivers": "Previsión con variables explicativas", "Run history": "Historial de ejecuciones",
+    "Synthetic data": "Datos sintéticos",
+    "A/B tests you can check after every visitor without cheating, a planner, and a bandit simulator.":
+        "Pruebas A/B que puedes mirar tras cada visitante sin hacer trampa, un planificador y un simulador de bandidos.",
+    "Find groups of similar rows with a Gaussian mixture, hierarchical clustering or DBSCAN, and read each group in words.":
+        "Encuentra grupos de filas parecidas con una mezcla gaussiana, agrupación jerárquica o DBSCAN y lee cada grupo en palabras.",
+    "Who might like what, and which items go together, from a table of who used or rated what.":
+        "Quién puede querer qué y qué artículos van juntos, a partir de una tabla de quién usó o puntuó qué.",
+    "Which columns are worth keeping to predict a target? Four methods vote and a validated curve decides how many.":
+        "¿Qué columnas merece la pena conservar para predecir un objetivo? Cuatro métodos votan y una curva validada decide cuántas.",
+    "Forecast a series using other columns too, test whether they really help, and try what-if scenarios.":
+        "Prevé una serie usando también otras columnas, comprueba si de verdad ayudan y prueba escenarios de qué pasaría si.",
+    "Every model lab training is recorded here, so you can compare attempts and never lose the best one.":
+        "Cada entrenamiento del laboratorio queda registrado aquí, para comparar intentos y no perder nunca el mejor.",
+    "Generate a table that looks like yours (same distributions and correlations) without being real people.":
+        "Genera una tabla que se parece a la tuya (mismas distribuciones y correlaciones) sin ser personas reales.",
+    "Live test": "Prueba en vivo", "Planner": "Planificador", "Bandit simulator": "Simulador de bandidos",
+    "Unlike a classic test, this one stays valid however often you look at it, so you can stop as soon as the evidence is enough.":
+        "A diferencia de una prueba clásica, esta sigue siendo válida mires tantas veces como mires, así que puedes parar en cuanto la evidencia basta.",
+    "Order of arrival": "Orden de llegada", "Decision": "Decisión", "Observations per group": "Observaciones por grupo", "Difference": "Diferencia",
+    "Always-valid p": "p siempre válido", "Classic p (only valid if looked at once)": "p clásico (solo válido si se mira una vez)",
+    "Plan it": "Planificarlo", "Simulations": "Simulaciones", "Simulating...": "Simulando...", "Fixed test": "Prueba de tamaño fijo",
+    "Sequential, median": "Secuencial, mediana", "Sequential, 90% of runs": "Secuencial, 90 % de los casos", "False alarms with no effect": "Falsas alarmas sin efecto real",
+    "True conversion rates, one per variant (comma separated)": "Tasas de conversión reales, una por variante (separadas por comas)", "Visitors": "Visitantes",
+    "In real life the true rates are unknown; this shows what a bandit would have done if they were these.":
+        "En la vida real las tasas verdaderas se desconocen; esto muestra lo que habría hecho un bandido si fueran estas.",
+    "Drivers": "Variables explicativas", "Column to forecast": "Columna a prever", "Does it help predict? (Granger)": "¿Ayuda a predecir? (Granger)",
+    "Forecast": "Previsión", "What-if: how much higher or lower will each driver be in the future, compared with its last value? 1.0 means the same.":
+        "Qué pasaría si: ¿cuánto más alta o baja será cada variable en el futuro respecto a su último valor? 1,0 significa igual.",
+    "Testing on the past...": "Probando sobre el pasado...", "Error with drivers": "Error con las variables", "Error alone": "Error sin ellas",
+    "Pick at least one driver.": "Elige al menos una variable explicativa.", "Does the past of": "¿Ayuda el pasado de", "Most periods back": "Máximo de periodos atrás",
+    "Score the columns": "Puntuar las columnas", "Scoring...": "Puntuando...", "Remove the columns I can leave out": "Quitar las columnas que puedo dejar fuera",
+    "Recommended": "Recomendadas", "Can be left out": "Se pueden dejar fuera",
+    "Each method scores the columns differently; the consensus ranks them by their average position. The curve shows the cross-validated score using the best k columns.":
+        "Cada método puntúa las columnas de forma distinta; el consenso las ordena por su posición media. La curva muestra la puntuación validada usando las k mejores.",
+    "Gaussian mixture (finds the number of groups)": "Mezcla gaussiana (encuentra el número de grupos)", "Hierarchical (dendrogram)": "Jerárquico (dendrograma)",
+    "DBSCAN (free shapes and noise)": "DBSCAN (formas libres y ruido)", "Columns to compare rows by": "Columnas con las que comparar filas",
+    "Groups": "Grupos", "Most groups to try": "Máximo de grupos a probar", "Neighbours needed to form a group": "Vecinos necesarios para formar un grupo",
+    "Add the group as a column": "Añadir el grupo como columna", "Adds a 'group' column to your data. You can undo it.": "Añade una columna 'group' a tus datos. Puedes deshacerlo.",
+    "Person": "Persona", "Rating (optional)": "Puntuación (opcional)", "People": "Personas", "Items": "Artículos", "Interactions": "Interacciones",
+    "For a person": "Para una persona", "Like this item": "Como este artículo", "How good is it?": "¿Qué tan bueno es?", "How many": "Cuántos",
+    "Already used": "Ya usados", "Evaluate": "Evaluar", "Recommender": "Recomendador", "Most popular items": "Artículos más populares", "People tested": "Personas probadas",
+    "One interaction of each person is hidden, and the recommender has to bring it back among its first suggestions.":
+        "Se oculta una interacción de cada persona y el recomendador tiene que devolverla entre sus primeras sugerencias.",
+    "Rows to generate": "Filas a generar", "Random seed": "Semilla aleatoria", "Generate": "Generar", "Generating...": "Generando...",
+    "Fidelity": "Fidelidad", "Exact copies of real rows": "Copias exactas de filas reales", "Very close to a real row": "Muy cerca de una fila real",
+    "Correlation gap": "Diferencia de correlaciones", "Not imitated": "No imitadas", "Column by column": "Columna a columna", "#### Column by column": "#### Columna a columna",
+    "Download the synthetic data (CSV)": "Descargar los datos sintéticos (CSV)", "Is it useful? Train a model on it": "¿Es útil? Entrena un modelo con ellos",
+    "Synthetic data lowers the risk but does not remove it: check the copies above and keep the original private.":
+        "Los datos sintéticos reducen el riesgo pero no lo eliminan: revisa las copias de arriba y mantén privado el original.",
+    "Different columns predicted": "Columnas distintas predichas", "Column predicted": "Columna predicha", "Runs": "Ejecuciones", "Best": "Mejor",
+    "Compare runs": "Comparar ejecuciones", "#### Compare runs": "#### Comparar ejecuciones", "Runs to compare": "Ejecuciones a comparar", "Pick at least two.": "Elige al menos dos.",
+    "Delete a run": "Borrar una ejecución", "Run": "Ejecutar",
+    "No runs yet. Train something in the Model lab and it will appear here.": "Aún no hay ejecuciones. Entrena algo en el laboratorio de modelos y aparecerá aquí.",
+    "Search method": "Método de búsqueda", "Random": "Aleatoria", "Bayesian (smarter, slower)": "Bayesiana (más lista, más lenta)",
+    "Bayesian search learns from each attempt to pick the next one, so it often needs fewer attempts.":
+        "La búsqueda bayesiana aprende de cada intento para elegir el siguiente, así que suele necesitar menos intentos.",
+    "How the Bayesian search went": "Cómo fue la búsqueda bayesiana",
 }

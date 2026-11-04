@@ -50,6 +50,13 @@ An unknown field raises an error that lists what is available. Text from your da
 | `cohorts(df, user, date)` / `rfm(df, customer, date, amount)` | Retention and customer segments. |
 | `distribution(series)` | Which distribution fits a column best. |
 | `link(left, right, left_on, right_on)` | Fuzzy match by names; `res.merged` has the joined table. |
+| `select_features(df, target)` | Which columns to keep: consensus of four methods and a cross-validated curve; `res.recommended`, `res.removable`. |
+| `segment(df, "gmm" \| "hierarchical" \| "dbscan")` | Segments with each group described in words; `res.labels` is the group of every row. |
+| `ab_sequential(df, group, outcome, control, order=None)` | A sequential A/B test that stays valid when checked after every observation. |
+| `granger(df, date, cause, effect)` / `forecast_drivers(df, date, target, drivers, scenario=...)` | Granger test; forecast using other columns, with what-if scenarios. |
+| `recommender(df, user, item, rating=None)` | An item-based recommender: `.recommend(person)`, `.similar_items(item)`, `.popular()`. |
+| `synthesize(df, n=None)` | Synthetic data; `res.data` is the table and `res.report` the fidelity and privacy figures. |
+| `runs(target=None)` | The history of model lab runs (the dashboard and `kikolens lab` record them). |
 | `save_model(lab_result, df, name)` / `score(df, "name")` | Keep a model and predict with it later. Only open model files you trust. |
 
 ## Magics

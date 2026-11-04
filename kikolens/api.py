@@ -238,5 +238,60 @@ def save_model(result: Result, df: pd.DataFrame, name: str | None = None):
     return save_bundle(build_bundle(result, df, name=name))
 
 
+def select_features(df: pd.DataFrame, target: str, **kwargs) -> Result:
+    """Qué columnas merece la pena conservar para predecir `target` (consenso de cuatro métodos y curva validada)."""
+    from kikolens.analyze.featureselect import select_features as run
+    return _wrap("feature selection", run(df, target, **kwargs), figure=None)
+
+
+def segment(df: pd.DataFrame, method: str = "gmm", columns=None, **kwargs) -> Result:
+    """Segmenta filas: "gmm" (mezcla gaussiana), "hierarchical" o "dbscan". `res.labels` es el grupo de cada fila."""
+    from kikolens.analyze import segments
+    runners = {"gmm": segments.gmm_auto, "hierarchical": segments.hierarchical, "dbscan": segments.dbscan_auto}
+    if method not in runners:
+        raise ValueError("method must be gmm, hierarchical or dbscan.")
+    res = runners[method](df, columns, **kwargs)
+    return _wrap("segments", res, table=res["profiles"])
+
+
+def ab_sequential(df: pd.DataFrame, group: str, outcome: str, control, order: str | None = None, **kwargs) -> Result:
+    """Prueba A/B secuencial (mSPRT): válida aunque se mire tras cada observación."""
+    from kikolens.analyze.sequential import from_frame
+    return _wrap("sequential test", from_frame(df, group, outcome, control, order, **kwargs))
+
+
+def granger(df: pd.DataFrame, date: str, cause: str, effect: str, **kwargs) -> Result:
+    """¿Ayuda el pasado de `cause` a predecir `effect`?"""
+    from kikolens.analyze.multivar import granger as run
+    return _wrap("granger", run(df, date, cause, effect, **kwargs))
+
+
+def forecast_drivers(df: pd.DataFrame, date: str, target: str, drivers: list, **kwargs) -> Result:
+    """Previsión que usa también otras columnas, con escenarios y comprobación de si ayudan."""
+    from kikolens.analyze.multivar import forecast_with_drivers
+    res = forecast_with_drivers(df, date, target, drivers, **kwargs)
+    return _wrap("forecast with drivers", res, table=res["forecast"])
+
+
+def recommender(df: pd.DataFrame, user: str, item: str, rating: str | None = None):
+    """Recomendador por filtrado colaborativo: `.recommend(persona)`, `.similar_items(artículo)`, `.popular()`."""
+    from kikolens.analyze.recommend import fit
+    return fit(df, user, item, rating)
+
+
+def synthesize(df: pd.DataFrame, n: int | None = None, seed: int = 0) -> Result:
+    """Datos sintéticos con las mismas distribuciones y correlaciones; `res.data` es la tabla y `res.report` mide fidelidad y privacidad."""
+    from kikolens.analyze.synthetic import report, synthesize as run
+    res = run(df, n, seed)
+    return _wrap("synthetic data", res, table=res["data"], report=report(df, res["data"]))
+
+
+def runs(target: str | None = None) -> pd.DataFrame:
+    """El historial de ejecuciones del laboratorio."""
+    from kikolens.analyze.runs import list_runs
+    return list_runs(target)
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
-             "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result")
+             "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
+             "recommender", "synthesize", "runs")

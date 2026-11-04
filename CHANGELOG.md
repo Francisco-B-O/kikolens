@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+* **Home page, data story and chart gallery:** a quality ring, sparklines and one-click actions on a new home page; the data told as chapters with charts; nine new charts (Sankey, treemap, radar, grouped correlations, correlation network, calendar, ridgelines, parallel coordinates, small multiples); built-in example datasets on the welcome screen; coloured tables.
+* **Bayesian hyperparameter optimisation** in the model lab (`lab --bayes`), with the search history.
+* **Sequential A/B tests** (mSPRT) that stay valid when checked after every visitor, a simulation planner and a Thompson-sampling bandit simulator (`ab-seq`, `bandit`).
+* **Forecast with drivers** (scenarios, test of whether drivers help) and **Granger** tests (`forecast-drivers`, `granger`).
+* **Feature selection** by consensus of four methods and a cross-validated curve (`select-features`).
+* **Segment explorer:** Gaussian mixtures with automatic number of groups, hierarchical clustering with a dendrogram and DBSCAN, with groups described in words (`segment`).
+* **Recommender** with an honest evaluation against popularity (`recommend`).
+* **Synthetic data** with a fidelity, privacy and utility report (`synth`).
+* **Run history** of every lab training, with comparison (`runs`).
+* Python API: `select_features`, `segment`, `ab_sequential`, `granger`, `forecast_drivers`, `recommender`, `synthesize` and `runs`.
+
 * **Python API for notebooks:** `import kikolens as kl` gives `load`, `profile`, `autopilot`, `lab`, `forecast`, `why`, `regress`, `survival`, `link`, `query` and more; results display as readable tables in Jupyter and keep every field. See `docs/python-api.md`.
 * **IPython magics:** `%load_ext kikolens` adds `%kl_profile`, `%kl_autopilot`, `%kl_privacy` and `%%kl_sql`.
 * **`kikolens jupyter`** writes a self-contained quickstart notebook and opens JupyterLab (optional extra `kikolens[jupyter]`).

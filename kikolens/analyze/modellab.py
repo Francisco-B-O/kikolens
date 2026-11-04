@@ -359,8 +359,11 @@ def compare_models(X, y, task, models=None, folds=5, seed=42, balance=False, pro
     return board.sort_values(primary, ascending=False, na_position="last").reset_index(drop=True)
 
 
-def tune_model(X, y, task, name, n_iter=20, folds=5, seed=42, balance=False, scoring=None):
-    """Búsqueda aleatoria de hiperparámetros. Devuelve (mejor pipeline sin ajustar, parámetros, puntuación CV, puntuación base)."""
+def tune_model(X, y, task, name, n_iter=20, folds=5, seed=42, balance=False, scoring=None, method="random"):
+    """Búsqueda de hiperparámetros, aleatoria o bayesiana. Devuelve (mejor pipeline sin ajustar, parámetros, puntuación CV,
+    puntuación base); con `method="bayes"` el historial de intentos queda en `tune_model.last_history`."""
+    if method not in ("random", "bayes"):
+        raise ValueError("method must be 'random' or 'bayes'.")
     pool = model_pool(task, seed, balance, [name])
     if name not in pool:
         raise ValueError(f"Unknown model '{name}'.")
@@ -370,6 +373,12 @@ def tune_model(X, y, task, name, n_iter=20, folds=5, seed=42, balance=False, sco
     scoring = scoring or ("r2" if task == "regression" else "f1_weighted")
     cv = _splitter(task, y, folds, seed)
     base_score = float(np.mean(cross_validate(make_pipeline(X, estimator), X, y, cv=cv, scoring=scoring)["test_score"]))
+    if method == "bayes":
+        from kikolens.analyze.bayesopt import tune_bayes
+        found = tune_bayes(pool[name], make_pipeline, X, y, scoring, cv, n_iter=max(n_iter, 6), seed=seed)
+        tune_model.last_history = found["history"]
+        return (found["pipeline"], {k.removeprefix("model__"): v for k, v in found["best_params"].items()},
+                found["best_score"], base_score)
     search = RandomizedSearchCV(make_pipeline(X, estimator), space, n_iter=n_iter, cv=cv, scoring=scoring,
                                 random_state=seed, error_score=np.nan, refit=False)
     with warnings.catch_warnings():
@@ -508,7 +517,7 @@ def partial_dependence_figure(pipe, X: pd.DataFrame, feature: str, task: str) ->
 
 # ── Orquestación ─────────────────────────────────────────────────────────────
 def run_model_lab(df, target, models=None, folds=5, tune=True, n_iter=20, test_size=0.2, balance=False,
-                  drop=(), seed=42, progress=None, task=None) -> dict:
+                  drop=(), seed=42, progress=None, task=None, tuner="random") -> dict:
     """Pipeline completo: separa un test final, compara por CV, ajusta el mejor, evalúa y explica."""
     if not 3 <= folds <= 10:
         raise ValueError("folds must be between 3 and 10")
@@ -532,9 +541,11 @@ def run_model_lab(df, target, models=None, folds=5, tune=True, n_iter=20, test_s
     tuning = None
     unfitted = make_pipeline(X_train, pool[best_name][0])
     if tune and pool[best_name][1]:
-        tuned, params, tuned_score, base_score = tune_model(X_train, y_train, task, best_name, n_iter, folds, seed, balance)
-        tuning = {"params": params, "tuned_cv": tuned_score, "default_cv": base_score,
+        tuned, params, tuned_score, base_score = tune_model(X_train, y_train, task, best_name, n_iter, folds, seed, balance, method=tuner)
+        tuning = {"params": params, "tuned_cv": tuned_score, "default_cv": base_score, "method": tuner,
                   "improved": tuned_score > base_score + 1e-9}
+        if tuner == "bayes":
+            tuning["history"] = tune_model.last_history
         if tuning["improved"]:  # si el ajuste no mejora se conserva la configuración por defecto
             unfitted = tuned
     pipe = clone(unfitted).fit(X_train, y_train)

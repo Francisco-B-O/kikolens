@@ -8,7 +8,7 @@ from kikolens.dashboard import components as ui
 from kikolens import demo
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
-                                      features, gallery, health, home, impact, lab, linkage, models, monitoring, survival,
+                                      features, gallery, health, history, home, impact, lab, linkage, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
                                       neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
                                       story, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
@@ -22,11 +22,12 @@ GROUPS = {
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
                  "Compare data": compare, "Segments": clusters,
-                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact,
+                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Sequential tests": sequential, "Segment explorer": segment_explorer,
+                 "Recommendations": recommender,
                  "Why it changed": drivers},
-    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Regression": regression, "Neural network": neural, "Time series": timeseries,
+    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries,
                "Predict": predict, "Model health": health, "Monitoring": monitoring},
-    "Share": {"Panel": panel, "Report": report, "Export": export, "Project": project},
+    "Share": {"Panel": panel, "Report": report, "Export": export, "Synthetic data": synthetic, "Project": project},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
 GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}

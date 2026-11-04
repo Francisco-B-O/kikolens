@@ -1,6 +1,12 @@
+import os
+import tempfile
+
 import pandas as pd
 import numpy as np
 import pytest
+
+# Ninguna prueba debe escribir en el directorio de usuario (modelos, monitores, historial de experimentos).
+os.environ["KIKOLENS_HOME"] = tempfile.mkdtemp(prefix="kikolens_tests_")
 
 
 @pytest.fixture
