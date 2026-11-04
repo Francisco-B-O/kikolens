@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KikoLens - Private data analysis</title>
+<meta name="description" content="KikoLens is a local-first data analysis app: clean data, compare many models, forecast, monitor and share. Nothing leaves your machine.">
+<meta property="og:title" content="KikoLens">
+<meta property="og:description" content="Private, local-first data analysis. Nothing leaves your machine.">
+<meta property="og:image" content="img/lab-leaderboard-light.png">
+<style>
+:root{
+  --bg:#f9f7f2; --surface:#ffffff; --sunk:#f0ede4; --ink:#1c1a17; --muted:#6a655c;
+  --line:#ddd8cb; --accent:#9b3412; --accent-ink:#ffffff; --code:#1c1a17; --code-ink:#f3efe6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#181614; --surface:#201e1b; --sunk:#26231f; --ink:#f0ece3; --muted:#a39d91;
+    --line:#38342e; --accent:#e0805a; --accent-ink:#181614; --code:#0f0e0d; --code-ink:#f0ece3;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#181614; --surface:#201e1b; --sunk:#26231f; --ink:#f0ece3; --muted:#a39d91;
+  --line:#38342e; --accent:#e0805a; --accent-ink:#181614; --code:#0f0e0d; --code-ink:#f0ece3;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+.serif{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif}
+a{color:var(--accent)}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.top{border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.brand{font:700 22px Georgia,serif;text-decoration:none;color:var(--ink)}
+nav a{margin-left:22px;color:var(--muted);text-decoration:none;font-size:15px}
+nav a:hover{color:var(--ink)}
+.hero{padding:76px 0 44px}
+.hero h1{font:700 clamp(36px,6vw,60px)/1.1 Georgia,serif;margin:0 0 18px;max-width:18ch}
+.hero p.lead{font-size:20px;color:var(--muted);max-width:60ch;margin:0 0 30px}
+.btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 20px;border:1px solid var(--ink);border-radius:4px;text-decoration:none;color:var(--ink);font-weight:600;font-size:15px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.shot{margin:44px 0 0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.shot img{display:block;width:100%;height:auto}
+section{padding:60px 0;border-top:1px solid var(--line)}
+section h2{font:700 32px/1.2 Georgia,serif;margin:0 0 10px}
+section p.sub{color:var(--muted);margin:0 0 34px;max-width:62ch}
+.grid{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(3,1fr)}
+.grid>div{background:var(--bg);padding:22px}
+.grid h3{font:700 18px Georgia,serif;margin:0 0 8px}
+.grid p{margin:0;color:var(--muted);font-size:15px}
+.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+.gallery figure{margin:0}
+.gallery img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}
+.gallery figcaption{font-size:14px;color:var(--muted);margin-top:8px}
+.code{position:relative;background:var(--code);color:var(--code-ink);border-radius:6px;padding:18px 70px 18px 20px;font:14.5px/1.7 ui-monospace,Consolas,Menlo,monospace;overflow-x:auto;white-space:pre;margin:0 0 14px}
+.copy{position:absolute;top:10px;right:10px;background:transparent;border:1px solid #6a655c;color:var(--code-ink);border-radius:4px;font-size:12px;padding:4px 10px;cursor:pointer}
+.copy:hover{border-color:var(--code-ink)}
+.tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 14px;font:inherit;font-size:15px;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.pane[hidden]{display:none}
+.note{color:var(--muted);font-size:15px;margin:4px 0 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+ul.plain{margin:0;padding-left:20px;color:var(--muted)}
+ul.plain li{margin:6px 0}
+footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}.gallery{grid-template-columns:1fr}.two{grid-template-columns:1fr}
+  nav a{margin-left:14px}.hero{padding-top:44px}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <a class="brand" href="#">KikoLens</a>
+  <nav><a href="#features">Features</a><a href="#gallery">Screens</a><a href="#install">Install</a><a href="https://github.com/Francisco-B-O/kikolens">GitHub</a></nav>
+</div></header>
+
+<main>
+<div class="wrap">
+  <div class="hero">
+    <h1>Data analysis that stays on your machine.</h1>
+    <p class="lead">Load a dataset, fix its quality, compare a dozen models and see where they fail, forecast, watch a source over time and keep everything you built. No account, no upload. Language features run on a local model.</p>
+    <div class="btns">
+      <a class="btn primary" href="#install">Install</a>
+      <a class="btn" href="https://github.com/Francisco-B-O/kikolens">View the source</a>
+    </div>
+    <div class="shot">
+      <picture>
+        <source srcset="img/lab-leaderboard-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="img/lab-leaderboard-light.png" alt="The model lab leaderboard comparing twelve models">
+      </picture>
+    </div>
+  </div>
+</div>
+
+<section id="features"><div class="wrap">
+  <h2>What it does</h2>
+  <p class="sub">One dashboard and one command line, built around work you can repeat: every cleaning step is a recipe, every model a package, every result a file you can share.</p>
+  <div class="grid">
+    <div><h3>Quality and cleaning</h3><p>Score the data, find missing-data patterns, fill smartly, merge similar spellings, catch near-duplicates and enforce your own rules. Every fix is undoable.</p></div>
+    <div><h3>Model lab</h3><p>Up to twelve models cross-validated, the best one tuned, data leaks flagged, Shapley explanations and a map of where the model fails.</p></div>
+    <div><h3>Forecasting</h3><p>Five models tested on the past, an honest range from real errors, level and trend changes, special dates and one forecast per group.</p></div>
+    <div><h3>Monitoring</h3><p>Keep a baseline and check new data for drift, quality, rule violations and prediction shifts, with alerts and history.</p></div>
+    <div><h3>Experiments</h3><p>The right statistical test is chosen for you, with effect sizes. A/B tests with sample-size planning, and a screen of every column corrected for many comparisons.</p></div>
+    <div><h3>Text</h3><p>Key terms, themes, tone and a classifier for comments and reviews, plus an optional summary from a local model.</p></div>
+    <div><h3>Panel and reports</h3><p>Pin the numbers and charts you care about, with global filters, and export one self-contained page.</p></div>
+    <div><h3>Export and connections</h3><p>Excel workbooks, Parquet, databases, shared Google Sheets and cloud storage, both ways.</p></div>
+    <div><h3>Reproducible</h3><p>Save a whole project in one file, replay the recipe on new data or export it as a Python script.</p></div>
+  </div>
+</div></section>
+
+<section id="gallery"><div class="wrap">
+  <h2>Screens</h2>
+  <p class="sub">The dashboard follows your light or dark setting.</p>
+  <div class="gallery">
+    <figure><picture><source srcset="img/panel-dark.png" media="(prefers-color-scheme: dark)"><img src="img/panel-light.png" alt="Panel" loading="lazy"></picture><figcaption>Panel: pinned metrics and charts</figcaption></figure>
+    <figure><picture><source srcset="img/monitoring-dark.png" media="(prefers-color-scheme: dark)"><img src="img/monitoring-light.png" alt="Monitoring" loading="lazy"></picture><figcaption>Monitoring: drift, quality and alerts over time</figcaption></figure>
+    <figure><picture><source srcset="img/lab-errors-dark.png" media="(prefers-color-scheme: dark)"><img src="img/lab-errors-light.png" alt="Where a model fails" loading="lazy"></picture><figcaption>Model lab: where the model fails</figcaption></figure>
+    <figure><picture><source srcset="img/text-dark.png" media="(prefers-color-scheme: dark)"><img src="img/text-light.png" alt="Text analysis" loading="lazy"></picture><figcaption>Text: what people write about</figcaption></figure>
+    <figure><picture><source srcset="img/timeseries-dark.png" media="(prefers-color-scheme: dark)"><img src="img/timeseries-light.png" alt="Time series" loading="lazy"></picture><figcaption>Time series: tested forecasts</figcaption></figure>
+    <figure><picture><source srcset="img/experiments-dark.png" media="(prefers-color-scheme: dark)"><img src="img/experiments-light.png" alt="Statistical tests" loading="lazy"></picture><figcaption>Experiments: the right test, explained</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="install"><div class="wrap">
+  <h2>Install</h2>
+  <p class="sub">Requires Python 3.12 or newer.</p>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-pane="p-pip">pip</button>
+    <button role="tab" aria-selected="false" data-pane="p-pipx">pipx</button>
+    <button role="tab" aria-selected="false" data-pane="p-src">From source</button>
+    <button role="tab" aria-selected="false" data-pane="p-docker">Docker</button>
+  </div>
+  <div class="pane" id="p-pip">
+    <div class="code" data-copy>pip install "kikolens @ git+https://github.com/Francisco-B-O/kikolens.git"<button class="copy">Copy</button></div>
+    <p class="note">Add extras with <code>kikolens[cloud]</code>, <code>[postgres]</code>, <code>[mysql]</code> or <code>[all]</code>.</p>
+  </div>
+  <div class="pane" id="p-pipx" hidden>
+    <div class="code" data-copy>pipx install git+https://github.com/Francisco-B-O/kikolens.git<button class="copy">Copy</button></div>
+    <p class="note">Keeps KikoLens in its own environment and puts the <code>kikolens</code> command on your path.</p>
+  </div>
+  <div class="pane" id="p-src" hidden>
+    <div class="code" data-copy>git clone https://github.com/Francisco-B-O/kikolens.git
+cd kikolens
+pip install -e .<button class="copy">Copy</button></div>
+  </div>
+  <div class="pane" id="p-docker" hidden>
+    <div class="code" data-copy>git clone https://github.com/Francisco-B-O/kikolens.git
+cd kikolens
+docker compose up<button class="copy">Copy</button></div>
+    <p class="note">Then open <code>http://localhost:8501</code>.</p>
+  </div>
+
+  <h3 class="serif" style="margin:34px 0 10px">Then run it</h3>
+  <div class="code" data-copy>kikolens start<button class="copy">Copy</button></div>
+  <p class="note">Drop a CSV, Excel or Parquet file into the sidebar. Everything runs at <code>localhost</code>.</p>
+
+  <div class="two" style="margin-top:40px">
+    <div>
+      <h3 class="serif" style="margin:0 0 10px">From the terminal</h3>
+      <div class="code" data-copy>kikolens clean sales.csv --output clean.csv
+kikolens lab clean.csv revenue --register sales-model
+kikolens forecast clean.csv --compare
+kikolens monitor run sales-feed<button class="copy">Copy</button></div>
+    </div>
+    <div>
+      <h3 class="serif" style="margin:0 0 10px">Optional: local language model</h3>
+      <div class="code" data-copy>ollama pull llama3.2<button class="copy">Copy</button></div>
+      <p class="note">Install <a href="https://ollama.com/">Ollama</a> to ask questions in plain language and summarize text. Without it, everything else still works.</p>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Private by design</h2>
+  <div class="two">
+    <ul class="plain">
+      <li>Your data is read from and written to your own disk.</li>
+      <li>No telemetry, no account, no network calls unless you load a URL or a cloud source.</li>
+      <li>SQL you type is validated as read-only before it runs.</li>
+    </ul>
+    <ul class="plain">
+      <li>Formulas use a small safe interpreter, never <code>eval</code>.</li>
+      <li>Excel exports store text starting with <code>=</code> as text, not as a formula.</li>
+      <li>MIT licensed and open source.</li>
+    </ul>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <span>KikoLens - MIT license</span>
+  <span><a href="https://github.com/Francisco-B-O/kikolens">GitHub</a> &middot; <a href="https://github.com/Francisco-B-O/kikolens/blob/main/CHANGELOG.md">Changelog</a> &middot; <a href="https://github.com/Francisco-B-O/kikolens/issues">Issues</a></span>
+</div></footer>
+
+<script>
+document.querySelectorAll('.tabs button').forEach(function(b){
+  b.addEventListener('click',function(){
+    document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-selected',x===b)});
+    document.querySelectorAll('.pane').forEach(function(p){p.hidden=p.id!==b.dataset.pane});
+  });
+});
+document.querySelectorAll('[data-copy]').forEach(function(box){
+  var btn=box.querySelector('.copy');
+  btn.addEventListener('click',function(){
+    var text=Array.from(box.childNodes).filter(function(n){return n.nodeType===3}).map(function(n){return n.textContent}).join('');
+    var done=function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1500)};
+    if(navigator.clipboard){navigator.clipboard.writeText(text).then(done,function(){})}
+  });
+});
+</script>
+</body>
+</html>
