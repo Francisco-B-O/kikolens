@@ -15,6 +15,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens validate SOURCE [RULES.json] [--save FILE]` | Check the data against validation rules (or the rules suggested by the data). Exit code `2` when a rule is broken. |
 | `kikolens export SOURCE OUTPUT [--recipe FILE] [--workbook]` | Convert to `.csv`, `.tsv`, `.xlsx`, `.json`, `.ndjson`, `.parquet` or `.feather`. `--workbook` makes a formatted Excel workbook with quality, statistics and recipe sheets. |
 | `kikolens to-db SOURCE DATABASE TABLE [--if-exists fail\|append\|replace]` | Write the data into a table. It never overwrites unless you say `replace`. |
+| `kikolens autopilot SOURCE [--target COL] [--horizon N] [--thorough] [--clean FILE] [--recipe FILE] [--pdf FILE]` | A first full analysis: clean, find patterns, model a column and forecast dates. `--clean` and `--recipe` save the cleaned data and the steps; `--pdf` writes a report. |
 | `kikolens project FILE.kikolens [--output FILE]` | Show what a project contains (notes, recipe) and optionally export its processed data. |
 
 ## Models
@@ -32,8 +33,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens forecast ... --compare` | Compare five models with rolling-origin tests and forecast with the best one. |
 | `kikolens forecast ... --changes` | Also list level shifts and trend changes in the series. |
 | `kikolens forecast ... --by COLUMN` | One forecast per value of a column (the 20 with the most activity). |
+| `kikolens serve MODEL [--port 8000] [--host 127.0.0.1] [--token T]` | Serve a saved model as a small JSON API. `POST /predict` with `{"rows": [{...}]}` returns predictions and warnings; `GET /model` describes the inputs; `GET /health`. It listens only on this computer unless you give another `--host`, which requires `--token` (sent as `Authorization: Bearer T`). |
 
-`predict` and `lab` take `--save PATH` to write a model package to a file and `--register NAME` to keep it with your saved models. `lab` also takes `--folds`, `--no-tune`, `--models "Ridge,Random Forest"`, `--balance` and `--exclude col1,col2`.
+`predict` and `lab` take `--save PATH` to write a model package to a file and `--register NAME` to keep it with your saved models. `lab` also takes `--folds`, `--no-tune`, `--models "Ridge,Random Forest"`, `--balance` and `--exclude col1,col2`. Besides the default models, `--models` accepts `SVM`, `AdaBoost`, `Bagging`, `Voting Ensemble`, `Stacking Ensemble` and, with PyTorch installed, `PyTorch MLP`.
 
 ## Analysis
 
@@ -45,7 +47,14 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens drift REFERENCE CURRENT [--output FILE]` | Compare two datasets column by column. Exits with code `2` when the data changed a lot, so it works as an alarm in scripts and CI. |
 | `kikolens text SOURCE COLUMN [--group COL] [--ngram 1\|2\|3] [--themes K]` | Key terms of a free-text column, the terms that distinguish each group, and themes. |
 | `kikolens panel SOURCE [PANEL.json] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables; without a definition, one is suggested from the data. |
-| `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE]` | Build the HTML report. |
+| `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE] [--pdf FILE]` | Build the HTML report, and a PDF with `--pdf`. |
+| `kikolens survival SOURCE DURATION EVENT [--group COL]` | Kaplan-Meier medians and a log-rank test between groups. |
+| `kikolens cohorts SOURCE USER DATE [--period Day\|Week\|Month]` | Retention by cohort. |
+| `kikolens rfm SOURCE CUSTOMER DATE AMOUNT [--output FILE]` | Recency, frequency and spend segments. `--output` writes every customer with their segment. |
+| `kikolens basket SOURCE TRANSACTION ITEM [--support 0.02] [--confidence 0.3]` | Association rules: what is bought together. |
+| `kikolens impact SOURCE DATE VALUE --at YYYY-MM-DD [--control a,b] [--agg mean\|sum]` | Estimate the effect of a change against what would have happened. |
+| `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |
+| `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 
 ## Monitoring
 

@@ -18,7 +18,7 @@ def _controls(df: pd.DataFrame) -> dict:
     target = st.selectbox("Column to predict", df.columns, index=len(df.columns) - 1, key="lab_target")
     task = lab.detect_task(df[target].dropna()) if df[target].notna().any() else "classification"
     default_pool = list(lab.candidates(task))
-    pool = default_pool + list(lab.ADVANCED)
+    pool = default_pool + lab.advanced_names()
 
     left, right = st.columns(2, gap="large")
     with left:
