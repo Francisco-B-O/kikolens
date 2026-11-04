@@ -5,7 +5,7 @@ from urllib.parse import quote
 import streamlit as st
 
 from kikolens.dashboard import components as ui
-from kikolens.dashboard import state, theme
+from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, experiments, explore, export,
                                       features, impact, lab, models, monitoring, survival,
                                       neural, overview, patterns, predict, project, quality, panel, report, statistics,
@@ -49,7 +49,8 @@ def _database_uri() -> str | None:
 def _source_picker():
     """Devuelve (fuente, nombre, opciones de carga). El nombre cambia cuando cambia algo que obligue a recargar."""
     ui.label("Data", sidebar=True)
-    mode = st.sidebar.selectbox("Source", ["File", "URL", "Paste", "Database"], key="source_mode", label_visibility="collapsed")
+    mode = st.sidebar.selectbox("Source", ["File", "URL", "Paste", "Database"], key="source_mode", label_visibility="collapsed",
+                                format_func=i18n.t)
     if mode == "File":
         upload = st.sidebar.file_uploader("File", type=FILE_TYPES, key="upload", label_visibility="collapsed")
         options, name = {}, getattr(upload, "name", None)
@@ -107,12 +108,13 @@ def _load_if_new(source, name, options=None) -> bool:
 
 
 def _welcome() -> None:
+    t = i18n.t
+    steps = ("Choose a file, a link or a database in the sidebar.", "Check the quality of the data and fix what is wrong.",
+             "Explore it, train a model or a neural network, and export a report.")
     st.markdown(
-        """<div class="kl-empty"><h1>KikoLens</h1>
-        <p>Analyze, clean, model and forecast your data without it leaving this computer.</p>
-        <ol class="kl-steps"><li>Choose a file, a link or a database in the sidebar.</li>
-        <li>Check the quality of the data and fix what is wrong.</li>
-        <li>Explore it, train a model or a neural network, and export a report.</li></ol></div>""",
+        '<div class="kl-empty"><h1>KikoLens</h1>'
+        f'<p>{html.escape(t("Analyze, clean, model and forecast your data without it leaving this computer."))}</p>'
+        f'<ol class="kl-steps">{"".join(f"<li>{html.escape(t(step))}</li>" for step in steps)}</ol></div>',
         unsafe_allow_html=True,
     )
 
@@ -130,18 +132,27 @@ def _navigation() -> None:
         st.session_state["nav_group"] = "Data"
     ui.label("Area", sidebar=True)
     group = st.sidebar.radio("Area", list(GROUPS), key="nav_group", horizontal=True, label_visibility="collapsed",
-                             on_change=_go_to_group)
+                             on_change=_go_to_group, format_func=i18n.t)
     if st.session_state.get("nav") not in GROUPS[group]:
         st.session_state["nav"] = next(iter(GROUPS[group]))
     ui.label("Sections", sidebar=True)
-    st.sidebar.radio("Section", list(GROUPS[group]), key="nav", label_visibility="collapsed")
+    st.sidebar.radio("Section", list(GROUPS[group]), key="nav", label_visibility="collapsed", format_func=i18n.t)
+
+
+def _language_picker() -> None:
+    """Al final de la barra lateral. Se lee el valor de la ejecución anterior para traducir desde el principio."""
+    choice = st.sidebar.selectbox("Language / Idioma", list(i18n.LANGUAGES), key="lang_choice")
+    st.session_state["lang"] = i18n.LANGUAGES[choice]
 
 
 def main() -> None:
     state.init()
+    st.session_state["lang"] = i18n.LANGUAGES.get(st.session_state.get("lang_choice", "English"), "en")
+    i18n.install()
     theme.inject()
 
-    st.sidebar.markdown('<div class="kl-brand">KikoLens<small>Private data analysis</small></div>', unsafe_allow_html=True)
+    st.sidebar.markdown(f'<div class="kl-brand">KikoLens<small>{html.escape(i18n.t("Private data analysis"))}</small></div>',
+                        unsafe_allow_html=True)
     source, name, options = _source_picker()
     if _load_if_new(source, name, options):
         st.rerun()
@@ -149,6 +160,7 @@ def main() -> None:
     df = st.session_state.df
     if df is None:
         _welcome()
+        _language_picker()
         return
 
     _navigation()
@@ -159,6 +171,7 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
+    _language_picker()
     view = PAGES[page]
     ui.header(view.TITLE, view.SUBTITLE)
     view.render(df)

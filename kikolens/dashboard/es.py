@@ -1,0 +1,388 @@
+"""Traducción al español de los textos fijos del panel. La clave es el texto en inglés tal como aparece en el código.
+Los mensajes que se construyen con números o nombres de columnas (resultados de los análisis) siguen en inglés."""
+
+ES = {
+    # Áreas y secciones
+    "Data": "Datos", "Analysis": "Análisis", "Models": "Modelos", "Share": "Compartir",
+    "Area": "Área", "Sections": "Secciones", "Section": "Sección",
+    "Overview": "Resumen", "Autopilot": "Piloto automático", "Explore": "Explorar", "Quality and cleaning": "Calidad y limpieza",
+    "Transform": "Transformar", "Patterns": "Patrones", "Statistics": "Estadísticas", "Ask": "Preguntar",
+    "Experiments": "Experimentos", "Anomalies": "Anomalías", "Dimensions": "Dimensiones", "Compare data": "Comparar datos",
+    "Segments": "Segmentos", "Text": "Texto", "Survival": "Supervivencia", "Customers": "Clientes", "Impact": "Impacto",
+    "Model lab": "Laboratorio de modelos", "Feature ideas": "Ideas de variables", "Neural network": "Red neuronal",
+    "Time series": "Series temporales", "Predict": "Predecir", "Monitoring": "Monitorización",
+    "Panel": "Panel", "Report": "Informe", "Export": "Exportar", "Project": "Proyecto",
+    "Private data analysis": "Análisis de datos privado",
+    # Origen de datos
+    "File": "Archivo", "URL": "Enlace", "Paste": "Pegar", "Database": "Base de datos", "Source": "Origen",
+    "Engine": "Motor", "Path to the .db file": "Ruta del archivo .db", "Host": "Servidor", "Port": "Puerto", "User": "Usuario",
+    "Password": "Contraseña", "Sheet": "Hoja", "Table": "Tabla", "Loading...": "Cargando...",
+    "Link to a file or a shared Google Sheet": "Enlace a un archivo o a una hoja de Google compartida",
+    "CSV, JSON, Excel or Parquet. s3:// and gs:// work if s3fs or gcsfs is installed.":
+        "CSV, JSON, Excel o Parquet. s3:// y gs:// funcionan si s3fs o gcsfs están instalados.",
+    "Paste a table (with its header row)": "Pega una tabla (con su fila de encabezados)",
+    "Read-only query (optional)": "Consulta de solo lectura (opcional)", "Leave empty to pick a table.": "Déjalo vacío para elegir una tabla.",
+    "Analyze, clean, model and forecast your data without it leaving this computer.":
+        "Analiza, limpia, modela y prevé tus datos sin que salgan de este ordenador.",
+    "Choose a file, a link or a database in the sidebar.": "Elige un archivo, un enlace o una base de datos en la barra lateral.",
+    "Check the quality of the data and fix what is wrong.": "Comprueba la calidad de los datos y corrige lo que falle.",
+    "Explore it, train a model or a neural network, and export a report.":
+        "Explóralos, entrena un modelo o una red neuronal y exporta un informe.",
+    # Títulos y subtítulos de las secciones
+    "What is in this dataset, at a glance.": "Qué contiene este conjunto de datos, de un vistazo.",
+    "A first full analysis in one click: clean, find patterns, model a column and forecast dates.":
+        "Un primer análisis completo con un clic: limpia, busca patrones, modela una columna y prevé las fechas.",
+    "Build charts from any columns and filter what you see.": "Crea gráficos con cualquier columna y filtra lo que ves.",
+    "Find what is wrong with the data, fix it, and undo anything.": "Encuentra lo que falla en los datos, arréglalo y deshaz lo que quieras.",
+    "Filter, create columns, reshape and combine datasets. Every step is saved in the recipe.":
+        "Filtra, crea columnas, reorganiza y combina conjuntos de datos. Cada paso queda guardado en la receta.",
+    "Correlations, outliers and imbalances found automatically.": "Correlaciones, valores atípicos y desequilibrios encontrados automáticamente.",
+    "Distributions, summaries and relationships between variables.": "Distribuciones, resúmenes y relaciones entre variables.",
+    "Question the data in plain language, or write SQL yourself. Read-only.":
+        "Pregunta a los datos en lenguaje natural o escribe tú el SQL. Solo lectura.",
+    "Statistical tests explained in plain language, with effect sizes and A/B testing.":
+        "Pruebas estadísticas explicadas en lenguaje claro, con tamaños de efecto y pruebas A/B.",
+    "Find the rows that do not look like the rest, and see why.": "Encuentra las filas que no se parecen al resto y mira por qué.",
+    "Squeeze many columns into a picture, and find the ones that say the same thing.":
+        "Resume muchas columnas en un dibujo y encuentra las que dicen lo mismo.",
+    "See what changed between two datasets, two periods or the raw and the cleaned data.":
+        "Mira qué cambió entre dos conjuntos de datos, dos periodos o los datos en bruto y los limpios.",
+    "Group similar rows together with k-means.": "Agrupa filas parecidas con k-means.",
+    "Make sense of comments, reviews and free-text answers, all on this computer.":
+        "Entiende comentarios, reseñas y respuestas libres, todo en este ordenador.",
+    "How long until something happens (churn, failure, a purchase), counting cases that have not happened yet.":
+        "Cuánto tarda en ocurrir algo (una baja, una avería, una compra), contando los casos que aún no han ocurrido.",
+    "Retention by cohort, valuable customer segments, conversion funnels and what is bought together.":
+        "Retención por cohortes, segmentos de clientes valiosos, embudos de conversión y qué se compra junto.",
+    "Did a change (a campaign, a price, a new feature) move the numbers? Compare with what would have happened.":
+        "¿Un cambio (una campaña, un precio, una novedad) movió las cifras? Compáralo con lo que habría pasado.",
+    "Classical machine learning, chosen and explained automatically.": "Aprendizaje automático clásico, elegido y explicado automáticamente.",
+    "Compare many models fairly, tune the best one and check it for problems.":
+        "Compara muchos modelos con justicia, ajusta el mejor y busca problemas.",
+    "Let KikoLens try new columns (ratios, products, logs) and keep the ones that make a model better.":
+        "Deja que KikoLens pruebe columnas nuevas (cocientes, productos, logaritmos) y conserve las que mejoran un modelo.",
+    "Train a multilayer perceptron and watch how it learns.": "Entrena un perceptrón multicapa y mira cómo aprende.",
+    "Trend, seasonality and a forecast checked against a simple baseline.":
+        "Tendencia, estacionalidad y una previsión comprobada contra una referencia simple.",
+    "Use a trained model on new data, keep it for later and see what it expects.":
+        "Usa un modelo entrenado con datos nuevos, guárdalo para después y mira qué espera.",
+    "Watch a data source over time: drift, quality, predictions and alerts.":
+        "Vigila un origen de datos a lo largo del tiempo: deriva, calidad, predicciones y alertas.",
+    "Pin the numbers and charts you care about into one page you can export.":
+        "Fija las cifras y gráficos que te importan en una página que puedes exportar.",
+    "One self-contained page, or a PDF, that you can share.": "Una página autónoma, o un PDF, que puedes compartir.",
+    "Take the data and the results out: files, a formatted Excel workbook or a database table.":
+        "Saca los datos y los resultados: archivos, un libro de Excel con formato o una tabla de base de datos.",
+    "Save your work, repeat it on new data and export it as code.": "Guarda tu trabajo, repítelo con datos nuevos y expórtalo como código.",
+    # Autopilot
+    "Column to predict": "Columna a predecir", "Thorough (every model, tuned)": "A fondo (todos los modelos, ajustados)",
+    "Slower, and usually a little more accurate.": "Más lento y normalmente algo más preciso.",
+    "Periods to forecast": "Periodos a prever", "Analyze everything": "Analizar todo", "Quality before": "Calidad antes",
+    "Quality after": "Calidad después", "Findings": "Hallazgos", "Best model": "Mejor modelo", "Starting...": "Empezando...",
+    "#### What it did": "#### Qué hizo", "#### Findings": "#### Hallazgos", "#### Suggested next steps": "#### Próximos pasos sugeridos",
+    "Apply the cleaning to my data": "Aplicar la limpieza a mis datos",
+    "Adds these steps to the recipe, so you can undo them or replay them on new data.":
+        "Añade estos pasos a la receta, para poder deshacerlos o repetirlos con datos nuevos.",
+    "Open the Model lab for tuning, explanations and where the model fails.":
+        "Abre el laboratorio de modelos para ajustar, ver explicaciones y saber dónde falla el modelo.",
+    # Resumen y calidad
+    "Rows": "Filas", "Columns": "Columnas", "Quality score": "Puntuación de calidad", "Missing cells": "Celdas vacías", "Memory": "Memoria",
+    "#### Columns": "#### Columnas", "#### Preview": "#### Vista previa", "Rows to show": "Filas a mostrar",
+    "#### Issues found": "#### Problemas encontrados", "#### Fix": "#### Corregir", "#### Column profile": "#### Perfil de columnas",
+    "No issues detected.": "No se detectó ningún problema.", "No missing values.": "No hay valores vacíos.",
+    "Auto-clean": "Limpieza automática", "Trim text, drop duplicates, fix types, drop constant columns.":
+        "Quita espacios, elimina duplicados, corrige tipos y borra columnas constantes.",
+    "Undo": "Deshacer", "Reset": "Restablecer", "Apply": "Aplicar", "Action": "Acción", "Strategy": "Estrategia",
+    "Column": "Columna", "Columns to fill": "Columnas a rellenar", "Convert to": "Convertir a", "IQR factor": "Factor IQR",
+    "Duplicate rows": "Filas duplicadas", "Duplicates": "Duplicados", "Constant columns": "Columnas constantes",
+    "Mistyped columns": "Columnas con tipo erróneo", "Missing data patterns": "Patrones de datos vacíos",
+    "Near-duplicate rows": "Filas casi duplicadas", "Look for near-duplicates": "Buscar casi duplicados",
+    "Merge them": "Unificarlas", "No similar spellings found.": "No se encontraron escrituras parecidas.",
+    "Similarity": "Parecido", "No changes yet. The original file is never modified.": "Aún no hay cambios. El archivo original nunca se modifica.",
+    "**Columns that are empty together** (1 means always together)": "**Columnas que se vacían a la vez** (1 significa siempre juntas)",
+    "**Gaps that depend on another column**": "**Huecos que dependen de otra columna**",
+    "Add a column marking the filled cells": "Añadir una columna que marque las celdas rellenadas",
+    "knn: from the most similar rows. iterative: predicts each gap from the other columns. group: the median or most common value of each group.":
+        "knn: a partir de las filas más parecidas. iterative: predice cada hueco con las demás columnas. group: la mediana o el valor más común de cada grupo.",
+    "Validation rules": "Reglas de validación", "Rule": "Regla", "Add a rule": "Añadir una regla", "Add rule": "Añadir regla",
+    "No rules yet. Add one or let KikoLens suggest some.": "Aún no hay reglas. Añade una o deja que KikoLens sugiera algunas.",
+    "Suggest rules from this data": "Sugerir reglas a partir de estos datos", "See the rows that break a rule": "Ver las filas que incumplen una regla",
+    "No rows break this rule.": "Ninguna fila incumple esta regla.", "Download rules (JSON)": "Descargar reglas (JSON)",
+    "Open rules (JSON)": "Abrir reglas (JSON)", "Allowed values (comma separated)": "Valores permitidos (separados por comas)",
+    "Pattern (the whole value must match)": "Patrón (debe coincidir todo el valor)", "Minimum": "Mínimo", "Maximum": "Máximo",
+    "Minimum and maximum must be numbers.": "El mínimo y el máximo deben ser números.", "Must be": "Debe ser",
+    "Key column(s)": "Columna(s) clave", "Remove": "Quitar", "Remove selected rows": "Quitar las filas seleccionadas",
+    "Remove these rows": "Quitar estas filas", "Remove flagged rows": "Quitar las filas marcadas",
+    "Drops them from the working data. You can undo it.": "Las quita de los datos de trabajo. Puedes deshacerlo.",
+    "Removing rows from the dashboard is not stored in the recipe: review them first, they may be real events.":
+        "Quitar filas desde el panel no se guarda en la receta: revísalas antes, pueden ser casos reales.",
+    "Row B of each pair is offered. Check the pairs first.": "Se ofrece la fila B de cada pareja. Revisa antes las parejas.",
+    "Dates and columns that are different in every row (identifiers) are listed as info: they are expected to change.":
+        "Las fechas y las columnas distintas en cada fila (identificadores) aparecen como información: se espera que cambien.",
+    # Transformar
+    "Filter on columns": "Filtrar por columnas", "Sort by": "Ordenar por", "Order": "Orden", "Up": "Ascendente", "Down": "Descendente",
+    "Fraction of rows": "Fracción de filas", "Formula": "Fórmula", "New column name": "Nombre de la nueva columna",
+    "New column names (comma separated)": "Nombres de las nuevas columnas (separados por comas)",
+    "Use column names, numbers, + - * / // % **, comparisons and log, log1p, sqrt, abs, exp, round, floor, ceil, min, max. Put names with spaces between `backticks`.":
+        "Usa nombres de columna, números, + - * / // % **, comparaciones y log, log1p, sqrt, abs, exp, round, floor, ceil, min, max. Pon entre `acentos graves` los nombres con espacios.",
+    "Columns to combine": "Columnas a combinar", "Separator": "Separador", "Bins": "Intervalos", "Method": "Método",
+    "Lags (comma separated)": "Retardos (separados por comas)", "Lags must be whole numbers.": "Los retardos deben ser números enteros.",
+    "Window (rows)": "Ventana (filas)", "Group by": "Agrupar por", "Aggregate": "Agregar", "Columns to stack": "Columnas a apilar",
+    "Reshape": "Reorganizar", "Combine": "Combinar", "Add another dataset": "Añadir otro conjunto de datos",
+    "Upload a second file to join it to this one or append its rows.": "Sube un segundo archivo para unirlo a este o añadir sus filas.",
+    "Extra datasets": "Conjuntos de datos extra", "Replace this value": "Sustituir este valor", "New name": "Nuevo nombre",
+    "This replaces the data with one row per group. Undo brings it back.": "Esto sustituye los datos por una fila por grupo. Deshacer los recupera.",
+    "#### What was done": "#### Qué se hizo", "No steps yet. Cleaning and transformations you apply are recorded here.":
+        "Aún no hay pasos. Aquí se anotan la limpieza y las transformaciones que apliques.",
+    "Download recipe (JSON)": "Descargar receta (JSON)", "Download as Python script": "Descargar como script de Python",
+    "#### Repeat a recipe on another file": "#### Repetir una receta con otro archivo",
+    "Upload a recipe and a new file with the same columns; the cleaned result is ready to download.":
+        "Sube una receta y un archivo nuevo con las mismas columnas; el resultado limpio queda listo para descargar.",
+    "Apply recipe": "Aplicar receta", "File with the same columns": "Archivo con las mismas columnas", "Recipe (JSON)": "Receta (JSON)",
+    # Explorar y estadísticas
+    "Chart": "Gráfico", "Color": "Color", "Color the points by": "Colorear los puntos por", "X": "X", "Y": "Y",
+    "Horizontal": "Horizontal", "Vertical": "Vertical", "Horizontal / groups": "Horizontal / grupos", "Vertical / value": "Vertical / valor",
+    "Filters": "Filtros", "The filters leave no rows to plot.": "Los filtros no dejan filas para dibujar.",
+    "Distributions": "Distribuciones", "Correlation": "Correlación", "Strongest relationships": "Relaciones más fuertes",
+    "#### Strongest relationships": "#### Relaciones más fuertes", "Look at a column": "Mirar una columna", "Mean": "Media",
+    "Median": "Mediana", "Std. dev.": "Desv. típica", "Skewness": "Asimetría", "Min / Max": "Mín. / Máx.", "Mode": "Moda",
+    "No numeric columns.": "No hay columnas numéricas.", "At least two numeric columns are needed.": "Hacen falta al menos dos columnas numéricas.",
+    "No significant patterns or anomalies detected.": "No se detectaron patrones ni anomalías significativos.",
+    "Question": "Pregunta", "Your question": "Tu pregunta", "SQL": "SQL", "Query": "Consulta", "Plain language": "Lenguaje natural",
+    "Writing the query...": "Escribiendo la consulta...", "Generated SQL (editable)": "SQL generado (editable)",
+    "The table is called `df`.": "La tabla se llama `df`.", "Is Ollama running and the model downloaded?": "¿Está Ollama en marcha y el modelo descargado?",
+    # Experimentos
+    "Compare groups": "Comparar grupos", "Two categories": "Dos categorías", "A/B test": "Prueba A/B",
+    "A/B (Bayesian)": "A/B (bayesiano)", "What relates to...": "Qué se relaciona con...", "Find what relates to": "Buscar qué se relaciona con",
+    "Screen all columns": "Revisar todas las columnas", "Group column (two values)": "Columna de grupo (dos valores)",
+    "Control group": "Grupo de control", "Outcome": "Resultado", "Count as success": "Contar como éxito",
+    "Relative lift": "Mejora relativa", "p-value": "valor p", "#### How many rows will I need?": "#### ¿Cuántas filas necesitaré?",
+    "Plan an experiment before running it.": "Planifica un experimento antes de hacerlo.", "Measuring": "Midiendo",
+    "Current rate": "Tasa actual", "Smallest change worth detecting": "Menor cambio que merece detectarse",
+    "Smallest change worth detecting (absolute)": "Menor cambio que merece detectarse (absoluto)", "Power": "Potencia",
+    "Standard deviation": "Desviación típica", "Rows needed per group": "Filas necesarias por grupo",
+    "At the 5% significance level.": "Con un nivel de significación del 5 %.", "Significance level": "Nivel de significación",
+    "Compare this number": "Comparar esta cifra", "Compare using": "Comparar usando", "Between the groups of": "Entre los grupos de",
+    "Within group": "Dentro del grupo", "#### Components": "#### Componentes", "Pearson r": "r de Pearson", "Spearman rho": "rho de Spearman",
+    "First column": "Primera columna", "Second column": "Segunda columna", "First number": "Primer número", "Second number": "Segundo número",
+    "**Which groups differ**": "**Qué grupos difieren**",
+    "Instead of a p-value: how likely is it that the new version is better, and what would a wrong choice cost?":
+        "En lugar de un valor p: ¿qué probabilidad hay de que la versión nueva sea mejor y cuánto costaría equivocarse?",
+    "Chance the variant is better": "Probabilidad de que la variante sea mejor", "Likely difference": "Diferencia probable",
+    "Likely relative lift": "Mejora relativa probable", "Expected loss if wrong": "Pérdida esperada si me equivoco",
+    "An A/B test needs a column with exactly two groups and an outcome column.": "Una prueba A/B necesita una columna con exactamente dos grupos y una columna de resultado.",
+    "This needs a column with exactly two groups and an outcome column.": "Esto necesita una columna con exactamente dos grupos y una columna de resultado.",
+    # Anomalías, dimensiones, comparar, segmentos
+    "Find anomalies": "Buscar anomalías", "Share of rows to flag": "Porcentaje de filas a marcar", "Columns to examine": "Columnas a examinar",
+    "#### Flagged rows": "#### Filas marcadas", "Flagged rows": "Filas marcadas", "Anomaly detection needs numeric columns that vary.":
+        "La detección de anomalías necesita columnas numéricas que varíen.", "Row index": "Índice de fila",
+    "This is the most unusual slice, not a promise that those rows are errors.": "Es el tramo más inusual, no una garantía de que esas filas sean errores.",
+    "Main components (PCA)": "Componentes principales (PCA)", "Map of the rows (t-SNE)": "Mapa de las filas (t-SNE)",
+    "Redundant columns": "Columnas redundantes", "Loadings table": "Tabla de cargas", "First component": "Primer componente",
+    "For 90% of the variation": "Para el 90 % de la variación", "Perplexity": "Perplejidad", "Projecting...": "Proyectando...",
+    "Roughly how many neighbours each point considers. Try several values.": "Aproximadamente cuántos vecinos considera cada punto. Prueba varios valores.",
+    "Distances between far-apart clusters are not meaningful in t-SNE; look at which points stay together.":
+        "En t-SNE las distancias entre grupos lejanos no significan nada; mira qué puntos se quedan juntos.",
+    "This section needs at least two numeric columns that vary.": "Esta sección necesita al menos dos columnas numéricas que varíen.",
+    "At least two numeric, non-constant columns are needed.": "Hacen falta al menos dos columnas numéricas no constantes.",
+    "Values above 5 mean a column is largely explained by the others; above 10 it is nearly a duplicate. Consider dropping one of each redundant group before fitting a linear model.":
+        "Valores por encima de 5 indican que las otras columnas explican en gran parte esa columna; por encima de 10 es casi un duplicado. Considera quitar una de cada grupo redundante antes de ajustar un modelo lineal.",
+    "File to compare": "Archivo a comparar", "Dataset": "Conjunto de datos", "Stable": "Estable", "Moderate": "Moderado", "Drifted": "Con deriva",
+    "PSI below 0.1 is stable, 0.1 to 0.25 moderate, above 0.25 a real shift in the distribution.":
+        "Un PSI por debajo de 0,1 es estable, de 0,1 a 0,25 moderado y por encima de 0,25 un cambio real en la distribución.",
+    "Number of segments": "Número de segmentos", "Number of groups": "Número de grupos", "Help me choose the number of segments": "Ayúdame a elegir el número de segmentos",
+    "Segment": "Segmento", "Segmenting...": "Segmentando...", "#### Segment profiles (column means)": "#### Perfiles de los segmentos (medias de las columnas)",
+    # Texto
+    "Text column": "Columna de texto", "Terms": "Términos", "Themes": "Temas", "Classify": "Clasificar", "Tone": "Tono", "Summary": "Resumen",
+    "By group": "Por grupo", "Texts": "Textos", "Words per text": "Palabras por texto", "Texts used": "Textos usados",
+    "Look at": "Mirar", "Terms to show": "Términos a mostrar", "Group the texts": "Agrupar los textos",
+    "Find a word or phrase": "Buscar una palabra o frase", "Generate summary": "Generar resumen", "Train the classifier": "Entrenar el clasificador",
+    "Try a text": "Probar un texto", "Learn to predict": "Aprender a predecir", "Sequences": "Secuencias", "Number": "Número",
+    "No text columns.": "No hay columnas de texto.", "No text columns found. This section is for columns with sentences, such as comments or reviews.":
+        "No se encontraron columnas de texto. Esta sección es para columnas con frases, como comentarios o reseñas.",
+    "This column does not look like free text; results may not mean much.": "Esta columna no parece texto libre; los resultados pueden no significar mucho.",
+    "A simple word list, so it misses irony and negations. Use it to get a rough picture, not for decisions.":
+        "Es una lista simple de palabras, así que no entiende la ironía ni las negaciones. Úsala para una idea general, no para decidir.",
+    "Terms that appear much more in one group than in the rest (log odds).": "Términos que aparecen mucho más en un grupo que en el resto (log odds).",
+    "**Terms that point to each class**": "**Términos que apuntan a cada clase**",
+    "#### Terms that go with a higher or lower number": "#### Términos que acompañan a un número mayor o menor",
+    "This needs a column with a few categories to learn from (for example a rating or a topic).":
+        "Esto necesita una columna con pocas categorías de las que aprender (por ejemplo una valoración o un tema).",
+    "The classifier is no better than always guessing the most common class.": "El clasificador no mejora a adivinar siempre la clase más común.",
+    "Sends a sample of the texts to the language model running on this computer (Ollama).":
+        "Envía una muestra de los textos al modelo de lenguaje que corre en este ordenador (Ollama).",
+    "Waiting for the local model...": "Esperando al modelo local...", "Language": "Idioma",
+    "Values beyond about +2 or -2 are the combinations that appear much more or less than chance.":
+        "Los valores por encima de +2 o por debajo de -2 son las combinaciones que aparecen mucho más o mucho menos que por azar.",
+    "Text columns that look like dates are detected automatically. Convert a column in Quality and cleaning if yours was missed.":
+        "Las columnas de texto que parecen fechas se detectan automáticamente. Convierte una columna en Calidad y limpieza si no se detectó la tuya.",
+    # Supervivencia, clientes, impacto
+    "Time until the event or until last seen": "Tiempo hasta el suceso o hasta la última vez visto", "Did the event happen?": "¿Ocurrió el suceso?",
+    "1 or yes when it happened; 0 or no when the case is still waiting.": "1 o sí cuando ocurrió; 0 o no cuando el caso sigue esperando.",
+    "Compare groups by": "Comparar grupos por", "Draw the curves": "Dibujar las curvas", "Log-rank statistic": "Estadístico log-rank", "Groups": "Grupos",
+    "This needs a numeric duration column and a column saying whether the event happened (two values, such as 0/1).":
+        "Esto necesita una columna numérica de duración y otra que diga si ocurrió el suceso (dos valores, como 0/1).",
+    "Retention": "Retención", "Segments (RFM)": "Segmentos (RFM)", "Funnel": "Embudo", "Bought together": "Comprado junto",
+    "Customer or user": "Cliente o usuario", "Date of activity": "Fecha de actividad", "Cohort period": "Periodo de la cohorte",
+    "Customer": "Cliente", "Amount spent": "Importe gastado", "Every customer": "Todos los clientes", "Run": "Ejecutar",
+    "User": "Usuario", "Stage": "Etapa", "Stages in order, first to last": "Etapas en orden, de la primera a la última",
+    "Pick at least two stages, in the order users go through them.": "Elige al menos dos etapas, en el orden en que las recorren los usuarios.",
+    "Order or basket id": "Identificador de pedido o cesta", "Item": "Artículo", "Minimum share of baskets": "Porcentaje mínimo de cestas",
+    "Minimum confidence": "Confianza mínima", "Lift above 1 means the items are bought together more often than chance would give.":
+        "Un lift mayor que 1 significa que los artículos se compran juntos más a menudo de lo que daría el azar.",
+    "Retention needs a date column and a column that identifies the customer or user.": "La retención necesita una columna de fechas y otra que identifique al cliente o usuario.",
+    "RFM needs a customer column, a date and an amount.": "RFM necesita una columna de cliente, una fecha y un importe.",
+    "A funnel needs a column that names the stage each event reached (2 to 20 stages).": "Un embudo necesita una columna que nombre la etapa de cada suceso (de 2 a 20 etapas).",
+    "Before and after a date": "Antes y después de una fecha", "Treated and control groups": "Grupos tratado y de control",
+    "Measure": "Medida", "Date": "Fecha", "Combine rows of the same period by": "Combinar las filas del mismo periodo con",
+    "When did the change happen?": "¿Cuándo ocurrió el cambio?", "Estimate the effect": "Estimar el efecto", "Estimate": "Estimar",
+    "Control series (measures the change should not have touched)": "Series de control (medidas que el cambio no debería haber tocado)",
+    "Optional but much better: columns that move like the measure but were not affected.":
+        "Opcional pero mucho mejor: columnas que se mueven como la medida pero no se vieron afectadas.",
+    "Average effect": "Efecto medio", "Relative": "Relativo", "Total": "Total", "Treated or not": "Tratado o no", "Before or after": "Antes o después",
+    "This needs a date column and a numeric column to follow.": "Esto necesita una columna de fechas y otra numérica a seguir.",
+    "This needs a numeric outcome and two columns with two values each: treated or not, and before or after.":
+        "Esto necesita un resultado numérico y dos columnas de dos valores: tratado o no, y antes o después.",
+    # Modelos
+    "Train": "Entrenar", "Training...": "Entrenando...", "Models to compare": "Modelos a comparar", "Leave out columns": "Dejar fuera columnas",
+    "Use this for columns that would not be known when making a real prediction.": "Úsalo para columnas que no se conocerían al hacer una predicción real.",
+    "Cross-validation folds": "Particiones de validación cruzada", "Share kept aside for the final test": "Parte reservada para la prueba final",
+    "Tune the best model": "Ajustar el mejor modelo", "Tuning attempts": "Intentos de ajuste", "Balance classes": "Equilibrar las clases",
+    "Gives rarer classes more weight, for models that support it.": "Da más peso a las clases raras, en los modelos que lo permiten.",
+    "SVM, AdaBoost, Bagging and the voting and stacking ensembles are slower, so they start unticked.":
+        "SVM, AdaBoost, Bagging y los conjuntos por votación y apilado son más lentos, por eso empiezan sin marcar.",
+    "Each model is trained and scored this many times on different slices of the training data.":
+        "Cada modelo se entrena y se puntúa este número de veces con partes distintas de los datos de entrenamiento.",
+    "Run the lab": "Ejecutar el laboratorio", "Select at least one model.": "Elige al menos un modelo.", "Leaderboard": "Clasificación",
+    "Diagnostics": "Diagnóstico", "Explain": "Explicar", "Errors": "Errores", "Uncertainty": "Incertidumbre", "What would change it": "Qué lo cambiaría",
+    "Fairness": "Equidad", "Try it": "Pruébalo", "Predict": "Predecir", "Download leaderboard (CSV)": "Descargar clasificación (CSV)",
+    "Download model package": "Descargar paquete del modelo", "Possible data leak.": "Posible fuga de datos.", "Imbalanced classes.": "Clases desequilibradas.",
+    "Includes the expected columns and ranges. Use it in the Predict page or with: kikolens score":
+        "Incluye las columnas y rangos esperados. Úsalo en la página Predecir o con: kikolens score",
+    "#### Learning curve": "#### Curva de aprendizaje", "#### How one feature changes the prediction": "#### Cómo cambia la predicción una variable",
+    "#### Why this row got its prediction": "#### Por qué esta fila recibió su predicción",
+    "#### Contribution of each feature (Shapley)": "#### Contribución de cada variable (Shapley)",
+    "Fairer than the effect above when features are related: each feature gets its average contribution over many orders.":
+        "Más justo que el efecto anterior cuando las variables están relacionadas: cada variable recibe su contribución media en muchos órdenes.",
+    "Compute Shapley values for this row": "Calcular los valores de Shapley de esta fila", "Global importance from Shapley values": "Importancia global a partir de los valores de Shapley",
+    "Computing on a sample of rows...": "Calculando sobre una muestra de filas...", "Computing...": "Calculando...", "Test row": "Fila de prueba",
+    "Feature": "Variable", "#### Where the model fails": "#### Dónde falla el modelo", "The rows it gets most wrong": "Las filas en las que más se equivoca",
+    "#### Choose the decision threshold": "#### Elegir el umbral de decisión", "Positive class": "Clase positiva",
+    "Cost of a false alarm": "Coste de una falsa alarma", "Cost of a miss": "Coste de un fallo", "#### Compare with another model": "#### Comparar con otro modelo",
+    "Model A": "Modelo A", "Model B": "Modelo B", "Compare them row by row": "Compararlos fila a fila",
+    "How often should it be right": "Con qué frecuencia debe acertar",
+    "A range (or a short list of classes) that contains the truth about as often as you ask, whatever the model. Half of the test rows calibrate it and the other half check it.":
+        "Un rango (o una lista corta de clases) que contiene la verdad con la frecuencia que pidas, sea cual sea el modelo. La mitad de las filas de prueba lo calibra y la otra mitad lo comprueba.",
+    "A set with several classes means the model is not sure about that row.": "Un conjunto con varias clases significa que el modelo no está seguro de esa fila.",
+    "The test set is too small to calibrate. Run the lab with more rows or a larger test share.":
+        "El conjunto de prueba es demasiado pequeño para calibrar. Ejecuta el laboratorio con más filas o una parte de prueba mayor.",
+    "The smallest changes to one row that would make the model give a different answer. Useful to explain a decision and to see which levers exist.":
+        "Los cambios más pequeños en una fila que harían que el modelo diera otra respuesta. Sirve para explicar una decisión y ver qué palancas existen.",
+    "Things that cannot change": "Cosas que no pueden cambiar", "For example age or country.": "Por ejemplo la edad o el país.",
+    "Variables allowed to change together": "Variables que pueden cambiar a la vez", "Find what would change it": "Buscar qué lo cambiaría",
+    "Searching...": "Buscando...", "Compares how the model treats each group. It cannot say what is fair, but it shows differences you would need to justify.":
+        "Compara cómo trata el modelo a cada grupo. No puede decir qué es justo, pero muestra diferencias que tendrías que justificar.",
+    "Compare groups of": "Comparar grupos de", "Favourable result": "Resultado favorable",
+    "No column with 2 to 12 groups was found to compare.": "No se encontró ninguna columna con 2 a 12 grupos para comparar.",
+    "The fairness check compares how a classifier treats groups. Train a model that predicts a category.":
+        "La comprobación de equidad compara cómo trata un clasificador a los grupos. Entrena un modelo que prediga una categoría.",
+    "Most new columns to add": "Máximo de columnas nuevas a añadir", "Smallest improvement worth keeping": "Menor mejora que merece conservarse",
+    "Cross-validated R2, or F1 for a category.": "R2 con validación cruzada, o F1 para una categoría.", "Search": "Buscar",
+    "Trying ideas...": "Probando ideas...", "Add these columns to my data": "Añadir estas columnas a mis datos",
+    "They become steps in the recipe, so you can undo them or repeat them on new data.":
+        "Pasan a ser pasos de la receta, para poder deshacerlos o repetirlos con datos nuevos.",
+    "Train network": "Entrenar la red", "Hidden layers": "Capas ocultas", "Neurons per layer, separated by commas.": "Neuronas por capa, separadas por comas.",
+    "Activation": "Activación", "Optimizer": "Optimizador", "Learning rate": "Tasa de aprendizaje", "Maximum epochs": "Máximo de épocas",
+    "L2 regularization": "Regularización L2", "Stop early when validation stops improving": "Parar antes cuando la validación deje de mejorar",
+    "Share of data held out for testing": "Parte de los datos reservada para pruebas",
+    "relu is a good default; tanh and logistic are smoother; identity is linear.": "relu es una buena opción por defecto; tanh y logistic son más suaves; identity es lineal.",
+    "adam suits most data; lbfgs is fast on small data.": "adam sirve para la mayoría de datos; lbfgs es rápido con pocos datos.",
+    "#### Architecture": "#### Arquitectura", "#### Training": "#### Entrenamiento", "#### Compared with the classical model": "#### Comparada con el modelo clásico",
+    "#### Explain and simulate": "#### Explicar y simular", "What-if simulator": "Simulador de qué pasaría si", "Explain a row": "Explicar una fila",
+    "Explain this row": "Explicar esta fila", "Predict this row": "Predecir esta fila", "Predicted outcome": "Resultado previsto",
+    "No features available for simulation.": "No hay variables disponibles para simular.",
+    "No numeric features available to explain this row.": "No hay variables numéricas para explicar esta fila.",
+    "None of the most influential features can be simulated directly.": "Ninguna de las variables más influyentes se puede simular directamente.",
+    "Backtest error (MAE)": "Error en la prueba histórica (MAE)", "Accuracy": "Exactitud", "F1 (weighted)": "F1 (ponderado)",
+    "Always guessing the commonest": "Adivinar siempre lo más común", "cross-validated": "validación cruzada", "held-out test": "prueba reservada",
+    "Mean prediction": "Predicción media", "Prediction": "Predicción",
+    # Series temporales
+    "Date column": "Columna de fechas", "Value": "Valor", "Combine rows by": "Combinar filas con", "Period": "Periodo", "Periods": "Periodos",
+    "Trend": "Tendencia", "Seasonal period": "Periodo estacional", "Compare models": "Comparar modelos", "Changes in the series": "Cambios en la serie",
+    "One forecast per group": "Una previsión por grupo", "Forecast every group": "Prever cada grupo", "Forecast table": "Tabla de previsión",
+    "Forecasting each group...": "Prediciendo cada grupo...", "Testing the models...": "Probando los modelos...", "Sensitivity": "Sensibilidad",
+    "Lower finds more changes.": "Un valor menor encuentra más cambios.",
+    "Special dates (optional, comma separated, e.g. 2024-11-29, 2024-12-24)": "Fechas especiales (opcional, separadas por comas, p. ej. 2024-11-29, 2024-12-24)",
+    "Each model is trained on the past and tested on the stretch that follows, several times. The most accurate wins.":
+        "Cada modelo se entrena con el pasado y se prueba en el tramo siguiente, varias veces. Gana el más preciso.",
+    "The forecast beat a naive 'repeat the last value' baseline on held-out data.": "La previsión superó a la referencia ingenua de repetir el último valor con datos reservados.",
+    "The forecast did not beat a naive baseline on held-out data. Treat it with caution.": "La previsión no superó a la referencia ingenua con datos reservados. Tómala con cautela.",
+    "This usually means the series is noisy or has no stable pattern.": "Normalmente significa que la serie tiene mucho ruido o no sigue un patrón estable.",
+    "A date column and a numeric column are needed.": "Hacen falta una columna de fechas y una numérica.",
+    # Predecir
+    "Score with a saved model": "Puntuar con un modelo guardado", "Predict a file": "Predecir un archivo", "Predict one row": "Predecir una fila",
+    "Data to predict": "Datos a predecir", "New data": "Datos nuevos", "Or open a model file": "O abrir un archivo de modelo",
+    "Model file (.klmodel)": "Archivo de modelo (.klmodel)", "I trust this file": "Confío en este archivo",
+    "Only open model files you created or trust: they can run code when opened.": "Abre solo archivos de modelo que hayas creado o en los que confíes: pueden ejecutar código al abrirse.",
+    "Only load files you created yourself. A .pkl file can run code when opened.": "Carga solo archivos creados por ti. Un archivo .pkl puede ejecutar código al abrirse.",
+    "Upload a .pkl file": "Subir un archivo .pkl", "Upload a valid model first.": "Sube antes un modelo válido.",
+    "Train a model first (Models, Model lab or Neural network), save one, or open a model file.":
+        "Entrena antes un modelo (Modelos, Laboratorio de modelos o Red neuronal), guarda uno o abre un archivo de modelo.",
+    "Save to my models": "Guardar en mis modelos", "Saved models": "Modelos guardados", "#### Saved models": "#### Modelos guardados",
+    "Nothing saved yet.": "Aún no hay nada guardado.", "Delete a saved model": "Borrar un modelo guardado", "Delete": "Borrar",
+    "What this model expects": "Qué espera este modelo", "Download model card (Markdown)": "Descargar ficha del modelo (Markdown)",
+    "Download model (.pkl)": "Descargar modelo (.pkl)", "Open it later in this page or with: kikolens score data.csv model.klmodel":
+        "Ábrelo más tarde en esta página o con: kikolens score data.csv model.klmodel",
+    "Apply the cleaning steps used for training first": "Aplicar antes los pasos de limpieza usados al entrenar",
+    "Use this when the file is raw, as it was before any cleaning.": "Úsalo cuando el archivo esté en bruto, como estaba antes de limpiarlo.",
+    "The new data matches what the model saw in training.": "Los datos nuevos coinciden con lo que el modelo vio al entrenar.",
+    "Predicts": "Predice", "Trained on": "Entrenado con", "Algorithm": "Algoritmo", "Rows used": "Filas usadas", "Columns used": "Columnas usadas",
+    # Monitorización
+    "Create a monitor from the data open now": "Crear un monitor con los datos abiertos ahora", "Create monitor": "Crear monitor", "Monitor": "Monitor",
+    "Data to check now": "Datos a comprobar ahora", "Check the uploaded file": "Comprobar el archivo subido", "Check the watched source": "Comprobar el origen vigilado",
+    "Path of the file to watch (optional)": "Ruta del archivo a vigilar (opcional)", "Alert when drift reaches": "Avisar cuando la deriva llegue a",
+    "Drift alert at": "Alerta de deriva en", "Baseline quality": "Calidad de referencia", "Quality drop to alert (points)": "Caída de calidad para avisar (puntos)",
+    "Row count change to flag": "Cambio en el número de filas a señalar", "Schedule it": "Programarlo", "Delete this monitor": "Borrar este monitor",
+    "#### History": "#### Historial", "No alerts.": "Sin alertas.", "Nothing checked yet.": "Aún no se ha comprobado nada.",
+    "Run the check a few times to see how things move.": "Ejecuta la comprobación varias veces para ver cómo evolucionan las cosas.",
+    "A local file or link that gets updated. Leave empty to check files you upload here.": "Un archivo local o enlace que se actualiza. Déjalo vacío para comprobar archivos que subas aquí.",
+    "KikoLens does not install anything. Run these commands yourself to schedule the check.": "KikoLens no instala nada. Ejecuta tú estos comandos para programar la comprobación.",
+    "High": "Alta", "Medium": "Media", "Low / info": "Baja / info",
+    # Panel, informe, exportar, proyecto
+    "Panel title": "Título del panel", "Suggest a panel": "Sugerir un panel", "Open a saved panel definition": "Abrir una definición de panel guardada",
+    "Add a tile": "Añadir un bloque", "Add to panel": "Añadir al panel", "Replaces the tiles with a starting point built from your columns.":
+        "Sustituye los bloques por un punto de partida creado con tus columnas.", "The panel is empty. Add a tile above or press Suggest a panel.":
+        "El panel está vacío. Añade un bloque arriba o pulsa Sugerir un panel.", "Download as a web page": "Descargar como página web",
+    "Download panel definition (JSON)": "Descargar definición del panel (JSON)", "Panel definition (JSON)": "Definición del panel (JSON)",
+    "One self-contained page with the charts. The data is not included.": "Una página autónoma con los gráficos. No incluye los datos.",
+    "Title": "Título", "Type": "Tipo", "Calculation": "Cálculo", "Filter": "Filtro", "Operation": "Operación", "Condition": "Condición",
+    "Report title": "Título del informe", "Include models trained in this session": "Incluir los modelos entrenados en esta sesión",
+    "Add commentary from the local language model": "Añadir comentarios del modelo de lenguaje local", "Build report": "Generar informe",
+    "Building report...": "Generando informe...", "Download report (HTML)": "Descargar informe (HTML)", "Download report (PDF)": "Descargar informe (PDF)",
+    "Files": "Archivos", "Excel workbook": "Libro de Excel", "Format": "Formato", "Include the data": "Incluir los datos",
+    "Include model metrics": "Incluir las métricas del modelo", "Download the workbook": "Descargar el libro",
+    "One Excel file with a sheet for each part of your work. Text that starts with = is stored as text, never as a formula.":
+        "Un archivo de Excel con una hoja por cada parte de tu trabajo. El texto que empieza por = se guarda como texto, nunca como fórmula.",
+    "Write to the database": "Escribir en la base de datos", "Database address": "Dirección de la base de datos", "Table name": "Nombre de la tabla",
+    "If the table exists": "Si la tabla existe", "I understand that the existing table will be deleted": "Entiendo que la tabla existente se borrará",
+    "Writes the current data as a table. It never overwrites a table unless you choose to.": "Escribe los datos actuales como una tabla. Nunca sobrescribe una tabla salvo que lo elijas.",
+    "sqlite:///results.db  or  postgresql://user:password@host/db": "sqlite:///results.db  o  postgresql://usuario:contraseña@servidor/db",
+    "Rows used": "Filas usadas", "Steps recorded": "Pasos registrados", "Steps in recipe": "Pasos en la receta", "Notes": "Notas",
+    "What is this analysis about? What did you decide and why?": "¿De qué trata este análisis? ¿Qué decidiste y por qué?",
+    "Save and share": "Guardar y compartir", "Prepare project file": "Preparar el archivo de proyecto", "Download project": "Descargar proyecto",
+    "Open a project": "Abrir un proyecto", "Also load the models inside (only for files you trust)": "Cargar también los modelos que contiene (solo con archivos de confianza)",
+    "Models are stored with joblib. Only open projects with models if you trust their source.": "Los modelos se guardan con joblib. Abre proyectos con modelos solo si confías en su origen.",
+    "Models restored. Find them in Predict.": "Modelos restaurados. Los encontrarás en Predecir.", "Download as Python script": "Descargar como script de Python",
+    "Save": "Guardar", "Open": "Abrir", "Name": "Nombre", "Add": "Añadir", "Keep": "Conservar", "Take": "Tomar", "Values": "Valores",
+    "Start": "Empezar", "Summarize": "Resumir", "Parts": "Partes", "Statistic": "Estadístico", "Test": "Prueba",
+    "Preset": "Preajuste", "Features": "Variables", "Keep as identifiers": "Conservar como identificadores",
+    "Analyze": "Analizar", "Compare": "Comparar", "Between": "Entre", "With": "Con",
+    "Value (comma separated for 'in')": "Valor (separado por comas para 'in')", "Order by": "Ordenar por", "Order rows by": "Ordenar las filas por",
+    "This column": "Esta columna", "Highest": "Más alto", "Lowest": "Más bajo",
+    "How often": "Con qué frecuencia",
+    "This needs a column that splits the rows into groups (such as a region or a product).": "Esto necesita una columna que divida las filas en grupos (como una región o un producto).",
+    "This needs a numeric column and a column that splits the rows into groups.": "Esto necesita una columna numérica y otra que divida las filas en grupos.",
+    "This needs a numeric column to aggregate.": "Esto necesita una columna numérica que agregar.", "This needs a numeric column.": "Esto necesita una columna numérica.",
+    "This needs two columns with a small set of values.": "Esto necesita dos columnas con pocos valores distintos.",
+    "This needs two numeric columns.": "Esto necesita dos columnas numéricas.", "Group": "Grupo", "Cluster": "Grupo",
+}

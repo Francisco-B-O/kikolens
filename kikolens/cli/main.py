@@ -205,6 +205,32 @@ def score(
     console.print(f"{len(result):,} predictions of '{bundle['target']}' saved to {output}")
 
 
+@app.command()
+def serve(
+    model: str = typer.Argument(..., help="A model file (.klmodel) or the name of a saved model."),
+    port: int = typer.Option(8000, help="Port to listen on."),
+    host: str = typer.Option("127.0.0.1", help="Address to listen on. Anything but this computer needs --token."),
+    token: Optional[str] = typer.Option(None, help="Require this bearer token on every request."),
+):
+    """Serve a saved model as a small JSON API (POST /predict). Opens a model file, so use only models you trust."""
+    from kikolens.analyze.predict import load_bundle, resolve_model
+    from kikolens.serve import make_server
+
+    try:
+        bundle = load_bundle(resolve_model(model))
+        server = make_server(bundle, host, port, token)
+    except (ValueError, OSError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"Serving '{bundle['target']}' at http://{host}:{server.server_address[1]}  (POST /predict, GET /model). Ctrl+C to stop.")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
 models_app = typer.Typer(help="Manage the models you have saved.", no_args_is_help=False)
 app.add_typer(models_app, name="models")
 
