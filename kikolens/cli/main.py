@@ -345,25 +345,310 @@ def ab(
 
 
 @app.command()
+def panel(
+    source: str,
+    definition: Optional[Path] = typer.Argument(None, help="A panel definition (.json). Without it a panel is suggested from the data."),
+    output: Path = typer.Option(Path("kikolens_output/panel.html"), help="Where to write the web page."),
+    save: Optional[Path] = typer.Option(None, help="Also write the panel definition to this .json."),
+):
+    """Build a one-page panel (metrics, charts, tables) from a file."""
+    from kikolens.analyze.panel import Panel, panel_html, suggest_panel
+    from kikolens.analyze.quality import infer_types
+
+    df, _ = infer_types(_load(source))
+    try:
+        loaded = Panel.from_json(definition.read_text(encoding="utf-8")) if definition else suggest_panel(df, Path(str(source)).stem)
+        _, results = loaded.evaluate(df)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    for tile, _, error in results:
+        if error:
+            console.print(f"[yellow]{tile.get('title') or tile['type']}: {error}[/yellow]")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(panel_html(df, loaded), encoding="utf-8")
+    console.print(f"Panel with {len(loaded.tiles)} tile(s) written to [bold]{output}[/bold]")
+    if save:
+        save.parent.mkdir(parents=True, exist_ok=True)
+        save.write_text(loaded.to_json(), encoding="utf-8")
+        console.print(f"Definition saved to {save}")
+
+
+monitor_app = typer.Typer(help="Watch a data source over time and get alerts.", no_args_is_help=True)
+app.add_typer(monitor_app, name="monitor")
+
+
+def _monitor(name: str):
+    from kikolens.analyze.monitor import load_monitor
+
+    try:
+        return load_monitor(name)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@monitor_app.command("create")
+def monitor_create(
+    name: str,
+    source: str,
+    baseline: Optional[str] = typer.Option(None, help="Data to compare against; default is the source as it is now."),
+    recipe: Optional[Path] = typer.Option(None, help="Recipe (.json) to apply to every check."),
+    model: Optional[str] = typer.Option(None, help="Saved model to score each check with."),
+    webhook: Optional[str] = typer.Option(None, help="http(s) address to notify when a check raises an alert."),
+    rules: Optional[Path] = typer.Option(None, help="Validation rules (.json) to check on every run."),
+    drift_level: str = typer.Option("high", help="Alert when drift reaches this level: medium or high."),
+    quality_drop: float = typer.Option(10.0, help="Alert when the quality score falls by this many points."),
+):
+    """Create a monitor for SOURCE using a baseline."""
+    from kikolens.analyze.monitor import create_monitor
+    from kikolens.pipeline.recipe import Recipe
+
+    try:
+        loaded = Recipe.from_json(recipe.read_text(encoding="utf-8")) if recipe else None
+        mon = create_monitor(name, source, _load(baseline) if baseline else None, loaded, model,
+                             {"drift_level": drift_level, "quality_drop": quality_drop}, webhook,
+                             rules=rules.read_text(encoding="utf-8") if rules else None)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"Monitor [bold]{mon.name}[/bold] created. Baseline quality {mon.baseline_quality:.0f}/100. "
+                  f"Run it with: kikolens monitor run \"{mon.name}\"")
+
+
+@monitor_app.command("run")
+def monitor_run(name: str, source: Optional[str] = typer.Option(None, help="Check this file instead of the watched source.")):
+    """Run one check. Exit code 0 when fine, 2 on alerts, 1 when the data could not be read."""
+    from kikolens.analyze.monitor import run_check
+
+    mon = _monitor(name)
+    record = run_check(mon, _load(source) if source else None)
+    colour = {"ok": "green", "warning": "yellow", "alert": "red", "failed": "red"}[record["status"]]
+    console.print(f"[{colour}]{record['status'].upper()}[/{colour}] {mon.name}: {record.get('rows', 0):,} rows")
+    for a in record["alerts"]:
+        console.print(f"  [{a['severity']}] {a['message']}")
+    raise typer.Exit(code={"ok": 0, "warning": 0, "alert": 2, "failed": 1}[record["status"]])
+
+
+@monitor_app.command("list")
+def monitor_list():
+    """List the monitors."""
+    from kikolens.analyze.monitor import list_monitors
+
+    frame = list_monitors()
+    if frame.empty:
+        console.print("No monitors yet. Create one with: kikolens monitor create NAME SOURCE")
+        return
+    _print_frame(frame, "Monitors")
+
+
+@monitor_app.command("history")
+def monitor_history(name: str, last: int = typer.Option(20, help="How many checks to show.")):
+    """Show the past checks of a monitor."""
+    from kikolens.analyze.monitor import history
+
+    _monitor(name)
+    frame = history(name)
+    if frame.empty:
+        console.print("Nothing checked yet.")
+        return
+    _print_frame(frame.tail(last).round(3), f"History of {name}", max_rows=last)
+
+
+@monitor_app.command("watch")
+def monitor_watch(name: str, interval: float = typer.Option(300.0, help="Seconds between looks at the file.")):
+    """Keep running and check every time the watched file changes. Stop with Ctrl+C."""
+    from kikolens.analyze.monitor import watch
+
+    mon = _monitor(name)
+    console.print(f"Watching {mon.source} every {interval:g}s. Ctrl+C to stop.")
+
+    def show(record):
+        console.print(f"{record['time']} {record['status'].upper()} ({len(record['alerts'])} alert(s))")
+
+    try:
+        watch(mon, interval, on_run=show)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Stopped.[/yellow]")
+
+
+@monitor_app.command("schedule")
+def monitor_schedule(name: str, every: str = typer.Option("daily", help="hourly, daily or weekly.")):
+    """Print the cron and Windows commands that run the check on a schedule (nothing is installed)."""
+    from kikolens.analyze.monitor import schedule_hint
+
+    try:
+        console.print(schedule_hint(_monitor(name), every), markup=False)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@monitor_app.command("delete")
+def monitor_delete(name: str):
+    """Delete a monitor and its history."""
+    from kikolens.analyze.monitor import delete_monitor
+
+    _monitor(name)
+    delete_monitor(name)
+    console.print(f"Deleted {name}")
+
+
+@app.command()
+def text(
+    source: str,
+    column: str,
+    group: Optional[str] = typer.Option(None, help="Also show the terms that distinguish each group of this column."),
+    ngram: int = typer.Option(1, help="1 words, 2 pairs of words, 3 triples."),
+    themes: int = typer.Option(0, help="Group the texts into this many themes (0 skips it)."),
+    top: int = typer.Option(15, help="Terms to list."),
+):
+    """Key terms, groups and themes of a free-text column."""
+    from kikolens.analyze import text as tx
+
+    df = _load(source)
+    _check_target(df, column)
+    try:
+        info = tx.text_stats(df[column])
+        console.print(f"{info['rows'] - info['empty']:,} texts · {info['mean_words']:.1f} words each · language {info['language']}")
+        _print_frame(tx.top_terms(df[column], top, ngram).round(4), "Most common terms")
+        if group:
+            _check_target(df, group)
+            _print_frame(tx.terms_by_group(df, column, group).round(3), f"Terms that distinguish each {group}", max_rows=40)
+        if themes:
+            _print_frame(tx.cluster_texts(df[column], themes)["summary"].round(3), "Themes")
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def validate(
+    source: str,
+    rules: Optional[Path] = typer.Argument(None, help="A rules file (.json). Without it the rules suggested by the data are used."),
+    save: Optional[Path] = typer.Option(None, help="Write the rules used to this .json."),
+):
+    """Check a dataset against validation rules. Exit code 2 when a rule is broken."""
+    from kikolens.analyze.quality import infer_types
+    from kikolens.analyze.rules import RuleSet, describe, suggest_rules
+
+    df, _ = infer_types(_load(source))
+    try:
+        rule_set = RuleSet.from_json(rules.read_text(encoding="utf-8")) if rules else suggest_rules(df)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    result = rule_set.validate(df)
+    _print_frame(result["table"].drop(columns="id").round(2), "Rules", max_rows=100)
+    console.print(f"{result['summary']} {result['rows_with_problems']:,} row(s) have at least one problem.")
+    if save:
+        save.parent.mkdir(parents=True, exist_ok=True)
+        save.write_text(rule_set.to_json(), encoding="utf-8")
+        console.print(f"Rules saved to {save}")
+    if not result["passed"]:
+        raise typer.Exit(code=2)
+
+
+@app.command()
+def export(
+    source: str,
+    output: Path = typer.Argument(..., help="Where to write: .csv, .tsv, .xlsx, .json, .ndjson, .parquet or .feather."),
+    recipe: Optional[Path] = typer.Option(None, help="Apply this recipe before exporting."),
+    workbook: bool = typer.Option(False, "--workbook", help="For .xlsx: add quality, statistics and recipe sheets."),
+):
+    """Convert a dataset to another format, optionally as an analysis workbook."""
+    from kikolens.pipeline.recipe import Recipe
+
+    df = _load(source)
+    loaded = None
+    try:
+        if recipe:
+            loaded = Recipe.from_json(recipe.read_text(encoding="utf-8"))
+            df, _ = loaded.apply(df)
+        if workbook:
+            if output.suffix.lower() != ".xlsx":
+                raise ValueError("--workbook needs an output ending in .xlsx")
+            from kikolens.report.workbook import build_analysis_workbook
+
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(build_analysis_workbook(df, Path(str(source)).stem, loaded))
+        else:
+            from kikolens.utils.writers import write_frame
+
+            write_frame(df, output)
+    except (OSError, ValueError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"{len(df):,} rows × {len(df.columns)} columns written to [bold]{output}[/bold]")
+
+
+@app.command("to-db")
+def to_db(
+    source: str,
+    database: str = typer.Argument(..., help="Database address, e.g. sqlite:///results.db or postgresql://user:pass@host/db"),
+    table: str = typer.Argument(..., help="Table to write."),
+    if_exists: str = typer.Option("fail", help="fail (default), append or replace."),
+):
+    """Write a dataset into a database table. It never overwrites unless you say `--if-exists replace`."""
+    from kikolens.utils.writers import write_database
+
+    df = _load(source)
+    try:
+        n = write_database(df, database, table, if_exists)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"{n:,} rows written to table [bold]{table}[/bold].")
+
+
+@app.command()
 def forecast(
     source: str, date: str, value: str,
     horizon: int = typer.Option(12, help="Periods to forecast."),
     freq: Optional[str] = typer.Option(None, help="Resample frequency: h, D, W, MS, QS, YS."),
+    compare: bool = typer.Option(False, "--compare", help="Compare several models with rolling-origin tests and use the best."),
+    changes: bool = typer.Option(False, "--changes", help="List level shifts and trend changes in the series."),
+    by: Optional[str] = typer.Option(None, "--by", help="Forecast each value of this column separately."),
+    agg: str = typer.Option("mean", help="How to combine rows in the same period: mean, sum, median, min, max, count."),
 ):
     """Forecast a numeric column over time."""
+    from kikolens.analyze import forecasting as fx
     from kikolens.analyze import timeseries as ts
 
     df = _load(source)
     try:
-        series = ts.prepare_series(df, date, value, freq=freq)
-        result = ts.forecast(series, horizon=horizon)
+        if by:
+            _check_target(df, by)
+            res = fx.forecast_by_group(df, date, value, by, horizon, freq, agg)
+            _print_frame(res["summary"].round(3), f"Forecast by {by}", max_rows=40)
+            for _, row in res["skipped"].iterrows():
+                console.print(f"[yellow]Skipped {row['group']}: {row['reason']}[/yellow]")
+            _print_frame(res["forecast"].round(3), "Forecast", max_rows=40)
+            return
+        series = ts.prepare_series(df, date, value, freq=freq, agg=agg)
+        if compare:
+            best = fx.forecast_models(series, horizon)
+            console.print(best["summary"])
+            _print_frame(best["leaderboard"].round(4), "Model comparison")
+            _print_frame(best["forecast"].round(4).rename_axis("date").reset_index(), "Forecast")
+        else:
+            result = ts.forecast(series, horizon=horizon)
+            summary = ts.trend_summary(series)
+            console.print(f"Trend: [bold]{summary['direction']}[/bold]  ·  seasonal period: {result['period'] or 'none'}")
+            _print_frame(pd.DataFrame([result["metrics"]]), "Backtest")
+            _print_frame(result["forecast"].rename_axis("date").reset_index(), "Forecast")
+        if changes:
+            points = fx.detect_changepoints(series)
+            if points:
+                _print_frame(pd.DataFrame(points).round(3), "Changes in the series")
+            else:
+                console.print("No level shifts or trend changes found.")
     except ValueError as e:
         console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
-    summary = ts.trend_summary(series)
-    console.print(f"Trend: [bold]{summary['direction']}[/bold]  ·  seasonal period: {result['period'] or 'none'}")
-    _print_frame(pd.DataFrame([result["metrics"]]), "Backtest")
-    _print_frame(result["forecast"].rename_axis("date").reset_index(), "Forecast")
 
 
 @app.command()
@@ -393,14 +678,12 @@ def clean(
 
 
 def _write_frame(df: pd.DataFrame, output: Path) -> None:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    suffix = output.suffix.lower()
-    if suffix == ".parquet":
-        df.to_parquet(output, index=False)
-    elif suffix == ".csv":
-        df.to_csv(output, index=False)
-    else:
-        console.print("[red]Output must end in .csv or .parquet[/red]")
+    from kikolens.utils.writers import write_frame
+
+    try:
+        write_frame(df, output)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
 
 

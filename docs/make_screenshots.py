@@ -3,10 +3,13 @@
 Uso:  pip install -e ".[docs]" && python -m playwright install chromium   (o usa Edge/Chrome instalado)
       python docs/make_screenshots.py
 """
+import os
 import re
+import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.request
 from pathlib import Path
@@ -19,6 +22,7 @@ ROOT = Path(__file__).resolve().parent.parent
 CSV = ROOT / "examples" / "sales_demo.csv"
 NEW_CSV = ROOT / "examples" / "sales_new_quarter.csv"
 REGIONS_CSV = ROOT / "examples" / "regions.csv"
+REVIEWS_CSV = ROOT / "examples" / "reviews.csv"
 IMAGES = ROOT / "docs" / "images"
 PORT = 8598
 VIEW = {"width": 1360, "height": 860}
@@ -65,6 +69,41 @@ def make_companion_data(df: pd.DataFrame, rng) -> None:
     new["revenue"] = (1500 + 1.3 * days + 220 * np.sin(2 * np.pi * days / 7) + rng.normal(0, 70, n)).round(2)
     new["units"] = (new["revenue"] / 14 + rng.normal(0, 6, n)).round(0).clip(lower=1)
     new.to_csv(NEW_CSV, index=False)
+    make_reviews(rng)
+
+
+def make_reviews(rng) -> None:
+    """Comentarios de clientes con tres temas claros (envío, calidad, precio), una valoración y un canal."""
+    themes = {
+        "shipping": ["The delivery was late and the package arrived damaged", "Shipping took three weeks and nobody told me why",
+                     "The courier left the parcel outside and it got soaked", "Tracking said delivered but I never received it",
+                     "Slow delivery, the box was crushed when it finally came", "Customer service ignored my emails about the delay"],
+        "quality": ["The battery lasts all week and the screen is beautiful", "Great build quality, it feels solid and premium",
+                    "Excellent camera, the photos look amazing in low light", "The device is fast and the display is really sharp",
+                    "Very happy with the sound, much better than I expected", "Easy to set up and it works perfectly every day"],
+        "price": ["Too expensive for what it offers, I expected more", "The price went up again and discounts are rare",
+                  "Overpriced compared with similar models from other brands", "Not worth the cost, the accessories are extra",
+                  "Good product but the subscription fee is a rip off", "I asked for a refund because it was not worth that price"],
+    }
+    extras = {
+        "shipping": ["and support never answered", "so I had to chase the courier", "and the tracking page was wrong",
+                     "which ruined the gift", "and nobody apologised", "and the box was already open"],
+        "quality": ["and I would buy it again", "so my family wants one too", "and the battery is a bonus",
+                    "which surprised me", "and the setup took five minutes", "and it looks great on the desk"],
+        "price": ["so I am waiting for a sale", "and a competitor is cheaper", "which feels unfair",
+                  "and the extras add up", "so I returned it", "and the warranty costs more"],
+    }
+    openers = ["", "Honestly, ", "To be fair, ", "After two weeks: ", "Update: "]
+    base = {"shipping": 2, "quality": 5, "price": 3}
+    rows = []
+    for i in range(360):
+        theme = rng.choice(list(themes), p=[0.3, 0.45, 0.25])
+        rating = int(np.clip(base[theme] + rng.integers(-1, 2), 1, 5))
+        text = f"{rng.choice(openers)}{rng.choice(themes[theme])} {rng.choice(extras[theme])}"
+        rows.append({"review": text[0].upper() + text[1:], "rating": rating,
+                     "channel": str(rng.choice(["Online", "Store"], p=[0.7, 0.3])),
+                     "product": str(rng.choice(["Phone", "Tablet", "Watch"]))})
+    pd.DataFrame(rows).to_csv(REVIEWS_CSV, index=False)
 
 
 def port_in_use() -> bool:
@@ -86,7 +125,7 @@ def start_server() -> subprocess.Popen:
     proc = subprocess.Popen(
         [sys.executable, "-m", "kikolens.cli.main", "start", "--port", str(PORT)],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, cwd=ROOT,
-        env={**__import__("os").environ, "STREAMLIT_SERVER_HEADLESS": "true"})
+        env={**os.environ, "STREAMLIT_SERVER_HEADLESS": "true"})
     for _ in range(60):
         try:
             urllib.request.urlopen(f"http://localhost:{PORT}/_stcore/health", timeout=1)
@@ -95,6 +134,35 @@ def start_server() -> subprocess.Popen:
             time.sleep(1)
     stop_server(proc)
     raise RuntimeError("The dashboard did not start.")
+
+
+def prepare_workspace() -> Path:
+    """Una carpeta de datos propia, con un modelo guardado y un monitor con historial, para mostrarlos en las capturas."""
+    import warnings
+
+    warnings.simplefilter("ignore")
+    from kikolens.analyze import monitor as mt
+    from kikolens.analyze import predict as pr
+    from kikolens.analyze.modellab import run_model_lab
+    from kikolens.analyze.quality import auto_clean_steps
+    from kikolens.pipeline.recipe import Recipe
+    from kikolens.utils.loaders import load_data
+
+    home = Path(tempfile.mkdtemp(prefix="kikolens_shots_"))
+    os.environ["KIKOLENS_HOME"] = str(home)
+    raw = load_data(str(CSV))
+    clean, steps = auto_clean_steps(raw)
+    recipe = Recipe()
+    for op, params, message in steps:
+        recipe.add(op, params, message)
+    res = run_model_lab(clean, "revenue", models=["Ridge", "Random Forest", "Gradient Boosting"], folds=3, tune=False,
+                        drop=["units"])
+    pr.save_bundle(pr.build_bundle(res, clean, name="sales model"))
+    mon = mt.create_monitor("sales feed", "(uploaded)", raw, recipe, model="sales-model")
+    mt.run_check(mon, raw.sample(frac=0.8, random_state=1))
+    mt.run_check(mon, raw.sample(frac=0.9, random_state=2))
+    mt.run_check(mon, load_data(str(NEW_CSV)))
+    return home
 
 
 def pick(page, label: str, value: str) -> None:
@@ -163,6 +231,22 @@ def capture(browser, mode: str) -> None:
     time.sleep(2)
     page.screenshot(path=IMAGES / f"compare-{mode}.png")
 
+    go("Panel", "Share")
+    page.get_by_role("button", name="Suggest a panel").click()
+    time.sleep(6)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"panel-{mode}.png")
+
+    go("Export", "Share")
+    page.get_by_role("tab", name="Excel workbook").click()
+    time.sleep(2)
+    page.screenshot(path=IMAGES / f"export-{mode}.png")
+
+    go("Monitoring", "Models")
+    time.sleep(3)
+    scroll_main(page, 120)
+    page.screenshot(path=IMAGES / f"monitoring-{mode}.png")
+
     go("Neural network", "Models")
     pick(page, "Column to predict", "revenue")
     page.get_by_role("button", name="Train network").click()
@@ -190,11 +274,23 @@ def capture(browser, mode: str) -> None:
     scroll_main(page, 640)
     page.screenshot(path=IMAGES / f"lab-diagnostics-{mode}.png")
 
+    page.get_by_role("tab", name="Errors").click()
+    time.sleep(4)
+    scroll_main(page, 640)
+    page.screenshot(path=IMAGES / f"lab-errors-{mode}.png")
+
     go("Predict", "Models")
     page.get_by_role("button", name="Predict", exact=True).first.click()
     time.sleep(5)
     scroll_main(page, 220)
     page.screenshot(path=IMAGES / f"predict-{mode}.png")
+
+    page.set_input_files('input[type="file"]', str(REVIEWS_CSV))   # otro dataset, para la sección de texto
+    time.sleep(5)
+    go("Text", "Analysis")
+    time.sleep(3)
+    scroll_main(page, 120)
+    page.screenshot(path=IMAGES / f"text-{mode}.png")
     page.close()
 
 
@@ -203,6 +299,7 @@ def main() -> None:
     from kikolens.utils.loaders import load_data
 
     make_demo_data()
+    workspace = prepare_workspace()
     IMAGES.mkdir(parents=True, exist_ok=True)
     save_report(load_data(str(CSV)), ROOT / "examples" / "report.html", name="sales_demo", offline=False)
 
@@ -218,6 +315,7 @@ def main() -> None:
             browser.close()
     finally:
         stop_server(server)
+        shutil.rmtree(workspace, ignore_errors=True)
     print(f"Wrote {len(list(IMAGES.glob('*.png')))} images to {IMAGES}")
 
 

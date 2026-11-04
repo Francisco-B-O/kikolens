@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 
+from kikolens.analyze import explain as ex
 from kikolens.analyze import modellab as lab
 from kikolens.analyze.predict import EXTENSION, build_bundle
 from kikolens.dashboard import components as ui
@@ -104,6 +105,68 @@ def _explain(res: dict) -> None:
     ui.chart(fig, 340)
     st.caption(f"Prediction: {pipe.predict(row)[0]} · actual: {res['y_test'].iloc[int(idx)]}")
 
+    st.markdown("#### Contribution of each feature (Shapley)")
+    st.caption("Fairer than the effect above when features are related: each feature gets its average contribution over many orders.")
+    if len(res["features"]) > ex.MAX_FEATURES_SHAP:
+        ui.note(f"Shapley values need {ex.MAX_FEATURES_SHAP} features or fewer; leave some columns out and run the lab again.", "low")
+    elif st.button("Compute Shapley values for this row", key="lab_shap_row"):
+        with st.spinner("Computing..."):
+            st.session_state.lab_shap = (int(idx), ex.shapley_row(pipe, X, row, task))
+    shap = st.session_state.get("lab_shap")
+    if shap and shap[0] == int(idx):
+        ui.chart(ex.shapley_figure(shap[1]), 360)
+    if len(res["features"]) <= ex.MAX_FEATURES_SHAP and st.button("Global importance from Shapley values", key="lab_shap_all"):
+        with st.spinner("Computing on a sample of rows..."):
+            st.session_state.lab_shap_global = ex.shapley_global(pipe, X, X_test, task)
+    if st.session_state.get("lab_shap_global") is not None:
+        ui.table(st.session_state.lab_shap_global.round(4), hide_index=True)
+
+
+def _errors(res: dict) -> None:
+    pipe, X_test, y_test, task = res["pipeline"], res["X_test"], res["y_test"], res["task_type"]
+    st.markdown("#### Where the model fails")
+    try:
+        found = ex.error_analysis(pipe, X_test, y_test, task)
+    except ValueError as e:
+        ui.note(str(e), "low")
+        found = None
+    if found:
+        ui.note(found["summary"], "medium" if len(found["segments"]) else "ok")
+        if len(found["segments"]):
+            ui.table(found["segments"].round(3), hide_index=True)
+        with st.expander("The rows it gets most wrong"):
+            ui.table(found["worst"].round(3))
+
+    if task == "classification" and len(set(y_test)) == 2:
+        st.markdown("#### Choose the decision threshold")
+        classes = sorted(set(y_test.astype(str)))
+        c1, c2, c3 = st.columns(3)
+        positive = c1.selectbox("Positive class", classes, index=len(classes) - 1, key="lab_pos")
+        fp = c2.number_input("Cost of a false alarm", 0.0, 1e6, 1.0, key="lab_cfp")
+        fn = c3.number_input("Cost of a miss", 0.0, 1e6, 5.0, key="lab_cfn")
+        try:
+            out = ex.threshold_analysis(pipe, X_test, y_test, fp, fn, positive)
+        except ValueError as e:
+            ui.note(str(e), "high")
+        else:
+            st.markdown(out["summary"])
+            ui.chart(ex.threshold_figure(out), 340)
+
+    st.markdown("#### Compare with another model")
+    names = [n for n in res["leaderboard"]["model"] if res["leaderboard"].set_index("model").loc[n, "status"] == "ok"]
+    c1, c2 = st.columns(2)
+    a = c1.selectbox("Model A", names, index=names.index(res["best_model"]) if res["best_model"] in names else 0, key="lab_pa")
+    b = c2.selectbox("Model B", [n for n in names if n != a], key="lab_pb")
+    if st.button("Compare them row by row", key="lab_pair"):
+        try:
+            st.session_state.lab_pair_res = ex.compare_pair(res["X_train"], res["y_train"], X_test, y_test, task, a, b)
+        except ValueError as e:
+            ui.note(str(e), "high")
+    pair = st.session_state.get("lab_pair_res")
+    if pair and set(pair["scores"]) == {a, b}:
+        st.markdown(pair["verdict"])
+        ui.table(pair["disagreements"].round(3))
+
 
 def _predict(res: dict, df: pd.DataFrame) -> None:
     pipe, X = res["pipeline"], res["X_train"]
@@ -152,7 +215,7 @@ def render(df: pd.DataFrame) -> None:
     st.download_button("Download model package", buffer.getvalue(), f"{res['target']}_lab{EXTENSION}", key="lab_export",
                        help="Includes the expected columns and ranges. Use it in the Predict page or with: kikolens score")
 
-    tabs = st.tabs(["Leaderboard", "Diagnostics", "Explain", "Try it"])
+    tabs = st.tabs(["Leaderboard", "Diagnostics", "Explain", "Errors", "Try it"])
     with tabs[0]:
         _leaderboard(res)
     with tabs[1]:
@@ -160,4 +223,6 @@ def render(df: pd.DataFrame) -> None:
     with tabs[2]:
         _explain(res)
     with tabs[3]:
+        _errors(res)
+    with tabs[4]:
         _predict(res, df)

@@ -1,6 +1,6 @@
 # Workflows
 
-Four end-to-end paths that use the sample files in `examples/`. Each can be done in the dashboard or from the terminal.
+Six end-to-end paths that use the sample files in `examples/`. Each can be done in the dashboard or from the terminal.
 
 ## 1. From a messy file to a model you can reuse
 
@@ -55,10 +55,37 @@ What you will see:
 
 The steps in 1 and 2 are recorded in the recipe; the join needs `regions.csv` supplied again when you replay it (`kikolens apply data.csv recipe.json --output out.csv -d examples/regions.csv`).
 
+## 5. Watch a data feed
+
+**Goal:** be told when a data source that keeps being updated stops looking like the data a model was trained on.
+
+```bash
+kikolens clean examples/sales_demo.csv --output clean.csv --save-recipe recipe.json
+kikolens lab clean.csv revenue --exclude units --register sales-model
+kikolens validate clean.csv --save rules.json                       # rules suggested by the data
+kikolens monitor create sales-feed clean.csv --model sales-model --recipe recipe.json --rules rules.json
+kikolens monitor run sales-feed                                     # the baseline against itself: OK, exit code 0
+kikolens monitor run sales-feed --source examples/sales_new_quarter.csv
+```
+
+The last command prints `ALERT` and exits with code `2`. Its alerts: drift (5 of 6 columns), the drop from 540 rows to 120, the dates and prices outside what the model saw, and the average prediction up by 22%. The rules still pass: nothing in the new quarter is invalid, it is just different. In the dashboard, *Models* → *Monitoring* shows the same history as a chart and a table; *Schedule it* prints the commands to run the check every day or every hour, and `kikolens monitor watch sales-feed` keeps running and checks whenever the file changes. Add `--webhook https://...` if you want a short message posted when a check ends in an alert.
+
+## 6. Read customer comments
+
+**Goal:** find out what people complain about in `reviews.csv` and what goes with a low rating.
+
+1. *Analysis* → *Text* → **Terms**: the commonest words (`kikolens text examples/reviews.csv review`). Search a word, such as `courier`, to read it in context.
+2. **By group**, *Terms that go with a higher or lower number*, choosing `rating`: comments that mention `courier` or `tracking` average about 2 stars against about 3.6 for the rest, while `great` and `battery` average about 4.7. That is the shipping problem and the product strength, without anyone having tagged them.
+3. **Themes** with 3 groups gives the topics the comments fall into, each with its key terms and an example.
+4. **Classify**, predicting `rating`: it reaches about 44% against 30% for always guessing the commonest rating, which is a modest gain; the page tells you when a classifier is no better than guessing. Ratings are noisy (one star either way), so the text carries only part of the signal.
+5. **Summary** (needs Ollama) asks the local model for the main themes and complaints of a sample.
+
 ## Monitoring from a script or CI
 
 `kikolens drift` returns exit code `2` when the data changed a lot, `0` otherwise. A nightly job can compare the latest export with the data the model was trained on:
 
 ```bash
 kikolens drift training.csv latest.csv || echo "Data changed: review before trusting predictions"
+kikolens validate latest.csv rules.json || echo "Rules broken"
+kikolens monitor run sales-feed || echo "See kikolens monitor history sales-feed"
 ```

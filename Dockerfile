@@ -23,6 +23,10 @@ EXPOSE 8501
 ENV OLLAMA_HOST=http://ollama:11434
 ENV OLLAMA_MODEL=llama3.2
 
+# Comprobación de salud del servidor de Streamlit
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD python -c "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8501/_stcore/health', timeout=4).status == 200 else 1)"
+
 # Arrancar el dashboard directamente
 CMD ["streamlit", "run", "kikolens/dashboard/app.py", \
      "--server.address=0.0.0.0", \

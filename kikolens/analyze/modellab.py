@@ -490,7 +490,7 @@ def run_model_lab(df, target, models=None, folds=5, tune=True, n_iter=20, test_s
         "baseline_cv": float(board.loc[board["model"] == baseline_name, primary].iloc[0]) if baseline_name else None,
         "feature_importance": importance, "leakage": notes, "dropped": info["dropped"], "balance": balance_info,
         "converted": info["converted"], "plots": plots, "folds": folds, "n_train": len(X_train), "n_test": len(X_test),
-        "features": list(X.columns), "X_train": X_train, "X_test": X_test, "y_test": y_test,
+        "features": list(X.columns), "X_train": X_train, "X_test": X_test, "y_test": y_test, "y_train": y_train,
         "narrative": _narrative(task, target, best_name, metrics, primary, board, tuning, notes, balance_info, len(X_train), folds)
         + _converted_note(info["converted"]),
     }

@@ -6,10 +6,10 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state, theme
-from kikolens.dashboard.views import (anomalies, ask, clusters, compare, dimensions, experiments, explore, lab, models,
-                                      neural, overview, patterns, predict, project, quality, report, statistics,
-                                      timeseries, transform)
-from kikolens.utils.loaders import load_data
+from kikolens.dashboard.views import (anomalies, ask, clusters, compare, dimensions, experiments, explore, export, lab, models, monitoring,
+                                      neural, overview, patterns, predict, project, quality, panel, report, statistics,
+                                      text, timeseries, transform)
+from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
 st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial_sidebar_state="expanded")
 
@@ -18,10 +18,11 @@ GROUPS = {
     "Data": {"Overview": overview, "Explore": explore, "Quality and cleaning": quality, "Transform": transform,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions,
-                 "Compare data": compare, "Segments": clusters},
+                 "Compare data": compare, "Segments": clusters,
+                 "Text": text},
     "Models": {"Models": models, "Model lab": lab, "Neural network": neural, "Time series": timeseries,
-               "Predict": predict},
-    "Share": {"Report": report, "Project": project},
+               "Predict": predict, "Monitoring": monitoring},
+    "Share": {"Panel": panel, "Report": report, "Export": export, "Project": project},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
 GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}
@@ -45,25 +46,58 @@ def _database_uri() -> str | None:
 
 
 def _source_picker():
+    """Devuelve (fuente, nombre, opciones de carga). El nombre cambia cuando cambia algo que obligue a recargar."""
     ui.label("Data", sidebar=True)
-    mode = st.sidebar.selectbox("Source", ["File", "URL", "Database"], key="source_mode", label_visibility="collapsed")
+    mode = st.sidebar.selectbox("Source", ["File", "URL", "Paste", "Database"], key="source_mode", label_visibility="collapsed")
     if mode == "File":
         upload = st.sidebar.file_uploader("File", type=FILE_TYPES, key="upload", label_visibility="collapsed")
-        return upload, getattr(upload, "name", None)
+        options, name = {}, getattr(upload, "name", None)
+        if upload is not None and name.lower().endswith((".xlsx", ".xls")):
+            try:
+                sheets = list_sheets(upload)
+            except ValueError as e:
+                st.sidebar.error(str(e))
+                return None, None, {}
+            if len(sheets) > 1:
+                sheet = st.sidebar.selectbox("Sheet", sheets, key="xl_sheet")
+                options, name = {"sheet": sheet}, f"{name} [{sheet}]"
+        return upload, name, options
     if mode == "URL":
-        url = st.sidebar.text_input("Link to a CSV, JSON, Excel or Parquet file", key="source_url").strip()
-        return (url or None), (url.rsplit("/", 1)[-1] if url else None)
+        url = st.sidebar.text_input("Link to a file or a shared Google Sheet", key="source_url",
+                                    help="CSV, JSON, Excel or Parquet. s3:// and gs:// work if s3fs or gcsfs is installed.").strip()
+        return (url or None), (url.rsplit("/", 1)[-1][:60] or "link" if url else None), {}
+    if mode == "Paste":
+        text = st.sidebar.text_area("Paste a table (with its header row)", key="paste_text", height=140)
+        return (("paste", text) if text.strip() else None), (f"pasted data ({len(text)} characters)" if text.strip() else None), {}
     uri = _database_uri()
-    return uri, ("database" if uri else None)
+    options, name = {}, ("database" if uri else None)
+    if uri:
+        query = st.sidebar.text_area("Read-only query (optional)", key="db_query", height=70,
+                                     help="Leave empty to pick a table.").strip()
+        if query:
+            options, name = {"query": query}, f"database query {abs(hash(query)) % 10**6}"
+        else:
+            try:
+                tables = list_tables(uri)
+            except Exception as e:
+                st.sidebar.error(str(e))
+                return None, None, {}
+            if tables:
+                table = st.sidebar.selectbox("Table", tables, key="db_table")
+                options, name = {"table": table}, f"database: {table}"
+    return uri, name, options
 
 
-def _load_if_new(source, name) -> bool:
+def _load_if_new(source, name, options=None) -> bool:
     """Carga la fuente cuando cambia. Devuelve True si hay que redibujar."""
     if source is None or st.session_state.filename == name:
         return False
     try:
         with st.spinner("Loading..."):
-            df = load_data(source)
+            if isinstance(source, tuple) and source[0] == "paste":
+                df = load_text(source[1])
+            else:
+                df = load_data(source, **(options or {}))
     except Exception as e:
         st.sidebar.error(str(e))
         return False
@@ -107,8 +141,8 @@ def main() -> None:
     theme.inject()
 
     st.sidebar.markdown('<div class="kl-brand">KikoLens<small>Private data analysis</small></div>', unsafe_allow_html=True)
-    source, name = _source_picker()
-    if _load_if_new(source, name):
+    source, name, options = _source_picker()
+    if _load_if_new(source, name, options):
         st.rerun()
 
     df = st.session_state.df

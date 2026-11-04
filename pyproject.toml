@@ -4,14 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kikolens"
-version = "1.2.0"
+version = "1.3.0"
 description = "Private, local-first data analysis with AutoML, neural networks and local LLMs"
 readme = "README.md"
+license = { text = "MIT" }
+keywords = ["data analysis", "machine learning", "streamlit", "local-first", "forecasting", "data quality", "ollama"]
 authors = [
   { name = "Francisco-B-O", email = "balonero18@gmail.com" },
 ]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Information Analysis",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
@@ -35,10 +41,20 @@ dependencies = [
     "tabulate>=0.9.0"
 ]
 
+[project.urls]
+Homepage = "https://github.com/Francisco-B-O/kikolens"
+Repository = "https://github.com/Francisco-B-O/kikolens"
+Issues = "https://github.com/Francisco-B-O/kikolens/issues"
+Changelog = "https://github.com/Francisco-B-O/kikolens/blob/main/CHANGELOG.md"
+
 [project.scripts]
 kikolens = "kikolens.cli.main:cli"
 
 [project.optional-dependencies]
+cloud = ["fsspec>=2023.1.0", "s3fs", "gcsfs"]
+postgres = ["psycopg2-binary"]
+mysql = ["pymysql", "cryptography"]
+all = ["fsspec>=2023.1.0", "s3fs", "gcsfs", "psycopg2-binary", "pymysql", "cryptography"]
 dev = [
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",

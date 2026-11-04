@@ -12,7 +12,7 @@ from kikolens.pipeline.project import load_project
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
-         "Experiments", "Anomalies", "Dimensions", "Compare data"]
+         "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
 
 @pytest.fixture(scope="module")
@@ -185,6 +185,12 @@ def test_model_lab_runs_end_to_end(data):
     at.button(key="lab_predict").click().run()
     assert_clean(at)
     assert any(m.label == "Prediction" for m in at.metric)
+    at.button(key="lab_shap_row").click().run()
+    assert_clean(at)
+    assert at.session_state["lab_shap"][1]["table"].shape[0] >= 2
+    at.button(key="lab_pair").click().run()
+    assert_clean(at)
+    assert "lab_pair_res" in at.session_state
 
 
 def test_model_lab_reports_bad_target(data):
@@ -291,3 +297,52 @@ def test_sidebar_groups_follow_the_open_section(data):
     assert at.session_state["nav_group"] == "Analysis"
     at = open_page(data, "Project")
     assert at.session_state["nav_group"] == "Share"
+
+
+def test_panel_suggest_add_and_export(data):
+    at = open_page(data, "Panel")
+    assert_clean(at)
+    at.button(key="pn_suggest").click().run()
+    assert_clean(at)
+    assert len(at.session_state["panel"].tiles) >= 4
+    at.button(key="pn_add").click().run()
+    assert_clean(at)
+
+
+def test_quality_smart_fill_and_extra_checks(data):
+    at = open_page(data, "Quality and cleaning")
+    assert_clean(at)
+    at.selectbox(key="q_op").set_value("Smart fill (KNN, iterative, by group)").run()
+    at.button(key="q_apply_sf").click().run()
+    assert_clean(at)
+    assert at.session_state["df"]["z"].isna().sum() == 0
+    assert [s.op for s in at.session_state["recipe"].steps] == ["impute_advanced"]
+    at.button(key="q_rl_suggest").click().run()
+    assert_clean(at)
+    assert len(at.session_state["rules"].rules) > 0
+
+
+def test_time_series_compare_models_and_groups(data):
+    at = open_page(data, "Time series")
+    at.selectbox(key="ts_value").set_value("y")
+    at.button(key="ts_go").click().run()
+    assert_clean(at)
+    at.button(key="ts_compare").click().run()
+    assert_clean(at)
+    assert at.session_state["ts_models"][1]["best"]
+    at.button(key="ts_by_group").click().run()
+    assert_clean(at)
+
+
+def test_pasting_a_table_loads_it():
+    at = AppTest.from_file(APP, default_timeout=30).run()
+    at.selectbox(key="source_mode").set_value("Paste").run()
+    at.text_area(key="paste_text").set_value("a,b\n1,2\n3,4\n5,6").run()
+    assert_clean(at)
+    assert at.session_state["df"].shape == (3, 2)
+
+
+def test_export_page_offers_every_route(data):
+    at = open_page(data, "Export")
+    assert_clean(at)
+    assert [t.label for t in at.tabs] == ["Files", "Excel workbook", "Database"]

@@ -50,6 +50,16 @@ Rules of thumb: start with the *Medium* preset; if training and validation curve
 
 This is a deliberately simple model. It handles trend and one seasonal cycle well; it does not know about holidays, promotions or sudden changes.
 
+## Forecasting models
+Five models share one interface, and each can be tested on its own:
+
+* **Naive** repeats the last value; **seasonal naive** repeats the last full cycle.
+* **Trend + seasonality** is the linear trend plus Fourier terms described above.
+* **Holt-Winters** is the additive version with a damped trend: a level, a trend and one seasonal profile, updated at each step; its smoothing parameters are found by minimizing the one-step squared error. With fewer than two cycles of data it drops the seasonality.
+* **Lag boosting** removes a linear trend, then fits a gradient-boosting model on the previous values (1, 2, 3, 7, 14 and one season back), a rolling mean and deviation, the weekday, month, day of year and a flag for the special dates you give. It forecasts recursively, feeding its own predictions back as lags.
+
+**Choosing.** The series is cut at several points (up to three); at each, every model is trained on what came before and forecasts the next stretch (as long as the horizon, up to a quarter of the series). The model with the lowest mean absolute error wins, and the table also gives RMSE and MASE (error relative to repeating the previous value). The final model is refitted on all the data. **Range.** The interval is not a formula: it is the 5th to 95th percentile of the real errors the winning model made at each step ahead in those tests, and it cannot narrow as the horizon grows. With few test points it borrows from all steps. **Changes.** The series is split recursively where fitting two straight lines instead of one reduces the squared error by more than a penalty proportional to the noise (estimated from second differences) times the logarithm of the length, so noise alone produces no change points. A change is a *level shift* when the jump exceeds three times the noise and a *trend change* otherwise.
+
 ## Statistical tests
 Every test returns the p-value, an effect size and a sentence. A small p-value says a difference is unlikely to be chance; the effect size says whether it is big enough to matter, and with lots of rows even trivial differences become "significant".
 
@@ -68,6 +78,13 @@ Normality is checked with Shapiro-Wilk on small groups; equal spread with Levene
 
 **Screening many columns.** Testing 50 columns at the 5% level produces about two false hits by chance. The screen therefore reports Benjamini-Hochberg adjusted p-values and marks a column as related only if the adjusted value is below the threshold. Each column is compared with the target using the test that fits the two types (Spearman, Kruskal-Wallis or chi-squared), and numbers with 10 or fewer distinct values are treated as categories.
 
+## Missing data, spellings and rules
+* **Are gaps random?** For each column with gaps, KikoLens tests whether the other columns differ between the rows where it is empty and the rows where it is present (Mann-Whitney for numbers, chi-squared for categories). A gap is called dependent when the best p-value is below 0.001 and the effect is at least 0.2.
+* **Smart fill.** KNN uses the 5 nearest rows (distance-weighted) on standardized numeric columns. Iterative uses Bayesian ridge regression, cycling over the columns. Both work on numbers only and round columns that hold whole numbers. By group takes the median (or most common value) within each group, falling back to the overall value.
+* **Similar spellings.** Values are reduced to a key (lowercase, without accents or punctuation); keys are then merged when their similarity ratio is at least the threshold (0.85 by default), and every variant becomes the most frequent form. A change of two letters in a short word is below 0.85: lower the threshold to catch it.
+* **Near-duplicates.** Each row becomes text; rows are compared with character 2 to 4-grams (TF-IDF, cosine similarity), looking at each row's nearest neighbours. Identical rows are excluded (they are ordinary duplicates).
+* **Rules** are evaluated per row. Empty values break only the *not empty* rule. A pattern must match the whole value.
+
 ## Anomalies
 Isolation Forest, Local Outlier Factor and Mahalanobis distance first scale the numeric columns with the median and interquartile range; empty values are filled with the median. The share you choose is the share of rows flagged (the most unusual ones).
 
@@ -78,17 +95,29 @@ Isolation Forest, Local Outlier Factor and Mahalanobis distance first scale the 
 
 For every flagged row, the explanation lists up to three columns whose robust z-score is at least 2.
 
+## Text
+Words are lowercase sequences of letters (at least two), with stop words removed (English and Spanish; the language is detected by counting stop words). *Terms* counts in how many texts each term appears, next to its mean TF-IDF weight. *By group* ranks terms by the smoothed log odds of being in the group versus elsewhere. *Themes* uses TF-IDF vectors (reduced with a truncated SVD only when there are more than 400 terms), normalizes them and runs k-means; each theme shows its centroid's top terms and the text closest to its centre. The *classifier* is TF-IDF on words and pairs of words with a class-balanced logistic regression, scored with cross-validated predictions against the baseline of always predicting the commonest class. *Tone* counts words from a small positive and negative list. The *summary* sends a random sample of at most 40 texts, each cut to 400 characters, to the model running in Ollama.
+
 ## Dimensions
 **PCA** runs on standardized columns; components for 90% is the smallest number whose cumulative explained variation reaches 90%. **t-SNE** keeps neighbours close but distorts global distances, so use it to spot groups, not to measure separation. The **VIF** of a column is `1 / (1 - R²)` of regressing it on the others, computed from the inverse of the correlation matrix.
 
 ## Comparing datasets
 Numeric columns are cut at the deciles of the reference; categorical ones use their categories. The **PSI** is the sum over bins of `(current share - reference share) * ln(current share / reference share)`. Below 0.1 is stable, 0.1 to 0.25 moderate and above 0.25 a clear shift. Numbers with 12 or fewer distinct values are compared as categories. Text that holds numbers or dates is converted first, and dates and columns that are different in almost every row (identifiers) are listed as information rather than judged. A Kolmogorov-Smirnov test (numbers) or chi-squared test (categories) is shown beside the PSI, and a change of 10 points or more in the share of empty values downgrades a stable column to moderate. With large samples the tests flag tiny changes, which is why the verdict uses the PSI.
 
+## Explaining a model
+* **Shapley values.** For one row, KikoLens draws many random orders of the features. In each order it starts from a random training row and swaps in the features of the row being explained one at a time, recording how much the prediction moves at each step. The average move per feature is its Shapley value; together with the starting value they add up to the prediction exactly. For classifiers the value is in probability of the class you choose. The global version averages the absolute values over a sample of test rows. The cost grows with the number of features, so it is limited to 40.
+* **Error analysis.** The error is the absolute error (regression) or whether the prediction was wrong (classification). Each category, and each quartile of a number, is compared with the overall error; a segment is reported only if it has at least 8 rows, its error is more than 15% above average and the gap is at least two standard errors, so noise does not produce stories.
+* **Threshold and costs.** For a two-class model the probability threshold is swept from 0.05 to 0.95. The cost is `false alarms × cost of a false alarm + misses × cost of a miss`; the cheapest threshold is usually not 0.5 when one mistake costs more than the other.
+* **Comparing two models.** Both are trained on the same rows and tested on the same held-out rows. For regression the absolute errors are compared with a Wilcoxon signed-rank test; for classification, the rows only one of them gets right are compared with a binomial (McNemar-style) test.
+
 ## Clustering
 k-means on the standardized numeric columns, shown on the first two principal components. The inertia and silhouette chart helps pick `k`; the silhouette peak is a hint, not a rule.
 
 ## Recipes
 A recipe is a list of `{operation, parameters}` steps. The cleaning operations (fill missing, convert type, clip outliers, drop duplicates...) and the transformations share one registry, so any of them can be replayed. Applying a recipe to a new file runs the steps in order and stops at the first one that cannot apply, naming it. Operations that depend on the data itself (such as removing flagged anomalies) are not recorded. Joins refer to the extra dataset by name; supply it when replaying (`-d name=path` in the CLI).
+
+## Monitoring
+A monitor stores its baseline as Parquet (after the recipe, if any), its settings and one JSON file per check. A check applies the recipe, reads dates and numbers stored as text, then compares against the baseline with the same machinery as *Comparing datasets*, scores with the model if one is set, and evaluates the rules. Alerts are *high* (drift at the high level, columns missing, a type change, a broken rule, an unreadable source), *medium* (a quality drop, which becomes high when it is twice the threshold; moderate drift when you asked for it; a change in rows; model inputs out of range, except missing columns, which are high; a prediction shift) or *low* (new columns). The status of a check is `alert` if any alert is high, `warning` if there are only lower ones, `failed` if the data could not be read and `ok` otherwise.
 
 ## Saved models
 A model package holds the trained model together with:

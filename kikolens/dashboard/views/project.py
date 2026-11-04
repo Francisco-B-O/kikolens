@@ -5,6 +5,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 
+from kikolens.analyze.panel import Panel
 from kikolens.analyze.predict import build_bundle
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import state
@@ -44,6 +45,7 @@ def _restore(project: dict, name: str) -> None:
     state.set_dataset(original, name)
     st.session_state.datasets = project["datasets"]
     st.session_state.notes = project["notes"]
+    st.session_state.panel = Panel.from_json(project["panel"]) if project["panel"] else None
     df, log = recipe.apply(original, project["datasets"])
     st.session_state.df = df
     st.session_state.recipe = recipe
@@ -62,7 +64,8 @@ def _save_tab(df: pd.DataFrame) -> None:
         st.session_state.pj_blob = save_project(
             st.session_state.original_df, st.session_state.recipe, name=_name(), datasets=st.session_state.datasets,
             notes=st.session_state.notes, source=str(st.session_state.filename),
-            models=available if with_models else None)
+            models=available if with_models else None,
+            panel=st.session_state.panel.to_json() if st.session_state.get("panel") and st.session_state.panel.tiles else None)
     blob = st.session_state.get("pj_blob")
     if blob:
         ui.note(f"Project ready ({len(blob) / 1e6:.1f} MB): original data, {len(st.session_state.recipe)} step(s) and notes.", "ok")

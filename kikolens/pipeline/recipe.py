@@ -6,10 +6,10 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from kikolens.analyze import quality, transform
+from kikolens.analyze import cleaning, quality, transform
 
 FORMAT_VERSION = 1
-OPERATIONS = {**quality.OPERATIONS, **transform.OPERATIONS}
+OPERATIONS = {**quality.OPERATIONS, **transform.OPERATIONS, **cleaning.OPERATIONS}
 DATASET_OPERATIONS = transform.DATASET_OPERATIONS
 
 
