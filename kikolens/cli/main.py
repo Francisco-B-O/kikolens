@@ -1598,6 +1598,96 @@ def benchmark(
         console.print(f"Results written to {output}")
 
 
+@app.command()
+def analyst(
+    source: str, question: str = typer.Argument(..., help="What you want to know, in your own words."),
+    model: Optional[str] = typer.Option(None, help="Ollama model to use (default from the configuration)."),
+    no_samples: bool = typer.Option(False, "--no-samples", help="Send the model only column names, types and ranges, never values."),
+    html: Optional[Path] = typer.Option(None, help="If the answer has a chart, write it to this HTML file."),
+    trail: Optional[Path] = typer.Option(None, help="Write the steps as Python code (kikolens API calls) to this file."),
+):
+    """Ask a question about a dataset. A local model decides whether to draw a chart, run SQL or chain analyses; every step is shown."""
+    from kikolens.ai.analyst import Analyst
+    from kikolens.ai.client import LLM, ollama_transport
+
+    df = _load(source)
+    bot = Analyst(df, LLM(ollama_transport(model=model)) if model else LLM(), samples=not no_samples)
+    try:
+        turn = bot.ask(question)
+    except ValueError as e:
+        _fail(e)
+    if turn.report is not None and not turn.report.used_model:
+        for note in turn.report.notes:
+            console.print(f"[yellow]{note}[/yellow]")
+    console.print(turn.text)
+    if turn.sql:
+        console.print(f"SQL: {turn.sql}")
+    if turn.table is not None and turn.action in ("sql", "chart"):
+        _print_frame(turn.table.head(20))
+    if turn.report is not None:
+        for i, step in enumerate(turn.report.steps, 1):
+            console.print(f"  {i}. {step.tool}({step.args}): {step.summary or step.error}")
+    if html and turn.figure is not None:
+        html.parent.mkdir(parents=True, exist_ok=True)
+        turn.figure.write_html(str(html), include_plotlyjs="cdn")
+        console.print(f"Chart written to {html}")
+    if trail and turn.report is not None:
+        trail.parent.mkdir(parents=True, exist_ok=True)
+        trail.write_text(turn.report.python(str(source)), encoding="utf-8")
+        console.print(f"Steps written to {trail}")
+
+
+@app.command()
+def chart(
+    source: str, request: str = typer.Argument(..., help="The chart you want, in your own words."),
+    output: Path = typer.Option(Path("kikolens_output/chart.html"), help="Where to write the chart (.html, or .json for the specification)."),
+    model: Optional[str] = typer.Option(None, help="Ollama model to use."),
+):
+    """Describe a chart in words; a local model writes a specification that KikoLens checks and draws."""
+    import json
+
+    from kikolens.ai.analyst import ask_chart
+    from kikolens.ai.client import LLM, LLMError, ollama_transport
+
+    df = _load(source)
+    try:
+        fig, table, spec = ask_chart(df, request, LLM(ollama_transport(model=model)) if model else LLM())
+    except (ValueError, LLMError) as e:
+        _fail(e)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    if output.suffix.lower() == ".json":
+        output.write_text(json.dumps(spec, indent=2, default=str), encoding="utf-8")
+    else:
+        fig.write_html(str(output), include_plotlyjs="cdn")
+    console.print(f"{spec['kind']} chart written to {output} ({len(table):,} rows drawn)")
+
+
+@app.command("classify-text")
+def classify_text(
+    source: str, column: str,
+    labels: str = typer.Option(..., help="Comma-separated labels, such as shipping,quality,price."),
+    output: Optional[Path] = typer.Option(None, help="Write the texts with their label."),
+    limit: int = typer.Option(300, help="Most texts to classify."),
+    model: Optional[str] = typer.Option(None, help="Ollama model to use."),
+):
+    """Classify a text column into labels you choose, without training anything (a local model reads each text)."""
+    from kikolens.ai.analyst import classify_texts
+    from kikolens.ai.client import LLM, LLMError, ollama_transport
+
+    df = _load(source)
+    _check_target(df, column)
+    try:
+        with console.status("Reading the texts..."):
+            result = classify_texts(df[column], _names(labels), LLM(ollama_transport(model=model)) if model else LLM(), limit=limit)
+    except (ValueError, LLMError) as e:
+        _fail(e)
+    counts = result["label"].value_counts()
+    console.print(", ".join(f"{label}: {n}" for label, n in counts.items()))
+    if output:
+        _write_frame(result.reset_index(drop=True), output)
+        console.print(f"Classified texts written to {output}")
+
+
 def cli():
     app()
 

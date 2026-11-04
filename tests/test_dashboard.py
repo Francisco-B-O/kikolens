@@ -14,7 +14,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
-         "Home", "Data story", "Chart gallery", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
+         "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
          "Forecast with drivers", "Run history", "Synthetic data"]
 
 

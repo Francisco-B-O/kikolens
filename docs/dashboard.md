@@ -10,6 +10,15 @@ The sidebar's **Source** menu offers four ways in: **File** (CSV, TSV, Excel, JS
 
 ## Data
 
+### Analyst
+A chat with your data, answered by a language model that runs on this computer (Ollama). Ask in your own words and the analyst decides what to do:
+
+* **"Show the total revenue by region in 2024"** draws a chart. The model does not write code: it describes the chart (kind, columns, aggregation, time grain, filters, top N) in a small specification that KikoLens checks against your columns and draws itself. If the specification is wrong ("column `turnover` does not exist, the columns are..."), that sentence goes back to the model so it can correct it.
+* **"How many rows per region?"** runs a read-only SQL query (validated like in *Ask*).
+* **"Why did revenue fall in the last quarter?"** hands over to an analysis agent that chains KikoLens tools (regression, forecast, why it changed, unusual periods, segments, survival, Granger, RFM...), one at a time. Each choice is validated (the tool and every column must exist), run, and summarised back to the model, up to five steps, and every step is shown with its reason. Download the trail as Markdown, or as Python code that repeats the same calls without the model.
+
+The model only ever chooses and explains; every number comes from the analyses. If Ollama is not running, the page says so and falls back to a basic analysis picked from keywords in your question. *Settings* lets you stop sending sample values of the data to the model (only column names, types and ranges); it all stays on this computer either way.
+
 ### Home, data story and chart gallery
 **Home** is the first thing you see after loading data: a quality ring, how many columns of each kind there are, a strip showing where the empty values are, a small chart for every numeric column (and the trend over time if there is a date), the things worth a look, and one-click buttons to the autopilot, the cleaning page and the story. With no data loaded, the welcome screen offers four built-in examples (sales, reviews, orders and subscriptions) so you can try everything at once.
 

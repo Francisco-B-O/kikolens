@@ -7,7 +7,7 @@ import streamlit as st
 from kikolens.dashboard import components as ui
 from kikolens import config, demo
 from kikolens.dashboard import i18n, state, theme
-from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
+from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
                                       features, gallery, health, history, home, impact, lab, linkage, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
                                       neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
                                       story, text, timeseries, transform)
@@ -19,7 +19,7 @@ st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial
 GROUPS = {
     "Data": {"Home": home, "Overview": overview, "Data story": story, "Autopilot": autopilot, "Explore": explore, "Chart gallery": gallery, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
              "Match records": linkage,
-             "Patterns": patterns, "Statistics": statistics, "Ask": ask},
+             "Patterns": patterns, "Statistics": statistics, "Ask": ask, "Analyst": analyst},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
                  "Compare data": compare, "Segments": clusters,
                  "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Sequential tests": sequential, "Segment explorer": segment_explorer,
