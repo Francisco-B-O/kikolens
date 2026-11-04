@@ -13,7 +13,7 @@ APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
-         "Survival", "Customers", "Impact", "Feature ideas"]
+         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health"]
 
 
 @pytest.fixture(scope="module")
@@ -432,3 +432,40 @@ def test_lab_uncertainty_counterfactual_and_fairness_tabs():
     at.button(key="lab_cf_go").click().run()
     assert_clean(at)
     assert "lab_cf" in at.session_state
+
+
+def test_why_it_changed_explains_a_drop(behaviour):
+    at = open_page(behaviour, "Why it changed")
+    at.selectbox(key="dr_m").set_value("amount")
+    at.button(key="dr_go").click().run()
+    assert_clean(at)
+    assert at.session_state["dr_res"]["tables"]
+
+
+def test_regression_page_fits_and_explains(data):
+    at = open_page(data, "Regression")
+    at.selectbox(key="rg_t").set_value("y")
+    at.run()
+    at.multiselect(key="rg_f").set_value(["x", "z", "date"])
+    at.button(key="rg_go").click().run()
+    assert_clean(at)
+    res = at.session_state["rg_res"][1]
+    assert res["kind"] == "ols" and res["model"]["r2"] > 0.9
+
+
+def test_model_health_scores_newer_data(data):
+    from kikolens.analyze.modellab import run_model_lab
+    from kikolens.analyze.predict import build_bundle
+    res = run_model_lab(data.drop(columns=["date", "price"]), "y", models=["Ridge"], folds=3, tune=False)
+    bundle = build_bundle(res, data.drop(columns=["date", "price"]), name="m")
+    at = open_page(data, "Model health", restored_models={"m": bundle})
+    assert_clean(at)
+    at.button(key="mh_go").click().run()
+    assert_clean(at)
+    assert at.session_state["mh_res"]["table"]["rows"].sum() == len(data)
+
+
+def test_anomalies_has_a_tab_for_unusual_periods(data):
+    at = open_page(data, "Anomalies")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][:2] == ["Unusual rows", "Unusual periods"]

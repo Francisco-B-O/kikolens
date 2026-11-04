@@ -6,9 +6,9 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import i18n, state, theme
-from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, experiments, explore, export,
-                                      features, impact, lab, models, monitoring, survival,
-                                      neural, overview, patterns, predict, project, quality, panel, report, statistics,
+from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, drivers, experiments, explore, export,
+                                      features, health, impact, lab, models, monitoring, survival,
+                                      neural, overview, patterns, predict, project, quality, panel, regression, report, statistics,
                                       text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
@@ -20,9 +20,10 @@ GROUPS = {
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions,
                  "Compare data": compare, "Segments": clusters,
-                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact},
-    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Neural network": neural, "Time series": timeseries,
-               "Predict": predict, "Monitoring": monitoring},
+                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact,
+                 "Why it changed": drivers},
+    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Regression": regression, "Neural network": neural, "Time series": timeseries,
+               "Predict": predict, "Model health": health, "Monitoring": monitoring},
     "Share": {"Panel": panel, "Report": report, "Export": export, "Project": project},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}

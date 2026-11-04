@@ -9,7 +9,7 @@ ES = {
     "Transform": "Transformar", "Patterns": "Patrones", "Statistics": "Estadísticas", "Ask": "Preguntar",
     "Experiments": "Experimentos", "Anomalies": "Anomalías", "Dimensions": "Dimensiones", "Compare data": "Comparar datos",
     "Segments": "Segmentos", "Text": "Texto", "Survival": "Supervivencia", "Customers": "Clientes", "Impact": "Impacto",
-    "Model lab": "Laboratorio de modelos", "Feature ideas": "Ideas de variables", "Neural network": "Red neuronal",
+    "Why it changed": "Por qué cambió", "Model lab": "Laboratorio de modelos", "Feature ideas": "Ideas de variables", "Neural network": "Red neuronal",
     "Time series": "Series temporales", "Predict": "Predecir", "Monitoring": "Monitorización",
     "Panel": "Panel", "Report": "Informe", "Export": "Exportar", "Project": "Proyecto",
     "Private data analysis": "Análisis de datos privado",
@@ -385,4 +385,36 @@ ES = {
     "This needs a numeric column to aggregate.": "Esto necesita una columna numérica que agregar.", "This needs a numeric column.": "Esto necesita una columna numérica.",
     "This needs two columns with a small set of values.": "Esto necesita dos columnas con pocos valores distintos.",
     "This needs two numeric columns.": "Esto necesita dos columnas numéricas.", "Group": "Grupo", "Cluster": "Grupo",
+    "A figure moved between two periods: which regions, channels or products explain it?":
+        "Una cifra se movió entre dos periodos: ¿qué regiones, canales o productos lo explican?",
+    "Total of a column": "Total de una columna", "Average of a column": "Media de una columna", "Number of rows": "Número de filas",
+    "Earlier period": "Periodo anterior", "Later period": "Periodo posterior", "Break it down by": "Desglosar por",
+    "Explain the change": "Explicar el cambio", "Look at": "Mirar", "Before": "Antes", "After": "Después", "Change": "Cambio",
+    "Pick the start and the end of each period.": "Elige el inicio y el fin de cada periodo.",
+    "Concentration is how much of the change sits in the single biggest value of each column.":
+        "La concentración es cuánto del cambio está en el valor más grande de cada columna.",
+    "#### Combinations that moved most": "#### Combinaciones que más se movieron",
+    "This needs a date column to tell the two periods apart.": "Esto necesita una columna de fechas para distinguir los dos periodos.",
+    "There is no numeric column to measure.": "No hay ninguna columna numérica que medir.",
+    "Regression": "Regresión", "Model health": "Salud del modelo", "Unusual rows": "Filas inusuales", "Unusual periods": "Periodos inusuales",
+    "What pushes a result up or down, other things equal. Coefficients, ranges and p-values, each said in a sentence.":
+        "Qué empuja un resultado hacia arriba o abajo, a igualdad de lo demás. Coeficientes, rangos y valores p, cada uno dicho en una frase.",
+    "Is a model still as good as when you tested it? Score newer data whose real results are known.":
+        "¿Sigue siendo el modelo tan bueno como cuando lo probaste? Puntúa datos más recientes cuyos resultados reales se conocen.",
+    "Column to explain": "Columna a explicar", "Explain it with": "Explicarla con", "Model the chance of": "Modelar la probabilidad de",
+    "Fit the model": "Ajustar el modelo", "Linear regression for a number.": "Regresión lineal para un número.",
+    "Logistic regression for a column with two values.": "Regresión logística para una columna con dos valores.",
+    "This needs a numeric column (linear regression) or a column with exactly two values (logistic regression).":
+        "Esto necesita una columna numérica (regresión lineal) o una columna con exactamente dos valores (regresión logística).",
+    "Adjusted R2": "R2 ajustado", "Typical error": "Error típico", "AUC": "AUC", "Always guessing the commonest": "Adivinar siempre lo más común",
+    "#### What it says": "#### Qué dice", "Download the table": "Descargar la tabla", "Errors against fitted values": "Errores frente a los valores ajustados",
+    "Data with the real results": "Datos con los resultados reales", "(none, split in order)": "(ninguna, dividir en orden)",
+    "Check the model": "Comprobar el modelo",
+    "Periods with fewer than 20 rows are shown in the table but not judged.": "Los periodos con menos de 20 filas salen en la tabla pero no se juzgan.",
+    "Train a model first (Models, Model lab or Neural network) or save one, then come back with newer data.":
+        "Entrena antes un modelo (Modelos, Laboratorio de modelos o Red neuronal) o guarda uno, y vuelve con datos más recientes.",
+    "Periods that stand out once the trend and the weekly, monthly or yearly pattern are taken out.":
+        "Periodos que destacan una vez quitadas la tendencia y el patrón semanal, mensual o anual.",
+    "Sensitivity (lower finds more)": "Sensibilidad (menor encuentra más)", "Download the unusual periods": "Descargar los periodos inusuales",
+    "Unusual periods need a date column and a numeric column.": "Los periodos inusuales necesitan una columna de fechas y otra numérica.",
 }

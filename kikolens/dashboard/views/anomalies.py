@@ -3,6 +3,7 @@ import streamlit as st
 
 from kikolens.analyze import anomalies as an
 from kikolens.dashboard import components as ui
+from kikolens.dashboard.views import _spikes
 from kikolens.dashboard import state
 
 TITLE = "Anomalies"
@@ -16,7 +17,7 @@ HELP = {
 }
 
 
-def render(df: pd.DataFrame) -> None:
+def _rows(df: pd.DataFrame) -> None:
     usable = an.usable_columns(df)
     if not usable:
         ui.note("Anomaly detection needs numeric columns that vary.", "low")
@@ -60,3 +61,11 @@ def render(df: pd.DataFrame) -> None:
         st.session_state.pop("an_res", None)
         st.rerun()
     st.caption("Removing rows from the dashboard is not stored in the recipe: review them first, they may be real events.")
+
+
+def render(df: pd.DataFrame) -> None:
+    rows, periods = st.tabs(["Unusual rows", "Unusual periods"])
+    with rows:
+        _rows(df)
+    with periods:
+        _spikes.render(df)

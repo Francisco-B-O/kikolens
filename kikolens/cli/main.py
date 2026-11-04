@@ -990,6 +990,120 @@ def ab_bayes(source: str, group: str, outcome: str, control: str, success: Optio
     console.print(res["summary"])
 
 
+def _period(text: Optional[str], name: str):
+    if text is None:
+        return None
+    parts = [p.strip() for p in text.split(",")]
+    if len(parts) != 2:
+        _fail(ValueError(f"{name} must be two dates separated by a comma, such as 2024-03-01,2024-05-01 (the end is not included)."))
+    return parts[0], parts[1]
+
+
+@app.command()
+def why(
+    source: str, date: str,
+    metric: Optional[str] = typer.Option(None, help="Numeric column to measure (not needed with --agg count)."),
+    agg: str = typer.Option("sum", help="sum, mean or count."),
+    before: Optional[str] = typer.Option(None, help="Earlier period as START,END. Default: the middle third of the dates."),
+    after: Optional[str] = typer.Option(None, help="Later period as START,END. Default: the last third of the dates."),
+    by: Optional[str] = typer.Option(None, help="Comma-separated columns to break the change down by."),
+):
+    """Explain why a figure changed between two periods: which values of which columns account for it."""
+    from kikolens.analyze.drivers import why_changed
+
+    df = _load(source)
+    try:
+        res = why_changed(df, metric, date, _period(before, "--before"), _period(after, "--after"),
+                          [c.strip() for c in by.split(",")] if by else None, agg)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["ranking"].round(3), "Which column explains it")
+    top = res["ranking"]["dimension"].iloc[0]
+    _print_frame(res["tables"][top].round(3), f"By {top}")
+
+
+@app.command()
+def regress(
+    source: str, target: str,
+    using: Optional[str] = typer.Option(None, help="Comma-separated columns to explain the target with; default all others."),
+    positive: Optional[str] = typer.Option(None, help="For a two-valued target, the value whose chance is modelled."),
+    output: Optional[Path] = typer.Option(None, help="Write the coefficient table to this CSV."),
+):
+    """Explain what drives a column: linear regression for a number, logistic for two values, with ranges and p-values."""
+    from kikolens.analyze.regression import logit, ols
+
+    df = _load(source)
+    _check_target(df, target)
+    features = [c.strip() for c in using.split(",")] if using else None
+    try:
+        two = df[target].nunique(dropna=True) == 2
+        res = logit(df, target, features, positive) if two else ols(df, target, features)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for line in res["sentences"]:
+        console.print(f"  - {line}")
+    for line in res["flags"]:
+        console.print(f"[yellow]  ! {line}[/yellow]")
+    keep = ["term", "coefficient", "std error", "p-value", "low", "high"] + (["odds ratio"] if two else [])
+    _print_frame(res["table"][keep].round(4), "Coefficients")
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        res["table"].to_csv(output, index=False)
+        console.print(f"Table written to {output}")
+
+
+@app.command()
+def spikes(
+    source: str, date: str, value: str,
+    agg: str = typer.Option("mean", help="mean or sum, for rows that share a period."),
+    sensitivity: float = typer.Option(3.5, help="Robust z-score threshold; lower finds more."),
+    output: Optional[Path] = typer.Option(None, help="Write the unusual periods to this CSV."),
+):
+    """Find unusual periods in a series, once trend and season are taken out."""
+    from kikolens.analyze.tsanomaly import from_frame
+
+    df = _load(source)
+    try:
+        res = from_frame(df, date, value, agg=agg, threshold=sensitivity)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if len(res["anomalies"]):
+        _print_frame(res["anomalies"].round(3), "Unusual periods")
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        res["anomalies"].to_csv(output, index=False)
+        console.print(f"Written to {output}")
+
+
+@app.command()
+def performance(
+    source: str,
+    model: str = typer.Argument(..., help="A model file (.klmodel) or the name of a saved model."),
+    date: Optional[str] = typer.Option(None, help="Date column, to score period by period."),
+    period: str = typer.Option("Month", help="Day, Week, Month or Quarter."),
+    raw: bool = typer.Option(False, "--raw", help="The file is uncleaned: repeat the cleaning steps used in training first."),
+):
+    """Is a saved model still good? Compare its real accuracy on newer data with what it had in testing. Exit code 2 on a warning."""
+    from kikolens.analyze.perfwatch import performance_over_time
+    from kikolens.analyze.predict import load_bundle, resolve_model
+
+    df = _load(source)
+    try:
+        bundle = load_bundle(resolve_model(model))
+        res = performance_over_time(bundle, df, date, period, apply_recipe=raw)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].drop(columns=["enough rows"]).round(4), "By period")
+    for line in res["alerts"]:
+        console.print(f"[yellow]  ! {line}[/yellow]")
+    if res["status"] == "alert":
+        raise typer.Exit(code=2)
+
+
 def cli():
     app()
 
