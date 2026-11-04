@@ -120,6 +120,30 @@ curl -X POST localhost:8000/predict -H "Content-Type: application/json" \
 
 The reply has the predictions (with a range for regression) and warnings about missing columns, unseen categories or out-of-range values. The server listens only on this computer; to open it to the network use `--host 0.0.0.0 --token SECRET` and send `Authorization: Bearer SECRET`. Only serve model files you trust, because opening one can run code.
 
+## 11. Share data safely
+
+**Goal:** hand a dataset to someone else without exposing people.
+
+1. *Data* → *Privacy* (or `kikolens privacy customers.csv --scan`) lists the columns that hold personal data and why they were flagged.
+2. Choose for each: hash the customer email (it stays usable to count and join), mask the card number, remove the full name. The steps join the recipe.
+3. The **How identifiable** tab (`--k 5 --quasi age,city`) shows whether age, postal code and city together still single someone out. If many rows are alone in their group, group the ages into bands (*Transform* → bins) or drop a column, and check again.
+4. *Export* → **Data dictionary** documents what each column means for the person receiving it.
+
+```bash
+kikolens privacy customers.csv --hash email --mask card --drop full_name --salt "$SALT" --output shared.csv --recipe privacy.json
+kikolens privacy shared.csv --k 5 --quasi age,city
+```
+
+Keep `privacy.json` private: it contains the salt.
+
+## 12. Run the same analysis every morning
+
+Put the steps in a pipeline file and let a scheduler run it (see *Pipeline files* in the command reference):
+
+```bash
+kikolens run pipeline.json || echo "Something changed: look at out/log.json"
+```
+
 ## Monitoring from a script or CI
 
 `kikolens drift` returns exit code `2` when the data changed a lot, `0` otherwise. A nightly job can compare the latest export with the data the model was trained on:

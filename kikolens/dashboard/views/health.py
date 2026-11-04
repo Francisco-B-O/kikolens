@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from kikolens.analyze import champion
 from kikolens.analyze import perfwatch as pw
 from kikolens.analyze import predict as pr
 from kikolens.analyze.timeseries import detect_datetime_columns
@@ -12,7 +13,37 @@ TITLE = "Model health"
 SUBTITLE = "Is a model still as good as when you tested it? Score newer data whose real results are known."
 
 
+def _compare(df: pd.DataFrame) -> None:
+    options, saved = _session_bundles(df), _registry_choices()
+    labels = list(options) + list(saved)
+    if len(labels) < 2:
+        ui.note("Save at least two models (or train one in this session and save another) to compare them.", "low")
+        return
+    chosen = st.multiselect("Models to compare", labels, default=labels[:2], key="mh_cmp")
+    upload = st.file_uploader("Data with the real results", type=["csv", "xlsx", "parquet", "json"], key="mh_cmp_upload")
+    if st.button("Compare", key="mh_cmp_go", type="primary", disabled=len(chosen) < 2):
+        try:
+            data = load_data(upload) if upload is not None else df
+            bundles = {c: options[c] if c in options else pr.load_bundle(pr.resolve_model(saved[c])) for c in chosen}
+            st.session_state.mh_cmp_res = champion.compare_saved_models(bundles, data)
+        except ValueError as e:
+            st.session_state.pop("mh_cmp_res", None)
+            ui.note(str(e), "high")
+    res = st.session_state.get("mh_cmp_res")
+    if res:
+        ui.note(res["summary"], "ok" if res["reliable"] else "medium")
+        ui.table(res["table"].round(4), hide_index=True)
+
+
 def render(df: pd.DataFrame) -> None:
+    health, compare = st.tabs(["Check a model", "Compare models"])
+    with health:
+        _health(df)
+    with compare:
+        _compare(df)
+
+
+def _health(df: pd.DataFrame) -> None:
     options = _session_bundles(df)
     saved = _registry_choices()
     labels = list(options) + list(saved)

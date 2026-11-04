@@ -16,6 +16,11 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens export SOURCE OUTPUT [--recipe FILE] [--workbook]` | Convert to `.csv`, `.tsv`, `.xlsx`, `.json`, `.ndjson`, `.parquet` or `.feather`. `--workbook` makes a formatted Excel workbook with quality, statistics and recipe sheets. |
 | `kikolens to-db SOURCE DATABASE TABLE [--if-exists fail\|append\|replace]` | Write the data into a table. It never overwrites unless you say `replace`. |
 | `kikolens autopilot SOURCE [--target COL] [--horizon N] [--thorough] [--clean FILE] [--recipe FILE] [--pdf FILE]` | A first full analysis: clean, find patterns, model a column and forecast dates. `--clean` and `--recipe` save the cleaned data and the steps; `--pdf` writes a report. |
+| `kikolens privacy SOURCE [--scan] [--mask a,b] [--hash a,b] [--drop a,b] [--salt S] [--output FILE] [--recipe FILE] [--k N --quasi a,b]` | Find personal data, mask / hash / remove columns and measure k-anonymity. The salt used by `--hash` is written to the recipe, so keep the recipe private. |
+| `kikolens dictionary SOURCE [--output FILE.md\|.csv\|.xlsx]` | Describe every column: meaning, empty share, typical values, ranges and warnings. |
+| `kikolens notebook SOURCE OUTPUT.ipynb [--recipe FILE] [--target COL] [--exclude a,b] [--date COL --value COL] [--horizon N]` | Write a Jupyter notebook that reproduces the analysis. |
+| `kikolens link LEFT RIGHT LEFT_COLUMN RIGHT_COLUMN [--threshold 0.85] [--output FILE]` | Match records whose names are not spelled the same way. |
+| `kikolens run PIPELINE.json` | Run a pipeline file (see below). Exit code `2` when a `fail_on` condition triggers, `1` when something cannot be read. |
 | `kikolens project FILE.kikolens [--output FILE]` | Show what a project contains (notes, recipe) and optionally export its processed data. |
 
 ## Models
@@ -28,6 +33,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens score SOURCE MODEL [--output FILE] [--raw]` | Predict a file with a saved model. `MODEL` is a `.klmodel` path or the name of a saved model. `--raw` repeats the cleaning steps the model was trained with first. |
 | `kikolens models` | List the saved models. |
 | `kikolens models info NAME [--card FILE]` | Metrics and expected columns of a model; `--card` writes a Markdown model card. |
+| `kikolens models compare SOURCE MODEL MODEL [MODEL...]` | Which of several saved models predicts better on data whose real results are known, and whether the gap is reliable. |
 | `kikolens models delete NAME` | Remove a saved model. |
 | `kikolens forecast SOURCE DATE VALUE [--horizon N] [--freq D] [--agg mean]` | Forecast a numeric column. Frequencies: `h`, `D`, `W`, `MS`, `QS`, `YS`. |
 | `kikolens forecast ... --compare` | Compare five models with rolling-origin tests and forecast with the best one. |
@@ -99,6 +105,25 @@ A **recipe** (`.json`) is the ordered list of cleaning and transformation steps.
 `score` prints warnings before it predicts: columns that are missing, values that could not be read, categories never seen in training and numbers far outside the training range. Regression models also write a likely range (`<target>_low`, `<target>_high`), and classifiers write `confidence` and one probability column per class.
 
 Model packages are pickles: only open files you created or trust.
+
+## Pipeline files
+
+`kikolens run` reads a JSON file that says what to do with a dataset and where to leave the results; paths are relative to the file. Only `source` is required.
+
+```json
+{
+  "source": "today.csv",
+  "recipe": "recipe.json",
+  "rules": "rules.json",
+  "baseline": "training.csv",
+  "model": "sales-model",
+  "min_quality": 80,
+  "outputs": {"data": "out/clean.csv", "predictions": "out/scored.csv", "report": "out/report.html", "log": "out/log.json"},
+  "fail_on": ["rules", "drift", "quality", "input"]
+}
+```
+
+The stages run in this order: read, apply the recipe, score the quality, validate the rules, compare with the baseline (which also goes through the recipe), score with the model, write the outputs. A problem is only fatal if its name is in `fail_on` (`rules`: a rule is broken; `drift`: the data drifted a lot; `quality`: the score is below `min_quality`; `input`: the model received columns or values it did not see in training); otherwise it is shown as a warning. The `log` output is a JSON record of the run. Typical use is a daily job: `kikolens run pipeline.json || notify-someone`.
 
 ## SQL safety
 

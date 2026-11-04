@@ -57,18 +57,25 @@ def make_server(bundle: dict, host: str = "127.0.0.1", port: int = 8000, token: 
             self._send(404, {"error": "Not found. Use /health, /model or POST /predict."})
 
         def do_POST(self):
+            # Se lee el cuerpo antes de responder a cualquier error: si el cliente sigue enviando y el servidor ya cerró,
+            # algunos sistemas (Windows) cortan la conexión y el cliente no llega a ver la respuesta.
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+            except ValueError:
+                self.close_connection = True
+                return self._send(400, {"error": "Invalid Content-Length."})
+            if length > MAX_BODY:
+                self.close_connection = True
+                return self._send(413, {"error": f"Send at most {MAX_BODY:,} bytes of JSON."})
+            body = self.rfile.read(length) if length > 0 else b""
             if self.path != "/predict":
                 return self._send(404, {"error": "Not found. Use POST /predict."})
             if not self._authorized():
                 return self._send(401, {"error": "Missing or wrong token."})
+            if not body:
+                return self._send(400, {"error": f"Send between 1 byte and {MAX_BODY:,} bytes of JSON."})
             try:
-                length = int(self.headers.get("Content-Length", "0"))
-            except ValueError:
-                return self._send(400, {"error": "Invalid Content-Length."})
-            if length <= 0 or length > MAX_BODY:
-                return self._send(413 if length > MAX_BODY else 400, {"error": f"Send between 1 byte and {MAX_BODY:,} bytes of JSON."})
-            try:
-                payload = json.loads(self.rfile.read(length))
+                payload = json.loads(body)
                 rows = payload["rows"]
                 if not isinstance(rows, list) or not rows or not all(isinstance(r, dict) for r in rows):
                     raise ValueError("'rows' must be a non-empty list of objects, one per row.")

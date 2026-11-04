@@ -7,8 +7,8 @@ import streamlit as st
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, drivers, experiments, explore, export,
-                                      features, health, impact, lab, models, monitoring, survival,
-                                      neural, overview, patterns, predict, project, quality, panel, regression, report, statistics,
+                                      features, health, impact, lab, linkage, models, monitoring, survival,
+                                      neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
                                       text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
@@ -16,7 +16,8 @@ st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial
 
 # Las secciones se agrupan por áreas para que la barra lateral no sea una lista interminable.
 GROUPS = {
-    "Data": {"Overview": overview, "Autopilot": autopilot, "Explore": explore, "Quality and cleaning": quality, "Transform": transform,
+    "Data": {"Overview": overview, "Autopilot": autopilot, "Explore": explore, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
+             "Match records": linkage,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions,
                  "Compare data": compare, "Segments": clusters,
