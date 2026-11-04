@@ -151,6 +151,7 @@ def lab(
     target: str,
     folds: int = typer.Option(5, help="Cross-validation folds (3-10)."),
     tune: bool = typer.Option(True, help="Tune the best model."),
+    bayes: bool = typer.Option(False, "--bayes", help="Tune with Bayesian optimisation instead of a random search."),
     models: Optional[str] = typer.Option(None, help="Comma-separated model names; default is all."),
     balance: bool = typer.Option(False, "--balance", help="Weight rarer classes more (classification)."),
     exclude: Optional[str] = typer.Option(None, help="Comma-separated columns to leave out."),
@@ -166,7 +167,7 @@ def lab(
     drop = [c.strip() for c in exclude.split(",")] if exclude else []
     try:
         with console.status("Comparing models..."):
-            res = run_model_lab(df, target, models=names, folds=folds, tune=tune, balance=balance, drop=drop)
+            res = run_model_lab(df, target, models=names, folds=folds, tune=tune, balance=balance, drop=drop, tuner="bayes" if bayes else "random")
     except ValueError as e:
         console.print(f"[red]{e}[/red]")
         raise typer.Exit(code=1)
@@ -179,6 +180,11 @@ def lab(
     _print_frame(pd.DataFrame(list(res["feature_importance"].items())[:10], columns=["feature", "importance"]).round(4),
                  "Top features")
     _keep_model(res, df, save, register)
+    try:
+        from kikolens.analyze import runs as rn
+        rn.log_lab(res, str(source), {"folds": folds, "tune": tune, "tuner": "bayes" if bayes else "random", "balance": balance})
+    except OSError:
+        pass
 
 
 @app.command()
@@ -1321,6 +1327,219 @@ def fit(
         _fail(e)
     console.print(res["summary"])
     _print_frame(res["table"].round(4), "Fits, best first")
+
+
+@app.command("ab-seq")
+def ab_seq(
+    source: str, group: str, outcome: str, control: str,
+    order: Optional[str] = typer.Option(None, help="Column that gives the order of arrival (a date); default: the row order."),
+    alpha: float = typer.Option(0.05, help="Significance level."),
+):
+    """Sequential A/B test (mSPRT): valid even if you look at the data after every observation."""
+    from kikolens.analyze.sequential import from_frame
+
+    df = _load(source)
+    try:
+        res = from_frame(df, group, outcome, control, order, alpha=alpha)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command()
+def bandit(
+    rates: str = typer.Argument(..., help="True conversion rates of the variants, comma-separated, such as 0.04,0.08."),
+    visitors: int = typer.Option(5000, help="Visitors to simulate."),
+    seed: int = typer.Option(0, help="Random seed."),
+):
+    """Simulate a Thompson-sampling bandit against an even split."""
+    from kikolens.analyze.sequential import thompson
+
+    try:
+        res = thompson([float(r) for r in rates.split(",")], visitors, seed)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command()
+def granger(
+    source: str, date: str, cause: str, effect: str,
+    max_lag: int = typer.Option(7, help="Most periods back to try."),
+    agg: str = typer.Option("mean", help="mean or sum, for rows that share a period."),
+):
+    """Does the past of one column help predict another (Granger)? Predictive, not proof of cause."""
+    from kikolens.analyze.multivar import granger as run_granger
+
+    df = _load(source)
+    try:
+        res = run_granger(df, date, cause, effect, max_lag, agg)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "By lag")
+
+
+@app.command("forecast-drivers")
+def forecast_drivers(
+    source: str, date: str, target: str,
+    drivers: str = typer.Option(..., help="Comma-separated columns that help explain the target."),
+    horizon: int = typer.Option(12, help="Periods to forecast."),
+    scenario: Optional[str] = typer.Option(None, help="Future driver values as factors, such as price=1.1,promo=2."),
+    output: Optional[Path] = typer.Option(None, help="Write the forecast to this CSV."),
+):
+    """Forecast a column using other columns too, and check whether they really help."""
+    from kikolens.analyze.multivar import forecast_with_drivers
+
+    df = _load(source)
+    try:
+        factors = {k.strip(): float(v) for k, v in (pair.split("=") for pair in scenario.split(","))} if scenario else None
+        res = forecast_with_drivers(df, date, target, _names(drivers), horizon, scenario=factors)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["forecast"].reset_index().rename(columns={"index": "date"}).round(3), "Forecast")
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        res["forecast"].to_csv(output)
+        console.print(f"Forecast written to {output}")
+
+
+@app.command("select-features")
+def select_features_cmd(
+    source: str, target: str,
+    exclude: Optional[str] = typer.Option(None, help="Comma-separated columns to leave out."),
+    output: Optional[Path] = typer.Option(None, help="Write the data keeping only the recommended columns and the target."),
+):
+    """Which columns are worth keeping for predicting a target: consensus of four methods and a cross-validated curve."""
+    from kikolens.analyze.featureselect import select_features
+
+    df = _load(source)
+    _check_target(df, target)
+    try:
+        with console.status("Scoring the columns..."):
+            res = select_features(df, target, drop=_names(exclude))
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "Consensus ranking")
+    if output:
+        _write_frame(df[res["recommended"] + [target]], output)
+        console.print(f"Data with the recommended columns written to {output}")
+
+
+@app.command()
+def segment(
+    source: str,
+    method: str = typer.Argument("gmm", help="gmm (finds the number of groups), hierarchical or dbscan."),
+    columns: Optional[str] = typer.Option(None, help="Comma-separated numeric columns; default all."),
+    groups: int = typer.Option(4, help="Groups for hierarchical."),
+    output: Optional[Path] = typer.Option(None, help="Write the data with a group column."),
+):
+    """Segment rows with a Gaussian mixture, hierarchical clustering or DBSCAN, and describe each group in words."""
+    from kikolens.analyze import segments as sg
+
+    df = _load(source)
+    chosen = _names(columns) or None
+    try:
+        if method == "gmm":
+            res = sg.gmm_auto(df, chosen)
+        elif method == "hierarchical":
+            res = sg.hierarchical(df, chosen, groups)
+        elif method == "dbscan":
+            res = sg.dbscan_auto(df, chosen)
+        else:
+            raise ValueError("The method must be gmm, hierarchical or dbscan.")
+    except ValueError as e:
+        _fail(e)
+    console.print(f"{res['method']}: {res['summary']}")
+    _print_frame(res["profiles"][["group", "rows", "share", "described as"]].round(3), "Groups")
+    if output:
+        _write_frame(df.assign(group=res["labels"]), output)
+        console.print(f"Data with a group column written to {output}")
+
+
+@app.command()
+def recommend(
+    source: str, user: str, item: str,
+    rating: Optional[str] = typer.Option(None, help="Optional rating column; without it every interaction counts the same."),
+    for_user: Optional[str] = typer.Option(None, "--for", help="Recommend for this person."),
+    similar_to: Optional[str] = typer.Option(None, "--similar-to", help="List the items most like this one."),
+    top: int = typer.Option(10, help="How many to list."),
+    evaluate: bool = typer.Option(False, "--evaluate", help="Check it honestly against recommending the most popular items."),
+):
+    """Item-based recommender from a table of who used what."""
+    from kikolens.analyze import recommend as rc
+
+    df = _load(source)
+    try:
+        if evaluate:
+            console.print(rc.evaluate(df, user, item, rating, k=top)["summary"])
+        model = rc.fit(df, user, item, rating)
+        if for_user is not None:
+            _print_frame(model.recommend(for_user, top), f"For {for_user}")
+        if similar_to is not None:
+            _print_frame(model.similar_items(similar_to, top), f"Most like {similar_to}")
+        if not (evaluate or for_user or similar_to):
+            _print_frame(model.popular(top), "Most popular")
+    except ValueError as e:
+        _fail(e)
+
+
+@app.command()
+def synth(
+    source: str, output: Path = typer.Argument(..., help="Where to write the synthetic data (.csv, .parquet...)."),
+    rows: Optional[int] = typer.Option(None, help="Rows to generate; default as many as the original."),
+    seed: int = typer.Option(0, help="Random seed."),
+    report: bool = typer.Option(False, "--report", help="Also measure fidelity and privacy."),
+):
+    """Generate synthetic data that looks like the real data (same distributions and correlations) without being real people."""
+    from kikolens.analyze import synthetic as sy
+
+    df = _load(source)
+    try:
+        res = sy.synthesize(df, rows, seed)
+        _write_frame(res["data"], output)
+        console.print(f"{res['summary']} Written to {output}")
+        if report:
+            console.print(sy.report(df, res["data"])["summary"])
+    except ValueError as e:
+        _fail(e)
+
+
+@app.command()
+def runs(
+    target: Optional[str] = typer.Option(None, help="Only runs predicting this column."),
+    best: bool = typer.Option(False, "--best", help="Show only the best run for --target."),
+    compare: Optional[str] = typer.Option(None, help="Comma-separated run ids to compare side by side."),
+    delete: Optional[str] = typer.Option(None, help="Delete the run with this id."),
+):
+    """The history of model lab runs: every training is recorded so you can compare attempts."""
+    from kikolens.analyze import runs as rn
+
+    try:
+        if delete:
+            rn.delete_run(delete)
+            console.print(f"Deleted run {delete}.")
+            return
+        if compare:
+            table = rn.compare(_names(compare))
+            _print_frame(table[table["differs"]].drop(columns="differs").reset_index().rename(columns={"index": "what"}), "What differs", max_rows=60)
+            return
+        if best:
+            if not target:
+                raise ValueError("--best needs --target.")
+            record = rn.best_run(target)
+            console.print(f"Best run for {target}: {record['id']} ({record['name']}, {record['created']})")
+            console.print({k: round(v, 4) for k, v in record["metrics"].items()})
+            return
+    except ValueError as e:
+        _fail(e)
+    frame = rn.list_runs(target)
+    if frame.empty:
+        console.print("No runs yet. Every `kikolens lab` and every dashboard lab training is recorded here.")
+        return
+    _print_frame(frame.drop(columns=["task"]).round(4), "Runs, newest first")
 
 
 def cli():

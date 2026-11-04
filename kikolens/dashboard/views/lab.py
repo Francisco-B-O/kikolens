@@ -8,6 +8,7 @@ from kikolens.analyze import explain as ex
 from kikolens.analyze import modellab as lab
 from kikolens.analyze.predict import EXTENSION, build_bundle
 from kikolens.dashboard import components as ui
+from kikolens.dashboard.i18n import t
 from kikolens.dashboard.views import _lab_extra as extra
 
 TITLE = "Model lab"
@@ -32,10 +33,13 @@ def _controls(df: pd.DataFrame) -> dict:
         test_size = st.slider("Share kept aside for the final test", 0.1, 0.4, 0.2, 0.05, key="lab_test")
         tune = st.checkbox("Tune the best model", True, key="lab_tune")
         n_iter = st.slider("Tuning attempts", 5, 60, 20, key="lab_iter", disabled=not tune)
+        tuner = st.radio("Search method", ["random", "bayes"], horizontal=True, key="lab_tuner", disabled=not tune,
+                         format_func=lambda m: t({"random": "Random", "bayes": "Bayesian (smarter, slower)"}[m]),
+                         help="Bayesian search learns from each attempt to pick the next one, so it often needs fewer attempts.")
         balance = st.checkbox("Balance classes", False, key="lab_balance", disabled=task != "classification",
                               help="Gives rarer classes more weight, for models that support it.")
     return dict(target=target, drop=exclude, models=models, folds=folds, test_size=test_size, tune=tune,
-                n_iter=n_iter, balance=balance)
+                n_iter=n_iter, balance=balance, tuner=tuner)
 
 
 def _train(df: pd.DataFrame, params: dict) -> None:
@@ -48,6 +52,11 @@ def _train(df: pd.DataFrame, params: dict) -> None:
         return
     bar.empty()
     st.session_state.lab_res = res
+    try:
+        from kikolens.analyze import runs
+        runs.log_lab(res, str(st.session_state.get("filename") or ""), {k: v for k, v in params.items() if k != "drop" or v})
+    except (OSError, ValueError):  # el historial es un extra: si no se puede escribir, el laboratorio sigue
+        pass
 
 
 def _warnings(res: dict) -> None:
@@ -66,12 +75,17 @@ def _leaderboard(res: dict) -> None:
     ui.chart(res["plots"]["leaderboard"], 120 + 34 * len(res["leaderboard"]))
     board = res["leaderboard"].copy()
     shown = [c for c in board.columns if not c.endswith("std") and c != "total time (s)"]
-    ui.table(board[shown].round(4), hide_index=True)
+    ui.heat_table(board[shown].round(4), [c for c in shown if c not in ("model", "status", "fit time (s)")], hide_index=True)
     if res["tuning"]:
         t = res["tuning"]
         verdict = "improved" if t["improved"] else "did not improve"
         ui.note(f"Tuning {verdict} {res['best_model']}: {t['default_cv']:.4f} to {t['tuned_cv']:.4f} "
                 f"(cross-validated). Settings tried best: {t['params']}", "ok" if t["improved"] else "low")
+    if res["tuning"] and res["tuning"].get("history") is not None:
+        with st.expander(t("How the Bayesian search went")):
+            from kikolens.analyze.bayesopt import history_figure
+            ui.chart(history_figure(res["tuning"]["history"]), 320)
+            ui.table(res["tuning"]["history"].round(4), hide_index=True)
     ui.download_csv(board, "leaderboard.csv", "Download leaderboard (CSV)")
 
 

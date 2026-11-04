@@ -25,7 +25,8 @@ The dashboard groups its sections into four areas.
 
 | Area | Section | What it does |
 | :--- | :--- | :--- |
-| **Data** | Load | CSV, TSV, Excel (pick the sheet), JSON / NDJSON, Parquet, a pasted table, `http(s)` links, shared Google Sheets, `s3://` and `gs://` (with the `cloud` extra), and SQLite / PostgreSQL / MySQL (pick a table or run a read-only query). |
+| **Data** | Home, data story and chart gallery | A home page with a quality ring and sparklines, the data told as chapters with charts, and nine advanced charts (Sankey, treemap, radar, correlation network, calendar, ridgelines...). Built-in examples on the welcome screen. |
+| | Load | CSV, TSV, Excel (pick the sheet), JSON / NDJSON, Parquet, a pasted table, `http(s)` links, shared Google Sheets, `s3://` and `gs://` (with the `cloud` extra), and SQLite / PostgreSQL / MySQL (pick a table or run a read-only query). |
 | | Quality and cleaning | Quality score and detection of missing values, duplicates, constant columns, text that is really numbers or dates, and outliers. Missing-data patterns (are the gaps random?), smart fill (KNN, iterative, by group), merging of similar spellings, near-duplicate rows, and your own validation rules. Every fix is undoable; the original file is never touched. |
 | | Privacy | Finds personal data (validated patterns and column names), masks, hashes or removes it as recipe steps, and measures how identifiable people are with k-anonymity. |
 | | Match records | Joins two tables whose names are spelled differently (accents, order, typos), with ambiguity warnings. |
@@ -39,6 +40,9 @@ The dashboard groups its sections into four areas.
 | | Compare data | What changed between two datasets, two periods, or the raw and the cleaned data: PSI, KS and chi-squared per column. |
 | | Text | For comments and reviews: key terms, what distinguishes each group, themes, a classifier, rough tone, search, and an optional summary from the local model. |
 | | Segments | k-means clustering with a silhouette hint for the number of groups. |
+| | Sequential tests | A/B tests that stay valid when checked after every visitor (mSPRT), a planner, and a bandit simulator. |
+| | Segment explorer | Gaussian mixture (finds the number of groups), hierarchical clustering with a dendrogram and DBSCAN, each group described in words. |
+| | Recommendations | An item-based recommender with an honest evaluation against recommending the most popular items. |
 | | Survival | Kaplan-Meier curves with confidence bands and a log-rank test between groups, counting cases where the event has not happened yet. |
 | | Customers | Retention by cohort, RFM segments, conversion funnels and what is bought together. |
 | | Why it changed | A figure moved between two periods: which regions, channels or products explain it, with a waterfall and mix and rate effects for averages. |
@@ -46,6 +50,9 @@ The dashboard groups its sections into four areas.
 | **Models** | Models | AutoML for regression and classification with a written rationale, feature importance, row explanations and a what-if simulator. |
 | | Model lab | Up to 12 models (a baseline included) compared with cross-validation, the best one tuned, data-leak detection, diagnostics, partial dependence, Shapley values, **where the model fails**, decision thresholds with costs, a row-by-row comparison of two models, ranges that hold the truth as often as you ask (conformal), the smallest changes that would flip a prediction, and a fairness check across groups. SVM, AdaBoost, Bagging, voting and stacking ensembles, and an optional PyTorch network, are available too. |
 | | Regression | What pushes a result up or down, other things equal: linear or logistic regression with ranges, p-values, odds ratios, each effect in a sentence and warnings when the model cannot be trusted. |
+| | Feature selection | Four methods vote on which columns to keep, and a cross-validated curve decides how many. |
+| | Forecast with drivers | Forecast a series with other columns too, test whether they help, try what-if scenarios and run Granger tests. |
+| | Run history | Every lab training is recorded and comparable; Bayesian tuning is available in the lab. |
 | | Feature ideas | Tries ratios, products and other new columns and keeps the ones that make a model better, as recipe steps. |
 | | Neural network | Configurable multilayer perceptron with the architecture drawn, the training curve, permutation importance and a comparison with the classical model. |
 | | Time series | Trend and seasonality, then five models (naive, seasonal naive, trend + seasonality, Holt-Winters, boosting on lags) tested on the past, the best one forecast with an honest range, changes of level or trend, special dates, and one forecast per group. |
@@ -54,6 +61,7 @@ The dashboard groups its sections into four areas.
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
 | **Share** | Panel | Pin metrics, charts and tables with global filters, and export them as one self-contained web page. |
 | | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
+| | Synthetic data | A table with the same distributions and correlations as yours but not real people, with fidelity, privacy and utility reports. |
 | | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; a database table; a data dictionary; or a Jupyter notebook that reproduces the session. |
 | | Project | Save everything to a single `.kikolens` file, reopen it later, and repeat the recipe on new data or export it as a Python script. |
 

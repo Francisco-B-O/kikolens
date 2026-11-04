@@ -90,6 +90,33 @@ hr {{ border-color:var(--line); }}
 [data-testid="stMetric"] {{ background:var(--surface); border:1px solid var(--line); padding:10px 14px; }}
 [data-testid="stExpander"] {{ border:1px solid var(--line); border-radius:2px; background:var(--surface); }}
 [data-testid="stSidebar"] [role="radiogroup"] label {{ padding:3px 0; }}
+
+.kl-hero {{ display:flex; gap:28px; align-items:center; justify-content:space-between; flex-wrap:wrap; padding:26px 30px; margin:0 0 1.4rem;
+  background:linear-gradient(135deg,var(--accent-soft),var(--surface) 70%); border:1px solid var(--line); border-radius:6px; }}
+.kl-hero-main h2 {{ font:600 1.9rem var(--serif) !important; margin:0 0 4px !important; padding:0 !important; }}
+.kl-hero-main p {{ margin:0 0 14px; color:var(--muted); max-width:46rem; }}
+.kl-gauge {{ text-align:center; font-family:var(--sans); }}
+.kl-gauge-label {{ font:600 .68rem var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); margin-top:2px; }}
+.kl-gauge-cap {{ font-size:.78rem; color:var(--muted); }}
+.kl-tiles {{ display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; margin:0 0 1.5rem; }}
+.kl-tile {{ background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:14px 16px; transition:border-color .15s, transform .15s; }}
+.kl-tile:hover {{ border-color:var(--accent); transform:translateY(-1px); }}
+.kl-tile span {{ font:600 .68rem var(--sans); letter-spacing:.08em; text-transform:uppercase; color:var(--muted); display:block;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }}
+.kl-tile b {{ display:block; font:600 1.5rem var(--serif); margin:2px 0; font-variant-numeric:tabular-nums; }}
+.kl-tile i {{ display:block; font:normal .76rem var(--sans); color:var(--muted); }}
+.kl-tile-spark {{ margin-top:8px; line-height:0; }}
+.kl-chips {{ display:flex; flex-wrap:wrap; gap:6px; }}
+.kl-chip {{ font:600 .72rem var(--sans); padding:3px 10px; border-radius:99px; border:1px solid var(--line); background:var(--surface); color:var(--muted); }}
+.kl-chip.accent {{ background:var(--accent-soft); border-color:var(--accent); color:var(--accent); }}
+.kl-chip.ok {{ border-color:var(--ok); color:var(--ok); }} .kl-chip.high {{ border-color:var(--high); color:var(--high); }}
+.kl-chip.medium {{ border-color:var(--medium); color:var(--medium); }}
+.kl-strip {{ display:flex; gap:2px; height:14px; margin:6px 0 14px; }}
+.kl-miss {{ flex:1; border-radius:2px; }}
+.kl-chapter {{ border-left:3px solid var(--accent); padding:2px 0 2px 16px; margin:1.6rem 0 .6rem; }}
+.kl-chapter small {{ font:600 .68rem var(--sans); letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }}
+.kl-chapter h3 {{ font:600 1.3rem var(--serif) !important; margin:2px 0 !important; padding:0 !important; }}
+.kl-demo {{ display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-top:1.4rem; text-align:left; }}
 """
 
 
@@ -110,6 +137,8 @@ def style_chart(fig, height: int = 420):
         xaxis=axis, yaxis=axis, colorway=p["colorway"], height=height,
         margin=dict(l=8, r=8, t=48, b=8),
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(color=p["muted"])),
+        hoverlabel=dict(bgcolor=p["surface"], bordercolor=p["line"], font=dict(family="system-ui, sans-serif", color=p["ink"])),
     )
+    fig.update_traces(marker_line_width=0, selector=dict(type="bar"))
     fig.for_each_yaxis(lambda a: a.update(tickfont=dict(color=p["muted"]), linecolor=p["line"]))  # incluye ejes secundarios
     return fig

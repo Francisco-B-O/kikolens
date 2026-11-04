@@ -171,3 +171,30 @@ def test_fit_cli(tmp_path):
     assert out.exit_code == 0 and "exponential" in out.output
     assert runner.invoke(app, ["fit", str(csv), "nope"]).exit_code == 1
     assert runner.invoke(app, ["fit", str(csv), "v", "--only", "cauchy"]).exit_code == 1
+
+
+def test_newer_analyses_are_available_from_the_api(tmp_path, monkeypatch):
+    monkeypatch.setenv("KIKOLENS_HOME", str(tmp_path))
+    rng = np.random.default_rng(0)
+    n = 500
+    df = pd.DataFrame({"s1": rng.normal(size=n), "s2": rng.normal(size=n), "noise": rng.normal(size=n), "cat": rng.choice(["a", "b"], n)})
+    df["y"] = 3 * df["s1"] + 2 * df["s2"] + rng.normal(0, 0.3, n)
+    assert {"s1", "s2"} <= set(kl.select_features(df, "y").recommended)
+    seg = kl.segment(df, "hierarchical", ["s1", "s2", "noise"], n_groups=3)
+    assert seg.kind == "segments" and len(seg.labels) == n and seg.table is not None
+    with pytest.raises(ValueError, match="method"):
+        kl.segment(df, "magic")
+    syn = kl.synthesize(df, 300)
+    assert len(syn.data) == 300 and syn.report["fidelity"] > 60 and "<table" in syn._repr_html_()
+    arm = np.tile(["a", "b"], n // 2)
+    ab = pd.DataFrame({"arm": arm, "won": np.where(arm == "a", rng.random(n) < 0.1, rng.random(n) < 0.2).astype(int)})
+    assert kl.ab_sequential(ab, "arm", "won", "a").kind == "sequential test"
+    ts = pd.DataFrame({"date": pd.date_range("2024-01-01", periods=300), "x": rng.normal(size=300).cumsum()})
+    ts["y"] = ts["x"].shift(2).fillna(0) * 2 + rng.normal(0, 0.3, 300)
+    assert kl.granger(ts, "date", "x", "y", max_lag=3).kind == "granger"
+    assert len(kl.forecast_drivers(ts, "date", "y", ["x"], horizon=5).table) == 5
+    rows = [(f"u{u}", f"i{(u % 3) * 10 + int(rng.integers(0, 10))}") for u in range(150) for _ in range(5)]
+    model = kl.recommender(pd.DataFrame(rows, columns=["user", "item"]).drop_duplicates(), "user", "item")
+    assert len(model.recommend("u0", 3)) == 3
+    kl.lab(df, "y", models=["Ridge"], folds=3, tune=False)           # no registra: solo la CLI y el panel lo hacen
+    assert isinstance(kl.runs(), pd.DataFrame)

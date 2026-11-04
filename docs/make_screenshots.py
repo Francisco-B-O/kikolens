@@ -191,7 +191,7 @@ def prepare_workspace() -> Path:
 
 
 def pick(page, label: str, value: str) -> None:
-    box = page.locator('[data-testid="stSelectbox"]').filter(has_text=re.compile(rf"^{label}")).first
+    box = page.locator('[data-testid="stSelectbox"]').filter(has_text=re.compile(rf"^{re.escape(label)}")).first
     box.locator('[data-baseweb="select"]').click()
     page.keyboard.type(value)
     page.keyboard.press("Enter")
@@ -218,6 +218,11 @@ def capture(browser, mode: str) -> None:
         time.sleep(1.5)
         nav.get_by_text(name, exact=True).last.click()  # "Models" es a la vez un área y una sección
         time.sleep(3)
+
+    go("Home", "Data")
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"home-{mode}.png")
 
     go("Overview", "Data")
     page.screenshot(path=IMAGES / f"overview-{mode}.png")
@@ -263,6 +268,28 @@ def capture(browser, mode: str) -> None:
     page.mouse.move(5, 5)
     page.screenshot(path=IMAGES / f"autopilot-{mode}.png")
 
+    go("Data story", "Data")
+    page.get_by_role("button", name="Tell the story").click()
+    time.sleep(12)
+    page.mouse.move(5, 5)
+    scroll_main(page, 1500)
+    page.screenshot(path=IMAGES / f"story-{mode}.png")
+
+    go("Chart gallery", "Data")
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"gallery-{mode}.png")
+    pick(page, "Chart", "Network")
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"gallery-network-{mode}.png")
+
+    go("Segment explorer", "Analysis")
+    page.get_by_text("Hierarchical (dendrogram)").click()
+    time.sleep(5)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"segments-{mode}.png")
+
     go("Impact", "Analysis")
     pick(page, "Measure", "revenue")
     page.get_by_role("button", name="Estimate the effect").click()
@@ -279,6 +306,13 @@ def capture(browser, mode: str) -> None:
     scroll_main(page, 120)
     page.screenshot(path=IMAGES / f"why-{mode}.png")
 
+    go("Synthetic data", "Share")
+    page.get_by_role("button", name="Generate", exact=True).click()
+    page.get_by_text("Column by column").wait_for(timeout=120000)
+    time.sleep(2)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"synthetic-{mode}.png")
+
     go("Panel", "Share")
     page.get_by_role("button", name="Suggest a panel").click()
     time.sleep(6)
@@ -294,6 +328,22 @@ def capture(browser, mode: str) -> None:
     time.sleep(3)
     scroll_main(page, 120)
     page.screenshot(path=IMAGES / f"monitoring-{mode}.png")
+
+    go("Feature selection", "Models")
+    pick(page, "Column to predict", "revenue")
+    page.get_by_role("button", name="Score the columns").click()
+    page.get_by_text("Can be left out").wait_for(timeout=300000)
+    time.sleep(2)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"feature-selection-{mode}.png")
+
+    go("Forecast with drivers", "Models")
+    pick(page, "Column to forecast", "revenue")
+    page.get_by_role("button", name="Forecast", exact=True).click()
+    page.get_by_text("Error with drivers").wait_for(timeout=300000)
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"drivers-{mode}.png")
 
     go("Neural network", "Models")
     pick(page, "Column to predict", "revenue")
@@ -333,6 +383,11 @@ def capture(browser, mode: str) -> None:
     scroll_main(page, 640)
     page.screenshot(path=IMAGES / f"lab-uncertainty-{mode}.png")
 
+    go("Run history", "Models")
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"run-history-{mode}.png")
+
     go("Predict", "Models")
     page.get_by_role("button", name="Predict", exact=True).first.click()
     time.sleep(5)
@@ -364,6 +419,13 @@ def capture(browser, mode: str) -> None:
     time.sleep(6)
     page.mouse.move(5, 5)
     page.screenshot(path=IMAGES / f"survival-{mode}.png")
+
+    go("Sequential tests", "Analysis")
+    pick(page, "Group column (two values)", "plan")
+    pick(page, "Outcome", "churned")
+    time.sleep(4)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"sequential-{mode}.png")
     page.close()
 
 

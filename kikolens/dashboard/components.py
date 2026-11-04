@@ -1,6 +1,7 @@
 """Piezas de interfaz reutilizables."""
 import html
 
+import pandas as pd
 import streamlit as st
 
 from kikolens.dashboard.i18n import t
@@ -43,6 +44,16 @@ def table(df, height=None, **kwargs) -> None:
     if height is not None:
         kwargs["height"] = height
     st.dataframe(df, width="stretch", **kwargs)
+
+
+def heat_table(df, columns=None, cmap: str = "Oranges", **kwargs) -> None:
+    """Tabla con las columnas numéricas coloreadas según su valor (más intenso, más alto). Si no se puede dar formato, se muestra tal cual."""
+    cols = [c for c in (columns or df.columns) if c in df.columns and pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])]
+    try:
+        styled = df.style.background_gradient(cmap=cmap, subset=cols, axis=0) if cols and len(df) > 1 else df
+    except Exception:  # pragma: no cover - sin matplotlib o con tipos raros
+        styled = df
+    st.dataframe(styled, width="stretch", **kwargs)
 
 
 def download_csv(df, filename: str, label_text: str = "Download CSV") -> None:

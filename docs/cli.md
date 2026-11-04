@@ -23,6 +23,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens run PIPELINE.json` | Run a pipeline file (see below). Exit code `2` when a `fail_on` condition triggers, `1` when something cannot be read. |
 | `kikolens jupyter [FOLDER] [--no-open]` | Write a quickstart notebook for the Python API and open it in JupyterLab if it is installed. See the [Python API guide](python-api.md). |
 | `kikolens fit SOURCE COLUMN [--only normal,gamma]` | Which distribution describes a numeric column best (AIC, Kolmogorov-Smirnov, normality). |
+| `kikolens segment SOURCE [gmm\|hierarchical\|dbscan] [--columns a,b] [--groups 4] [--output FILE]` | Segment rows and describe each group in words; `--output` adds a group column. |
+| `kikolens recommend SOURCE USER ITEM [--rating COL] [--for PERSON] [--similar-to ITEM] [--evaluate]` | Item-based recommender from a table of who used what. |
+| `kikolens synth SOURCE OUTPUT [--rows N] [--seed N] [--report]` | Generate synthetic data with the same distributions and correlations; `--report` measures fidelity and privacy. |
 | `kikolens project FILE.kikolens [--output FILE]` | Show what a project contains (notes, recipe) and optionally export its processed data. |
 
 ## Models
@@ -43,7 +46,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens forecast ... --by COLUMN` | One forecast per value of a column (the 20 with the most activity). |
 | `kikolens serve MODEL [--port 8000] [--host 127.0.0.1] [--token T]` | Serve a saved model as a small JSON API. `POST /predict` with `{"rows": [{...}]}` returns predictions and warnings; `GET /model` describes the inputs; `GET /health`. It listens only on this computer unless you give another `--host`, which requires `--token` (sent as `Authorization: Bearer T`). |
 
-`predict` and `lab` take `--save PATH` to write a model package to a file and `--register NAME` to keep it with your saved models. `lab` also takes `--folds`, `--no-tune`, `--models "Ridge,Random Forest"`, `--balance` and `--exclude col1,col2`. Besides the default models, `--models` accepts `SVM`, `AdaBoost`, `Bagging`, `Voting Ensemble`, `Stacking Ensemble` and, with PyTorch installed, `PyTorch MLP`.
+`predict` and `lab` take `--save PATH` to write a model package to a file and `--register NAME` to keep it with your saved models. `lab` also takes `--folds`, `--no-tune`, `--bayes` (Bayesian optimisation instead of a random search), `--models "Ridge,Random Forest"`, `--balance` and `--exclude col1,col2`. Besides the default models, `--models` accepts `SVM`, `AdaBoost`, `Bagging`, `Voting Ensemble`, `Stacking Ensemble` and, with PyTorch installed, `PyTorch MLP`.
 
 ## Analysis
 
@@ -64,6 +67,12 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens regress SOURCE TARGET [--using a,b] [--positive VALUE] [--output FILE]` | Linear regression for a number and logistic for a two-valued column: coefficients with ranges and p-values, each effect in a sentence, and warnings about collinearity or unreliable errors. |
 | `kikolens spikes SOURCE DATE VALUE [--agg mean\|sum] [--sensitivity 3.5] [--output FILE]` | Unusual periods in a series once trend and season are taken out. |
 | `kikolens why SOURCE DATE [--metric COL] [--agg sum\|mean\|count] [--before START,END] [--after START,END] [--by a,b]` | Explain why a figure changed between two periods: which values of which columns account for it. The end date is not included; by default it compares the last third of the dates with the one before. |
+| `kikolens ab-seq SOURCE GROUP OUTCOME CONTROL [--order COL] [--alpha 0.05]` | Sequential A/B test (mSPRT): valid even if you look after every observation. |
+| `kikolens bandit RATES [--visitors N]` | Simulate a Thompson-sampling bandit against an even split. |
+| `kikolens granger SOURCE DATE CAUSE EFFECT [--max-lag 7]` | Does the past of one column help predict another? Predictive, not proof of cause. |
+| `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
+| `kikolens select-features SOURCE TARGET [--exclude a,b] [--output FILE]` | Which columns are worth keeping: consensus of four methods and a cross-validated curve. |
+| `kikolens runs [--target COL] [--best] [--compare id,id] [--delete id]` | The history of model lab runs. |
 | `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |
 | `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 

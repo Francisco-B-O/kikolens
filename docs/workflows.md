@@ -144,6 +144,26 @@ Put the steps in a pipeline file and let a scheduler run it (see *Pipeline files
 kikolens run pipeline.json || echo "Something changed: look at out/log.json"
 ```
 
+## 13. Stop an A/B test as soon as you can
+
+**Goal:** know whether a variant wins without waiting for a fixed number of visitors, and without fooling yourself by peeking.
+
+1. *Analysis* → *Sequential tests* → **Planner**: with a 10% conversion rate and a change of 2 points, compare the fixed-size test with the sequential one and see that false alarms stay near 5% even when checked after every visitor.
+2. Export the visits in order (one row per visitor, the variant and a 0/1 for conversion) and open **Live test**: the evidence line shows when it crosses the threshold, and the always-valid p-value and range say how much to trust the difference.
+3. Not sure the variants are equal? The **Bandit simulator** shows how much traffic would have gone to the winner while learning.
+
+From the terminal: `kikolens ab-seq visits.csv variant converted control --order timestamp`.
+
+## 14. What should I keep for the model?
+
+1. *Models* → *Feature selection* on your target. Four methods vote; the curve shows that a handful of columns is as good as all of them.
+2. *Remove the columns I can leave out* adds a recipe step, so the same cut is applied to new data.
+3. Train with the *Model lab* using Bayesian tuning, and look at *Run history* to see that the new run beats the previous ones.
+
+## 15. Share data you cannot share
+
+*Privacy* removes or fingerprints the identifying columns; **Synthetic data** then generates a table with the same distributions and correlations whose rows are not people. Its report shows the fidelity, the exact and near copies of real rows, and how well a model trained on it does on real rows. `kikolens synth customers.csv shareable.csv --report`.
+
 ## Monitoring from a script or CI
 
 `kikolens drift` returns exit code `2` when the data changed a lot, `0` otherwise. A nightly job can compare the latest export with the data the model was trained on:

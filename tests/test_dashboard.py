@@ -13,7 +13,9 @@ APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
-         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit"]
+         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
+         "Home", "Data story", "Chart gallery", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
+         "Forecast with drivers", "Run history", "Synthetic data"]
 
 
 @pytest.fixture(scope="module")
@@ -505,3 +507,44 @@ def test_distribution_page_fits_a_column(data):
     at.run()
     assert_clean(at)
     assert any("fits best" in m.value for m in at.markdown)
+
+
+def test_new_analysis_pages_work_on_suitable_data(data):
+    # segmentos: dos columnas numéricas son suficientes
+    at = open_page(data, "Segment explorer")
+    assert_clean(at)
+    at.radio(key="sx_m").set_value("hierarchical").run()
+    assert_clean(at)
+    at.button(key="sx_apply").click().run()
+    assert_clean(at)
+    assert "group" in at.session_state["df"].columns
+    # selección de variables
+    at = open_page(data, "Feature selection")
+    at.selectbox(key="fs_t").set_value("y")
+    at.run()
+    at.button(key="fs_go").click().run()
+    assert_clean(at)
+    assert "fs_res" in at.session_state
+
+
+def test_sequential_recommendations_synthetic_and_history_pages():
+    rng = np.random.default_rng(0)
+    n = 1200
+    arm = np.tile(["control", "new"], n // 2)
+    ab = pd.DataFrame({"arm": arm, "won": np.where(arm == "control", rng.random(n) < 0.1, rng.random(n) < 0.16).astype(int)})
+    at = open_page(ab, "Sequential tests")
+    assert_clean(at)
+    assert any("Always-valid" in str(m.label) or "Decision" in str(m.label) for m in at.metric) or any("kl-stat" in m.value for m in at.markdown)
+
+    rows = [(f"u{u}", f"i{(u % 3) * 10 + int(rng.integers(0, 10))}") for u in range(150) for _ in range(6)]
+    at = open_page(pd.DataFrame(rows, columns=["user", "item"]).drop_duplicates(), "Recommendations")
+    assert_clean(at)
+
+    people = pd.DataFrame({"age": rng.integers(20, 70, 300), "income": rng.normal(2000, 400, 300), "city": rng.choice(["A", "B"], 300)})
+    at = open_page(people, "Synthetic data")
+    at.button(key="sy_go").click().run()
+    assert_clean(at)
+    assert len(at.session_state["sy_res"][0]["data"]) == 300
+
+    at = open_page(people, "Run history")
+    assert_clean(at)

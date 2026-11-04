@@ -10,6 +10,13 @@ The sidebar's **Source** menu offers four ways in: **File** (CSV, TSV, Excel, JS
 
 ## Data
 
+### Home, data story and chart gallery
+**Home** is the first thing you see after loading data: a quality ring, how many columns of each kind there are, a strip showing where the empty values are, a small chart for every numeric column (and the trend over time if there is a date), the things worth a look, and one-click buttons to the autopilot, the cleaning page and the story. With no data loaded, the welcome screen offers four built-in examples (sales, reviews, orders and subscriptions) so you can try everything at once.
+
+**Data story** reads the data like an analyst and tells it in short chapters, each with its sentence, key figures and a chart: what is there, quality, what stands out, what moves together, how the main numeric column evolves (with its unusual periods marked), which groups differ most, the unusual rows, and where to go next. Download it as Markdown.
+
+**Chart gallery** has nine charts a bar chart cannot replace: a Sankey diagram of the flow between two columns, a treemap of nested groups, a radar chart of each group's profile, correlations reordered so similar columns sit together, a network of correlated columns, a calendar of activity, ridgelines of a distribution by group, parallel coordinates, and one panel per group.
+
 ### Overview
 Rows, columns, quality score, missing cells and memory use, a table with the type and health of every column, and a preview of the data.
 
@@ -97,6 +104,15 @@ Choose columns, a method and the share of rows to flag. Methods: Isolation Fores
 ### Distribution fit
 Which distribution describes a numeric column best: normal, lognormal, exponential, gamma, Weibull, beta, uniform, Laplace or Student t, ranked by AIC with the Kolmogorov-Smirnov statistic, the histogram with the fitted curve, and a Q-Q plot against the best one. Distributions that cannot hold the data (a lognormal for negative values) are left out, and the page says whether the column looks normal.
 
+### Sequential tests
+A/B tests that stay valid however often you look. A classic test is only right if you check once, at the end; checking daily and stopping when it looks significant multiplies the false positives. The **live test** uses a mixture sequential probability ratio test (mSPRT): it shows the evidence building up as visitors arrive, tells you when it is enough to stop, and gives an always-valid p-value and range next to the (misleading if peeked at) classic p-value. The **planner** simulates how many visitors the sequential test needs against a fixed-size test, and how often it raises a false alarm when there is no effect. The **bandit simulator** shows how a Thompson-sampling bandit shifts traffic to the winning variant while it learns, and how many more conversions that gives than an even split.
+
+### Segment explorer
+Three ways to find groups of similar rows: a **Gaussian mixture** that chooses the number of groups itself (lowest BIC) and gives every row a confidence, **hierarchical** clustering with a dendrogram, and **DBSCAN**, which follows free shapes and marks the rows that belong nowhere as noise (its radius is chosen from the distances to the neighbours). Each group is described in words ("units high, price low"), drawn on the two main components and summarised in a table; one click adds the group as a column.
+
+### Recommendations
+From a table of who used or rated what, an item-based recommender suggests items to a person, lists the items most like another, and is evaluated honestly: one interaction of each person is hidden and the recommender must bring it back among its first suggestions, against simply recommending the most popular items.
+
 ### Dimensions
 * **PCA.** How many components capture 90% of the variation, what each is made of, and a scatter of the rows on any two components, colored by a column.
 * **t-SNE.** A 2D map where similar rows sit together (a sample of 3,000 rows is used on larger data).
@@ -181,6 +197,15 @@ Tries new columns (products, ratios, sums, differences, logarithms of skewed col
 ### Regression
 For understanding rather than predicting: what pushes a result up or down, other things equal. A column with numbers gets a linear regression; a column with two values gets a logistic regression. Pick the columns to explain it with and you get each effect with its standard error, its 95% range and its p-value, a coefficient chart, the effect of each term written as a sentence ("each extra unit of size goes with price rising by 3.01, other things equal"; "a support ticket multiplies the odds of leaving by 1.6") and the standardized effect so that terms in different units can be compared. Categories are compared with the commonest value. The page warns about columns that are largely explained by others (unstable coefficients), errors whose spread changes with the fit or that are related from row to row (p-values too optimistic), and, for logistic regression, a column that almost gives the answer away.
 
+### Feature selection
+Which columns are worth keeping to predict a target. Four methods score every column (mutual information, an L1-penalised linear model, permutation importance and a random forest) and vote; a cross-validated curve shows the score using the best k columns and the page recommends the smallest k within one standard error of the best. One click adds a recipe step that drops the columns you can leave out.
+
+### Forecast with drivers
+Forecasts a series using other columns too (price, promotions, weather...). It tests on the past whether the drivers really beat the series alone, with a significance test, and lets you try **what-if scenarios** ("price 10% higher"). The second tab runs a **Granger test**: does the past of one column help predict another? It is about prediction, not proof of cause.
+
+### Run history
+Every training of the model lab (dashboard or `kikolens lab`) is recorded with its data, target, parameters and metrics. See them over time with the best so far, sort by any metric, and compare runs side by side (only what differs). The lab can also tune with **Bayesian optimisation**, which learns from each attempt to choose the next one and shows how the search went.
+
 ### Neural network
 A multilayer perceptron you configure: hidden layers (presets or your own, e.g. `128, 64, 32`), activation, optimizer, learning rate, L2 regularization, maximum epochs, early stopping and the held-out share for testing. After training you get metrics, the network diagram, the training curve, permutation importance and, if a classical model was trained for the same target, a side-by-side comparison.
 
@@ -223,6 +248,9 @@ A page of your own. Add **metrics** (count, sum, mean, median, minimum, maximum,
 * **Database:** writes the current data as a table. It stops if the table exists unless you choose to add rows or to replace it, and replacing needs a confirmation.
 
 ![Export](images/export-light.png)
+
+### Synthetic data
+Generates a table that looks like yours (each column with its distribution, and the columns with the same correlations) but whose rows are not real people, with a report on **fidelity** (how close the distributions and correlations are), **privacy** (exact and near copies of real rows) and **utility** (a model trained on the synthetic data against one trained on the real data, both tested on real rows).
 
 ### Data dictionary and notebook
 Two more tabs in *Export*. The **data dictionary** has one entry per column (meaning, empty share, distinct values, typical values, range, warnings such as "mostly empty" or "may contain personal data") and you write the descriptions in the table itself; download it as Markdown or CSV to hand over with the data. The **notebook** is a Jupyter file that reloads the data, repeats every recipe step of the session and, if you choose a column, trains a model with the lab; it runs as is.
