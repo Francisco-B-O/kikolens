@@ -82,15 +82,15 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
 <div class="wrap">
   <div class="hero">
     <h1>Data analysis that stays on your machine.</h1>
-    <p class="lead">Load a dataset and let the autopilot take a first pass, fix its quality, compare a dozen models and see where they fail, forecast, study customers and the effect of a change, watch a source over time and keep everything you built. No account, no upload. Language features run on a local model.</p>
+    <p class="lead">Load a dataset (or try a built-in example) and let the autopilot take a first pass, fix its quality, compare a dozen models and see where they fail, forecast, study customers and the effect of a change, watch a source over time and keep everything you built. No account, no upload. Language features run on a local model.</p>
     <div class="btns">
       <a class="btn primary" href="#install">Install</a>
       <a class="btn" href="https://github.com/Francisco-B-O/kikolens">View the source</a>
     </div>
     <div class="shot">
       <picture>
-        <source srcset="img/lab-leaderboard-dark.png" media="(prefers-color-scheme: dark)">
-        <img src="img/lab-leaderboard-light.png" alt="The model lab leaderboard comparing twelve models">
+        <source srcset="img/home-dark.png" media="(prefers-color-scheme: dark)">
+        <img src="img/home-light.png" alt="The KikoLens home page">
       </picture>
     </div>
   </div>
@@ -112,6 +112,15 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
     <div><h3>Text</h3><p>Key terms, themes, tone and a classifier for comments and reviews, plus an optional summary from a local model.</p></div>
     <div><h3>Panel and reports</h3><p>Pin the numbers and charts you care about, with global filters, and export one self-contained page.</p></div>
     <div><h3>Export and connections</h3><p>Excel workbooks, Parquet, databases, shared Google Sheets and cloud storage, both ways.</p></div>
+    <div><h3>Data story</h3><p>Your data told as short chapters with charts: what is there, what stands out, what moves together, what to do next.</p></div>
+    <div><h3>Chart gallery</h3><p>Sankey flows, treemaps, radar profiles, correlation networks, calendars and ridgelines for what a bar chart cannot show.</p></div>
+    <div><h3>Sequential A/B tests</h3><p>Stop a test as soon as the evidence is enough without inflating false positives, plus a planner and a bandit simulator.</p></div>
+    <div><h3>Bayesian tuning</h3><p>Hyperparameter search that learns from every attempt, with the whole run history to compare.</p></div>
+    <div><h3>Forecast with drivers</h3><p>Use price, promotions or weather in a forecast, test whether they help and try what-if scenarios.</p></div>
+    <div><h3>Segments and recommendations</h3><p>Gaussian mixtures, hierarchical clustering and DBSCAN, and an item-based recommender with an honest evaluation.</p></div>
+    <div><h3>Privacy and synthetic data</h3><p>Detect personal data, mask or hash it, measure k-anonymity and generate look-alike data that is not real people.</p></div>
+    <div><h3>Python API and Jupyter</h3><p>import kikolens as kl, magics for notebooks and a quickstart notebook that runs on its own.</p></div>
+    <div><h3>Pipelines</h3><p>Run a recipe, validation, drift check and scoring from one JSON file, with exit codes for schedulers.</p></div>
     <div><h3>Reproducible</h3><p>Save a whole project in one file, replay the recipe on new data or export it as a Python script.</p></div>
     <div><h3>Serve a model</h3><p>One command turns a saved model into a small JSON API that listens only on your computer unless you give it a token.</p></div>
     <div><h3>In English and Spanish</h3><p>A language menu in the dashboard, and reports as web pages or PDF.</p></div>
@@ -122,15 +131,22 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   <h2>Screens</h2>
   <p class="sub">The dashboard follows your light or dark setting.</p>
   <div class="gallery">
+    <figure><picture><source srcset="img/home-dark.png" media="(prefers-color-scheme: dark)"><img src="img/home-light.png" alt="Home page" loading="lazy"></picture><figcaption>Home: quality ring, sparklines and one-click actions</figcaption></figure>
+    <figure><picture><source srcset="img/story-dark.png" media="(prefers-color-scheme: dark)"><img src="img/story-light.png" alt="Data story" loading="lazy"></picture><figcaption>Data story: your data told in chapters</figcaption></figure>
+    <figure><picture><source srcset="img/gallery-dark.png" media="(prefers-color-scheme: dark)"><img src="img/gallery-light.png" alt="Chart gallery" loading="lazy"></picture><figcaption>Chart gallery: a Sankey diagram of the flow between columns</figcaption></figure>
+    <figure><picture><source srcset="img/gallery-network-dark.png" media="(prefers-color-scheme: dark)"><img src="img/gallery-network-light.png" alt="Correlation network" loading="lazy"></picture><figcaption>A network of correlated columns</figcaption></figure>
     <figure><picture><source srcset="img/autopilot-dark.png" media="(prefers-color-scheme: dark)"><img src="img/autopilot-light.png" alt="Autopilot" loading="lazy"></picture><figcaption>Autopilot: a first full analysis in one click</figcaption></figure>
-    <figure><picture><source srcset="img/panel-dark.png" media="(prefers-color-scheme: dark)"><img src="img/panel-light.png" alt="Panel" loading="lazy"></picture><figcaption>Panel: pinned metrics and charts</figcaption></figure>
+    <figure><picture><source srcset="img/segments-dark.png" media="(prefers-color-scheme: dark)"><img src="img/segments-light.png" alt="Segment explorer" loading="lazy"></picture><figcaption>Segment explorer: groups described in words</figcaption></figure>
+    <figure><picture><source srcset="img/sequential-dark.png" media="(prefers-color-scheme: dark)"><img src="img/sequential-light.png" alt="Sequential tests" loading="lazy"></picture><figcaption>Sequential tests: stop as soon as the evidence is enough</figcaption></figure>
+    <figure><picture><source srcset="img/feature-selection-dark.png" media="(prefers-color-scheme: dark)"><img src="img/feature-selection-light.png" alt="Feature selection" loading="lazy"></picture><figcaption>Feature selection: which columns to keep</figcaption></figure>
+    <figure><picture><source srcset="img/drivers-dark.png" media="(prefers-color-scheme: dark)"><img src="img/drivers-light.png" alt="Forecast with drivers" loading="lazy"></picture><figcaption>Forecast with drivers and what-if scenarios</figcaption></figure>
+    <figure><picture><source srcset="img/run-history-dark.png" media="(prefers-color-scheme: dark)"><img src="img/run-history-light.png" alt="Run history" loading="lazy"></picture><figcaption>Run history: every lab training, compared</figcaption></figure>
+    <figure><picture><source srcset="img/synthetic-dark.png" media="(prefers-color-scheme: dark)"><img src="img/synthetic-light.png" alt="Synthetic data" loading="lazy"></picture><figcaption>Synthetic data with fidelity and privacy checks</figcaption></figure>
     <figure><picture><source srcset="img/lab-uncertainty-dark.png" media="(prefers-color-scheme: dark)"><img src="img/lab-uncertainty-light.png" alt="Model lab ranges" loading="lazy"></picture><figcaption>Model lab: ranges that hold the truth as often as you ask</figcaption></figure>
-    <figure><picture><source srcset="img/lab-errors-dark.png" media="(prefers-color-scheme: dark)"><img src="img/lab-errors-light.png" alt="Where a model fails" loading="lazy"></picture><figcaption>Model lab: where the model fails</figcaption></figure>
     <figure><picture><source srcset="img/customers-dark.png" media="(prefers-color-scheme: dark)"><img src="img/customers-light.png" alt="Customers" loading="lazy"></picture><figcaption>Customers: retention by cohort</figcaption></figure>
-    <figure><picture><source srcset="img/survival-dark.png" media="(prefers-color-scheme: dark)"><img src="img/survival-light.png" alt="Survival curves" loading="lazy"></picture><figcaption>Survival: who stays, and who leaves first</figcaption></figure>
+    <figure><picture><source srcset="img/survival-dark.png" media="(prefers-color-scheme: dark)"><img src="img/survival-light.png" alt="Survival curves" loading="lazy"></picture><figcaption>Survival: who stays and who leaves first</figcaption></figure>
     <figure><picture><source srcset="img/impact-dark.png" media="(prefers-color-scheme: dark)"><img src="img/impact-light.png" alt="Impact of a change" loading="lazy"></picture><figcaption>Impact: what happened against what was expected</figcaption></figure>
     <figure><picture><source srcset="img/monitoring-dark.png" media="(prefers-color-scheme: dark)"><img src="img/monitoring-light.png" alt="Monitoring" loading="lazy"></picture><figcaption>Monitoring: drift, quality and alerts over time</figcaption></figure>
-    <figure><picture><source srcset="img/timeseries-dark.png" media="(prefers-color-scheme: dark)"><img src="img/timeseries-light.png" alt="Time series" loading="lazy"></picture><figcaption>Time series: tested forecasts</figcaption></figure>
     <figure><img src="img/spanish-light.png" alt="Dashboard in Spanish" loading="lazy"><figcaption>The same dashboard in Spanish</figcaption></figure>
   </div>
 </div></section>
