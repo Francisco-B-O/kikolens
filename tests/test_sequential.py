@@ -10,10 +10,10 @@ from kikolens.cli.main import app
 def test_real_effect_is_detected_early_with_a_valid_interval():
     rng = np.random.default_rng(0)
     r = sq.msprt(rng.random(8000) < 0.10, rng.random(8000) < 0.14)
-    assert r["stopped_at"] and r["stopped_at"] < 8000 and r["decision"] == "treatment better" and r["p_value"] < 0.05
+    assert r["stopped_at"] and r["stopped_at"] < 8000 and r["decision"] == "treatment higher" and r["p_value"] < 0.05
     assert r["interval"][0] < r["difference"] < r["interval"][1] and "can stop" in r["summary"]
     worse = sq.msprt(rng.random(8000) < 0.14, rng.random(8000) < 0.10)
-    assert worse["decision"] == "control better"
+    assert worse["decision"] == "control higher"
 
 
 def test_peeking_at_every_observation_does_not_inflate_false_alarms():
@@ -51,7 +51,7 @@ def test_from_frame_uses_arrival_order_and_checks_columns():
                        "day": np.repeat(pd.date_range("2024-01-01", periods=n // 2), 2)})
     shuffled = df.sample(frac=1, random_state=0)
     r = sq.from_frame(shuffled, "arm", "won", "a", order="day")
-    assert r["decision"] == "treatment better"
+    assert r["decision"] == "treatment higher"
     with pytest.raises(ValueError, match="not a value"):
         sq.from_frame(df, "arm", "won", "zzz")
     with pytest.raises(ValueError, match="exactly two"):

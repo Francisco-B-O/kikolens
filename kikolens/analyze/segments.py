@@ -71,6 +71,12 @@ def gmm_auto(df: pd.DataFrame, columns=None, k_max: int = 8, seed: int = 0) -> d
     if not 2 <= k_max <= 15:
         raise ValueError("k_max must be between 2 and 15.")
     X, cols, filled = prepare(df, columns)
+    # Una columna con muy pocos valores distintos (un descuento del 0, 5, 10 %...) deja que un componente se cuelgue de un solo valor,
+    # con varianza casi nula, y el BIC cae sin que haya grupos reales. Un poco de ruido en esas columnas lo evita.
+    rng = np.random.default_rng(seed)
+    for j, col in enumerate(cols):
+        if filled[col].nunique() <= 10:
+            X[:, j] = X[:, j] + rng.normal(0, 0.25, len(X))
     covariance = "full" if len(X) >= 20 * len(cols) else "diag"
     rows, models = [], {}
     for k in range(1, min(k_max, len(X) // 10) + 1):

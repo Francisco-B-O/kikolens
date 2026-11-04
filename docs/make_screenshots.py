@@ -191,7 +191,7 @@ def prepare_workspace() -> Path:
 
 
 def pick(page, label: str, value: str) -> None:
-    box = page.locator('[data-testid="stSelectbox"]').filter(has_text=re.compile(rf"^{label}")).first
+    box = page.locator('[data-testid="stSelectbox"]').filter(has_text=re.compile(rf"^{re.escape(label)}")).first
     box.locator('[data-baseweb="select"]').click()
     page.keyboard.type(value)
     page.keyboard.press("Enter")
@@ -272,7 +272,7 @@ def capture(browser, mode: str) -> None:
     page.get_by_role("button", name="Tell the story").click()
     time.sleep(12)
     page.mouse.move(5, 5)
-    scroll_main(page, 380)
+    scroll_main(page, 1500)
     page.screenshot(path=IMAGES / f"story-{mode}.png")
 
     go("Chart gallery", "Data")
@@ -285,6 +285,7 @@ def capture(browser, mode: str) -> None:
     page.screenshot(path=IMAGES / f"gallery-network-{mode}.png")
 
     go("Segment explorer", "Analysis")
+    page.get_by_text("Hierarchical (dendrogram)").click()
     time.sleep(5)
     page.mouse.move(5, 5)
     page.screenshot(path=IMAGES / f"segments-{mode}.png")

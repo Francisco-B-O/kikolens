@@ -53,10 +53,18 @@ def sankey(df: pd.DataFrame, source: str, target: str, value: str | None = None,
     right = [f"{target}: {v}" for v in sorted(flows["t"].unique())]
     labels = left + right
     index = {name: i for i, name in enumerate(labels)}
+    palette = ["#9a3412", "#2f5d62", "#b8860b", "#5b6b8c", "#6b7a3d", "#8c5b6b", "#7a4b2a", "#4b6f8c", "#8c7a3d"]
+    node_colours = [palette[i % len(palette)] for i in range(len(labels))]
+
+    def faded(hex_colour: str, alpha: float = 0.38) -> str:
+        r, g, b = (int(hex_colour[i:i + 2], 16) for i in (1, 3, 5))
+        return f"rgba({r},{g},{b},{alpha})"
+
+    sources = [index[f"{source}: {s}"] for s in flows["s"]]
     fig = go.Figure(go.Sankey(
-        node=dict(label=[l.split(": ", 1)[1] for l in labels], pad=14, thickness=16, line=dict(width=0)),
-        link=dict(source=[index[f"{source}: {s}"] for s in flows["s"]], target=[index[f"{target}: {t}"] for t in flows["t"]],
-                  value=flows["w"].tolist())))
+        node=dict(label=[l.split(": ", 1)[1] for l in labels], pad=14, thickness=16, line=dict(width=0), color=node_colours),
+        link=dict(source=sources, target=[index[f"{target}: {t}"] for t in flows["t"]], value=flows["w"].tolist(),
+                  color=[faded(node_colours[i]) for i in sources])))
     fig.update_layout(title=f"{source} to {target}" + (f" (sum of {value})" if value else " (rows)"))
     return fig
 

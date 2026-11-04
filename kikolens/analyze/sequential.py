@@ -38,8 +38,8 @@ def msprt(control, treatment, alpha: float = 0.05, tau: float | None = None, min
     # intervalo de confianza siempre válido: los theta que el mismo test no rechazaría; es más ancho que el clásico, a cambio de poder mirar siempre
     width = np.sqrt(2 * var * (var + n * tau2) / (n ** 2 * tau2) * (np.log(1 / alpha) + 0.5 * np.log((var + n * tau2) / var)))
     final = int(stop or n_total) - 1
-    result = {"n": n_total, "stopped_at": stop, "decision": "treatment better" if stop and running[final] > 0 else
-              "control better" if stop else "keep collecting", "difference": float(running[final]),
+    result = {"n": n_total, "stopped_at": stop, "decision": "treatment higher" if stop and running[final] > 0 else
+              "control higher" if stop else "keep collecting", "difference": float(running[final]),
               "interval": (float(running[final] - width[final]), float(running[final] + width[final])),
               "p_value": float(always_valid[final]), "log_lambda": log_lam, "p_path": always_valid, "means": running, "alpha": alpha,
               "classic_p": float(2 * stats.norm.sf(abs(running[-1] / se[-1]))),
