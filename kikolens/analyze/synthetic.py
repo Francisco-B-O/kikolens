@@ -11,6 +11,11 @@ from sklearn.neighbors import NearestNeighbors
 MAX_CATEGORIES = 50
 
 
+def _ns(series: pd.Series) -> pd.Series:
+    """Fechas como enteros en nanosegundos, sea cual sea la resolución de la columna (pandas 3 usa microsegundos por defecto)."""
+    return series.astype("datetime64[ns]").astype("int64").where(series.notna())
+
+
 def _kinds(df: pd.DataFrame) -> dict:
     kinds = {}
     for col in df.columns:
@@ -43,7 +48,7 @@ def _normal_scores(s: pd.Series, kind: str, rng) -> np.ndarray:
         high = values.map(lambda v: bounds.get(v, (np.nan, np.nan))[1]).to_numpy(float)
         u = low + rng.random(len(s)) * (high - low)
     else:
-        numeric = s.astype("int64").astype(float).where(s.notna()) if kind == "date" else s.astype(float)
+        numeric = _ns(s).astype(float) if kind == "date" else s.astype(float)
         ranks = numeric.rank(method="average").to_numpy()
         u = (ranks - 0.5) / max(n, 1)
     mask = ~np.isnan(u)
@@ -72,7 +77,7 @@ def synthesize(df: pd.DataFrame, n: int | None = None, seed: int = 0, keep_missi
     if len(modelled) < 1:
         raise ValueError("No column can be imitated (they are identifiers or long free text).")
     scores = pd.DataFrame({c: _normal_scores(df[c], kinds[c], rng) for c in modelled})
-    corr = scores.corr().fillna(0.0).to_numpy() if len(modelled) > 1 else np.ones((1, 1))
+    corr = np.array(scores.corr().fillna(0.0)) if len(modelled) > 1 else np.ones((1, 1))      # copia: con pandas 3 to_numpy() es de solo lectura
     np.fill_diagonal(corr, 1.0)
     corr = _nearest_psd(corr)
     z = rng.multivariate_normal(np.zeros(len(modelled)), corr, size=n)
@@ -91,10 +96,10 @@ def synthesize(df: pd.DataFrame, n: int | None = None, seed: int = 0, keep_missi
             elif pd.api.types.is_numeric_dtype(df[col]):
                 out[col] = pd.to_numeric(out[col])
         else:
-            base = s.astype("int64").astype(float) if kinds[col] == "date" else s.astype(float)
+            base = _ns(s).astype(float) if kinds[col] == "date" else s.astype(float)
             values = np.quantile(base.to_numpy(), u[:, j])
             if kinds[col] == "date":
-                out[col] = pd.to_datetime(values.astype("int64"))
+                out[col] = pd.to_datetime(values.astype("int64"), unit="ns")
             elif pd.api.types.is_integer_dtype(df[col]):
                 out[col] = np.round(values).astype(df[col].dtype if df[col].isna().sum() == 0 else "float64")
             else:
@@ -123,7 +128,7 @@ def _matrix(real: pd.DataFrame, synth: pd.DataFrame, kinds: dict) -> tuple:
         if kinds[c] == "category":
             parts.append(pd.get_dummies(both[c].astype(str), prefix=c, dtype=float))
         elif kinds[c] == "date":
-            parts.append(both[c].astype("int64").astype(float).rename(c).to_frame())
+            parts.append(_ns(both[c]).astype(float).rename(c).to_frame())
         else:
             parts.append(both[c].astype(float).to_frame())
     matrix = pd.concat(parts, axis=1)
@@ -138,8 +143,8 @@ def report(real: pd.DataFrame, synth: pd.DataFrame, max_rows: int = 3000, seed: 
     for col in synth.columns:
         k = kinds.get(col)
         if k in ("number", "date"):
-            a = real[col].dropna().astype("int64" if k == "date" else float).astype(float)
-            b = synth[col].dropna().astype("int64" if k == "date" else float).astype(float)
+            a = (_ns(real[col]) if k == "date" else real[col]).dropna().astype(float)
+            b = (_ns(synth[col]) if k == "date" else synth[col]).dropna().astype(float)
             stat = float(stats.ks_2samp(a, b).statistic)
             rows.append({"column": col, "kind": k, "difference": stat, "measure": "Kolmogorov-Smirnov distance"})
         elif k == "category":
