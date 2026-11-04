@@ -12,9 +12,11 @@ from sklearn.base import clone
 from sklearn.calibration import calibration_curve
 from sklearn.compose import ColumnTransformer, TransformedTargetRegressor
 from sklearn.dummy import DummyClassifier, DummyRegressor
-from sklearn.ensemble import (ExtraTreesClassifier, ExtraTreesRegressor, GradientBoostingClassifier,
+from sklearn.ensemble import (AdaBoostClassifier, AdaBoostRegressor, BaggingClassifier, BaggingRegressor,
+                              ExtraTreesClassifier, ExtraTreesRegressor, GradientBoostingClassifier,
                               GradientBoostingRegressor, HistGradientBoostingClassifier,
-                              HistGradientBoostingRegressor, RandomForestClassifier, RandomForestRegressor)
+                              HistGradientBoostingRegressor, RandomForestClassifier, RandomForestRegressor,
+                              StackingClassifier, StackingRegressor, VotingClassifier, VotingRegressor)
 from sklearn.impute import SimpleImputer
 from sklearn.inspection import partial_dependence, permutation_importance
 from sklearn.linear_model import ElasticNet, Lasso, LinearRegression, LogisticRegression, Ridge
@@ -28,6 +30,7 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from kikolens.analyze.quality import infer_types
@@ -164,6 +167,51 @@ def candidates(task: str, seed: int = 42, balance: bool = False) -> dict:
     }
 
 
+ADVANCED = ("SVM", "AdaBoost", "Bagging", "Voting Ensemble", "Stacking Ensemble")
+
+
+def advanced_candidates(task: str, seed: int = 42, balance: bool = False) -> dict:
+    """Modelos más lentos o que combinan a otros. No entran por defecto: hay que pedirlos por su nombre."""
+    cw = "balanced" if balance else None
+    if task == "regression":
+        def base():
+            return [("forest", RandomForestRegressor(n_estimators=100, random_state=seed)),
+                    ("hist", HistGradientBoostingRegressor(random_state=seed)), ("ridge", Ridge())]
+        return {
+            "SVM": (_scaled(SVR()), {"model__regressor__C": loguniform(1e-1, 1e2),
+                                     "model__regressor__epsilon": loguniform(1e-3, 1e0)}),
+            "AdaBoost": (AdaBoostRegressor(random_state=seed), {"model__n_estimators": randint(30, 250),
+                                                                "model__learning_rate": loguniform(0.01, 1.5)}),
+            "Bagging": (BaggingRegressor(random_state=seed), {"model__n_estimators": randint(10, 80),
+                                                              "model__max_samples": uniform(0.5, 0.5)}),
+            "Voting Ensemble": (VotingRegressor(base()), {}),
+            "Stacking Ensemble": (StackingRegressor(base(), final_estimator=Ridge(), cv=3), {}),
+        }
+
+    def base():
+        return [("forest", RandomForestClassifier(n_estimators=100, random_state=seed, class_weight=cw)),
+                ("hist", HistGradientBoostingClassifier(random_state=seed, class_weight=cw)),
+                ("logit", LogisticRegression(max_iter=2000, class_weight=cw))]
+    return {
+        "SVM": (SVC(probability=True, random_state=seed, class_weight=cw), {"model__C": loguniform(1e-1, 1e2),
+                                                                         "model__gamma": ["scale", "auto"]}),
+        "AdaBoost": (AdaBoostClassifier(random_state=seed), {"model__n_estimators": randint(30, 250),
+                                                             "model__learning_rate": loguniform(0.01, 1.5)}),
+        "Bagging": (BaggingClassifier(random_state=seed), {"model__n_estimators": randint(10, 80),
+                                                           "model__max_samples": uniform(0.5, 0.5)}),
+        "Voting Ensemble": (VotingClassifier(base(), voting="soft"), {}),
+        "Stacking Ensemble": (StackingClassifier(base(), final_estimator=LogisticRegression(max_iter=2000), cv=3), {}),
+    }
+
+
+def model_pool(task: str, seed: int = 42, balance: bool = False, names=None) -> dict:
+    """Los modelos por defecto, más los avanzados si alguno aparece por su nombre en `names`."""
+    pool = candidates(task, seed, balance)
+    if names and any(n in ADVANCED for n in names):
+        pool.update(advanced_candidates(task, seed, balance))
+    return pool
+
+
 def make_pipeline(X: pd.DataFrame, estimator) -> Pipeline:
     return Pipeline([("prep", build_preprocessor(X)), ("model", clone(estimator))])
 
@@ -253,7 +301,7 @@ def class_balance(y: pd.Series) -> dict:
 # ── Comparación y ajuste ─────────────────────────────────────────────────────
 def compare_models(X, y, task, models=None, folds=5, seed=42, balance=False, progress=None) -> pd.DataFrame:
     """Validación cruzada de cada candidato. Un modelo que falla no detiene a los demás."""
-    pool = candidates(task, seed, balance)
+    pool = model_pool(task, seed, balance, models)
     names = [m for m in (models or pool) if m in pool]
     if not names:
         raise ValueError("No valid models selected.")
@@ -294,7 +342,7 @@ def compare_models(X, y, task, models=None, folds=5, seed=42, balance=False, pro
 
 def tune_model(X, y, task, name, n_iter=20, folds=5, seed=42, balance=False, scoring=None):
     """Búsqueda aleatoria de hiperparámetros. Devuelve (mejor pipeline sin ajustar, parámetros, puntuación CV, puntuación base)."""
-    pool = candidates(task, seed, balance)
+    pool = model_pool(task, seed, balance, [name])
     if name not in pool:
         raise ValueError(f"Unknown model '{name}'.")
     estimator, space = pool[name]
@@ -461,7 +509,7 @@ def run_model_lab(df, target, models=None, folds=5, tune=True, n_iter=20, test_s
         raise ValueError("No model could be evaluated.")
     best_name = ranked.iloc[0]["model"]
 
-    pool = candidates(task, seed, balance)
+    pool = model_pool(task, seed, balance, models)
     tuning = None
     unfitted = make_pipeline(X_train, pool[best_name][0])
     if tune and pool[best_name][1]:

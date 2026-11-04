@@ -10,7 +10,7 @@ import kikolens.dashboard.app as dashboard_app
 from kikolens.pipeline.project import load_project
 
 APP = str(Path(dashboard_app.__file__))
-PAGES = ["Overview", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
+PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data"]
 
@@ -63,6 +63,17 @@ def test_models_train_button(data):
     at.button(key="aml_train").click().run()
     assert_clean(at)
     assert "automl_res" in at.session_state
+
+
+def test_autopilot_runs_and_can_apply_its_cleaning(data):
+    at = open_page(data, "Autopilot")
+    at.button(key="pilot_go").click().run()
+    assert_clean(at)
+    res = at.session_state["pilot_res"]
+    assert res["target"] and len(res["recipe"]) >= 1
+    at.button(key="pilot_apply").click().run()
+    assert_clean(at)
+    assert len(at.session_state["recipe"]) == len(res["recipe"]) and "pilot_res" not in at.session_state
 
 
 def test_neural_train_button(data):
