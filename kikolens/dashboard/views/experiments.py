@@ -3,6 +3,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 
+from kikolens.analyze import bayes
 from kikolens.analyze import stattests as sx
 from kikolens.dashboard import components as ui
 
@@ -153,6 +154,30 @@ def _ab(df: pd.DataFrame) -> None:
         ui.note(str(e), "high")
 
 
+def _bayes(df: pd.DataFrame) -> None:
+    st.caption("Instead of a p-value: how likely is it that the new version is better, and what would a wrong choice cost?")
+    two = [c for c in df.columns if df[c].nunique() == 2]
+    outcomes = [c for c in df.select_dtypes("number").columns] + [c for c in two if c not in df.select_dtypes("number").columns]
+    if not two or not outcomes:
+        ui.note("This needs a column with exactly two groups and an outcome column.", "low")
+        return
+    c1, c2, c3 = st.columns(3)
+    group = c1.selectbox("Group column (two values)", two, key="ex_yg")
+    options = sorted(df[group].dropna().astype(str).unique())
+    control = c2.selectbox("Control group", options, key="ex_yc")
+    outcome = c3.selectbox("Outcome", [c for c in outcomes if c != group], key="ex_yo")
+    success = None
+    if df[outcome].nunique() == 2:
+        success = st.selectbox("Count as success", sorted(df[outcome].dropna().astype(str).unique()), index=1, key="ex_ys")
+    result = _run(bayes.bayesian_ab, df, group, outcome, control, success=success)
+    if result:
+        ui.note(result["summary"], "ok" if max(result["probability_b_better"], 1 - result["probability_b_better"]) >= 0.95 else "low")
+        ui.stats([("Chance the variant is better", f"{result['probability_b_better']:.1%}"),
+                  ("Likely difference", f"{result['difference']:+.4g}"),
+                  ("Likely relative lift", f"{result['lift']:+.1%}"),
+                  ("Expected loss if wrong", f"{result['expected_loss_b']:.4g}")])
+
+
 def _screen(df: pd.DataFrame) -> None:
     target = st.selectbox("Find what relates to", df.columns, index=len(df.columns) - 1, key="ex_st")
     if st.button("Screen all columns", key="ex_sgo", type="primary"):
@@ -179,7 +204,7 @@ def _screen(df: pd.DataFrame) -> None:
 
 
 def render(df: pd.DataFrame) -> None:
-    tabs = st.tabs(["Compare groups", "Two categories", "Correlation", "A/B test", "What relates to..."])
-    for tab, body in zip(tabs, (_groups, _association, _correlation, _ab, _screen)):
+    tabs = st.tabs(["Compare groups", "Two categories", "Correlation", "A/B test", "A/B (Bayesian)", "What relates to..."])
+    for tab, body in zip(tabs, (_groups, _association, _correlation, _ab, _bayes, _screen)):
         with tab:
             body(df)

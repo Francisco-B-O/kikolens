@@ -8,6 +8,7 @@ from kikolens.analyze import explain as ex
 from kikolens.analyze import modellab as lab
 from kikolens.analyze.predict import EXTENSION, build_bundle
 from kikolens.dashboard import components as ui
+from kikolens.dashboard.views import _lab_extra as extra
 
 TITLE = "Model lab"
 SUBTITLE = "Compare many models fairly, tune the best one and check it for problems."
@@ -217,7 +218,7 @@ def render(df: pd.DataFrame) -> None:
     st.download_button("Download model package", buffer.getvalue(), f"{res['target']}_lab{EXTENSION}", key="lab_export",
                        help="Includes the expected columns and ranges. Use it in the Predict page or with: kikolens score")
 
-    tabs = st.tabs(["Leaderboard", "Diagnostics", "Explain", "Errors", "Try it"])
+    tabs = st.tabs(["Leaderboard", "Diagnostics", "Explain", "Errors", "Uncertainty", "What would change it", "Fairness", "Try it"])
     with tabs[0]:
         _leaderboard(res)
     with tabs[1]:
@@ -227,4 +228,10 @@ def render(df: pd.DataFrame) -> None:
     with tabs[3]:
         _errors(res)
     with tabs[4]:
+        extra.uncertainty(res)
+    with tabs[5]:
+        extra.what_would_change(res)
+    with tabs[6]:
+        extra.fair(res, df)
+    with tabs[7]:
         _predict(res, df)
