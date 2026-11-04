@@ -831,6 +831,139 @@ def autopilot(
         console.print(f"PDF written to {pdf}")
 
 
+def _fail(error: Exception):
+    console.print(f"[red]{error}[/red]")
+    raise typer.Exit(code=1)
+
+
+@app.command()
+def survival(source: str, duration: str, event: str, group: Optional[str] = typer.Option(None, help="Compare these groups.")):
+    """Kaplan-Meier survival curves and a log-rank test between groups."""
+    from kikolens.analyze.survival import survival_by_group
+
+    df = _load(source)
+    try:
+        res = survival_by_group(df, duration, event, group)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command()
+def cohorts(source: str, user: str, date: str, period: str = typer.Option("Month", help="Day, Week or Month.")):
+    """Retention by cohort: the share of each group of new users still active later."""
+    from kikolens.analyze.customers import cohort_retention
+
+    df = _load(source)
+    try:
+        res = cohort_retention(df, user, date, period)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame((res["matrix"] * 100).round(0).reset_index().rename(columns={"cohort": "cohort"}), "Retention (%)")
+
+
+@app.command()
+def rfm(source: str, customer: str, date: str, amount: str, output: Optional[Path] = typer.Option(None, help="Write every customer with their segment.")):
+    """Segment customers by recency, frequency and spend."""
+    from kikolens.analyze.customers import rfm as run_rfm
+
+    df = _load(source)
+    try:
+        res = run_rfm(df, customer, date, amount)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["segments"].round(2), "Segments")
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        res["customers"].to_csv(output, index=False)
+        console.print(f"Customers written to {output}")
+
+
+@app.command()
+def basket(source: str, transaction: str, item: str, support: float = typer.Option(0.02, help="Minimum share of baskets."),
+           confidence: float = typer.Option(0.3, help="Minimum confidence.")):
+    """Association rules: what is bought together."""
+    from kikolens.analyze.customers import association_rules
+
+    df = _load(source)
+    try:
+        res = association_rules(df, transaction, item, support, confidence)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["rules"].round(3), "Rules")
+
+
+@app.command()
+def impact(
+    source: str, date: str, value: str, at: str = typer.Option(..., help="When the change happened (YYYY-MM-DD)."),
+    control: Optional[str] = typer.Option(None, help="Comma-separated control columns the change should not have touched."),
+    agg: str = typer.Option("mean", help="mean or sum, for rows that share a period."),
+):
+    """Estimate the effect of a change by comparing with what would have happened."""
+    from kikolens.analyze import timeseries as ts
+    from kikolens.analyze.causal import causal_impact
+
+    df = _load(source)
+    try:
+        series = ts.prepare_series(df, date, value, agg=agg)
+        frame = None
+        if control:
+            frame = pd.concat([ts.prepare_series(df, date, c.strip(), agg=agg).rename(c.strip()) for c in control.split(",")], axis=1)
+        res = causal_impact(series, pd.Timestamp(at), frame)
+    except (ValueError, KeyError) as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command()
+def features(
+    source: str, target: str, apply: Optional[Path] = typer.Option(None, help="Write the data with the chosen columns added."),
+    recipe: Optional[Path] = typer.Option(None, help="Write the added columns as a recipe (JSON)."),
+    max_new: int = typer.Option(5, help="Most new columns to add."),
+):
+    """Search for ratios, products and other new columns that improve a model."""
+    from kikolens.analyze.autofeatures import apply_suggestions, suggest_features
+    from kikolens.pipeline.recipe import Recipe
+
+    df = _load(source)
+    _check_target(df, target)
+    try:
+        with console.status("Trying ideas..."):
+            res = suggest_features(df, target, max_new=max_new)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if res["suggestions"]:
+        _print_frame(pd.DataFrame(res["suggestions"])[["name", "expression", "gain"]].round(4), "New columns")
+        new, steps = apply_suggestions(df, res["suggestions"])
+        if apply:
+            apply.parent.mkdir(parents=True, exist_ok=True)
+            new.to_csv(apply, index=False)
+            console.print(f"Data written to {apply}")
+        if recipe:
+            r = Recipe()
+            for op, params, message in steps:
+                r.add(op, params, message)
+            recipe.write_text(r.to_json(), encoding="utf-8")
+            console.print(f"Recipe written to {recipe}")
+
+
+@app.command("ab-bayes")
+def ab_bayes(source: str, group: str, outcome: str, control: str, success: Optional[str] = typer.Option(None, help="Value that counts as success.")):
+    """Bayesian A/B test: the chance a variant is better and what a wrong choice would cost."""
+    from kikolens.analyze.bayes import bayesian_ab
+
+    df = _load(source)
+    try:
+        res = bayesian_ab(df, group, outcome, control, success=success)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
 def cli():
     app()
 

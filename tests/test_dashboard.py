@@ -12,7 +12,8 @@ from kikolens.pipeline.project import load_project
 APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
-         "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data"]
+         "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
+         "Survival", "Customers", "Impact", "Feature ideas"]
 
 
 @pytest.fixture(scope="module")
@@ -357,3 +358,77 @@ def test_export_page_offers_every_route(data):
     at = open_page(data, "Export")
     assert_clean(at)
     assert [t.label for t in at.tabs] == ["Files", "Excel workbook", "Database"]
+
+
+@pytest.fixture(scope="module")
+def behaviour():
+    rng = np.random.default_rng(8)
+    n = 300
+    df = pd.DataFrame({"user": rng.integers(0, 60, n), "date": pd.Timestamp("2024-01-01") + pd.to_timedelta(rng.integers(0, 150, n), "D"),
+                       "amount": rng.uniform(5, 90, n), "plan": rng.choice(["free", "pro"], n)})
+    df["tenure"] = rng.exponential(np.where(df["plan"] == "pro", 20, 10))
+    df["churned"] = rng.integers(0, 2, n)
+    return df
+
+
+def test_survival_page_draws_curves(behaviour):
+    at = open_page(behaviour, "Survival")
+    at.selectbox(key="sv_d").set_value("tenure")
+    at.selectbox(key="sv_e").set_value("churned")
+    at.run()
+    at.selectbox(key="sv_g").set_value("plan")
+    at.button(key="sv_go").click().run()
+    assert_clean(at)
+    assert set(at.session_state["sv_res"][1]["curves"]) == {"free", "pro"}
+
+
+def test_customers_tabs_run(behaviour):
+    at = open_page(behaviour, "Customers")
+    at.selectbox(key="cu_cu").set_value("user")
+    at.button(key="cu_cohort_go").click().run()
+    assert_clean(at)
+    assert "cu_cohort" in at.session_state
+    at.selectbox(key="cu_rc").set_value("user")
+    at.button(key="cu_rfm_go").click().run()
+    assert_clean(at)
+    assert "cu_rfm" in at.session_state
+
+
+def test_impact_estimates_with_a_control(behaviour):
+    daily = behaviour.groupby("date").agg(sales=("amount", "sum"), visits=("user", "size")).reset_index()
+    at = open_page(daily, "Impact")
+    at.selectbox(key="im_v").set_value("sales")
+    at.multiselect(key="im_c").set_value(["visits"])
+    at.button(key="im_go").click().run()
+    assert_clean(at)
+
+
+def test_feature_ideas_page_runs():
+    rng = np.random.default_rng(0)
+    df = pd.DataFrame({"a": rng.uniform(100, 1000, 400), "b": rng.uniform(10, 100, 400)})
+    df["y"] = 3 * df["a"] / df["b"] + rng.normal(0, 0.1, 400)
+    at = open_page(df, "Feature ideas")
+    at.button(key="af_go").click().run()
+    assert_clean(at)
+    assert at.session_state["af_res"][1]["suggestions"]
+    at.button(key="af_apply").click().run()
+    assert_clean(at)
+    assert any(s.op == "add_column" for s in at.session_state["recipe"].steps)
+
+
+def test_lab_uncertainty_counterfactual_and_fairness_tabs():
+    rng = np.random.default_rng(2)
+    n = 500
+    df = pd.DataFrame({"income": rng.normal(50, 15, n), "debt": rng.normal(20, 8, n), "region": rng.choice(["n", "s"], n)})
+    df["approved"] = np.where(0.08 * df["income"] - 0.1 * df["debt"] + rng.normal(0, 1, n) > 2, "yes", "no")
+    at = open_page(df, "Model lab")
+    at.selectbox(key="lab_target").set_value("approved")
+    at.run()
+    at.multiselect(key="lab_models_classification").set_value(["Baseline (majority)", "Logistic Regression"])
+    at.slider(key="lab_folds").set_value(3)
+    at.checkbox(key="lab_tune").set_value(False)
+    at.button(key="lab_run").click().run()
+    assert_clean(at)
+    at.button(key="lab_cf_go").click().run()
+    assert_clean(at)
+    assert "lab_cf" in at.session_state
