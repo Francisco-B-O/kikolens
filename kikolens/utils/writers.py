@@ -102,8 +102,10 @@ def build_workbook(sheets: dict, notes: dict | None = None, title: str = "KikoLe
             ws.auto_filter.ref = f"A1:{get_column_letter(len(data.columns))}{len(data) + 1}"
         for i, col in enumerate(data.columns, start=1):
             letter = get_column_letter(i)
-            sample = data[col].head(200).astype(str)
-            ws.column_dimensions[letter].width = min(60, max(10, len(str(col)) + 2, int(sample.str.len().quantile(0.9)) + 2 if len(sample) else 10))
+            sample = data[col].head(200).astype(str).fillna("")
+            typical = sample.str.len().quantile(0.9) if len(sample) else 8
+            typical = 8 if pd.isna(typical) else typical
+            ws.column_dimensions[letter].width = min(60, max(10, len(str(col)) + 2, int(typical) + 2))
             kind = data[col].dtype
             for cell in ws[letter][1:]:
                 if isinstance(cell.value, str) and cell.value[:1] in ("=", "+", "-", "@"):
