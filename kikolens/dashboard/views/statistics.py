@@ -27,7 +27,6 @@ def render(df: pd.DataFrame) -> None:
 
     with dist:
         numeric = df.select_dtypes("number").columns.tolist()
-        categorical = [c for c in df.columns if c not in numeric]
         col = st.selectbox("Column", df.columns, key="st_col")
         if col in numeric:
             s = df[col].dropna()

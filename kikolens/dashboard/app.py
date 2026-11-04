@@ -5,7 +5,7 @@ from urllib.parse import quote
 import streamlit as st
 
 from kikolens.dashboard import components as ui
-from kikolens import demo
+from kikolens import config, demo
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
                                       features, gallery, health, history, home, impact, lab, linkage, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
@@ -166,13 +166,16 @@ def _navigation() -> None:
 
 def _language_picker() -> None:
     """Al final de la barra lateral. Se lee el valor de la ejecución anterior para traducir desde el principio."""
-    choice = st.sidebar.selectbox("Language / Idioma", list(i18n.LANGUAGES), key="lang_choice")
+    names = list(i18n.LANGUAGES)
+    st.session_state.setdefault("lang_choice", next(n for n, code in i18n.LANGUAGES.items() if code == config.default_language()))
+    choice = st.sidebar.selectbox("Language / Idioma", names, key="lang_choice")
     st.session_state["lang"] = i18n.LANGUAGES[choice]
 
 
 def main() -> None:
     state.init()
-    st.session_state["lang"] = i18n.LANGUAGES.get(st.session_state.get("lang_choice", "English"), "en")
+    st.session_state["lang"] = i18n.LANGUAGES.get(st.session_state.get("lang_choice") or next(
+        n for n, code in i18n.LANGUAGES.items() if code == config.default_language()), "en")
     i18n.install()
     theme.inject()
 

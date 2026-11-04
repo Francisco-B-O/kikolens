@@ -2,7 +2,6 @@
 import re
 import warnings
 
-import numpy as np
 import pandas as pd
 
 from kikolens.utils.dtypes import is_text, text_columns

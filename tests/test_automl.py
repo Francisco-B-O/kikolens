@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pytest
-from kikolens.analyze.automl import run_automl_analysis, AutoMLExplainer
+from kikolens.analyze.automl import run_automl_analysis
 
 
 def test_regression_returns_expected_keys(regression_df):

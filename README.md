@@ -1,5 +1,11 @@
 # KikoLens
 
+[![CI](https://github.com/Francisco-B-O/kikolens/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Francisco-B-O/kikolens/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Francisco-B-O/kikolens/actions/workflows/codeql.yml/badge.svg?branch=develop)](https://github.com/Francisco-B-O/kikolens/actions/workflows/codeql.yml)
+![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
+![License: MIT](https://img.shields.io/badge/license-MIT-green)
+![Local first](https://img.shields.io/badge/data-never%20leaves%20your%20machine-9a3412)
+
 Private, local-first data analysis. Load a dataset, let the autopilot take a first pass, check its quality and fix it, reshape it, explore it, test hypotheses, compare many models and understand them, forecast, study customers and the effect of a change, watch a data source over time, and keep what you built: a recipe you can replay, a model you can score new data with (or serve behind a small local API), a panel and a report in HTML or PDF. Nothing leaves your machine; language-model features use [Ollama](https://ollama.com/) running locally.
 
 ![Model lab leaderboard](docs/images/lab-leaderboard-light.png)
@@ -114,7 +120,11 @@ Requires Python 3.12 or newer.
 git clone https://github.com/Francisco-B-O/kikolens.git
 cd kikolens
 pip install -e .
+kikolens doctor        # checks versions, optional extras, Ollama and your configuration
 ```
+
+Settings (the Ollama model, the port, the language the dashboard opens in) go in a `kikolens.toml`: see [Configuration](docs/configuration.md).
+To contribute, read [CONTRIBUTING.md](CONTRIBUTING.md); the documentation is built with `mkdocs` (`docs/`).
 
 Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
 

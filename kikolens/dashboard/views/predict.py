@@ -40,8 +40,6 @@ def _registry_choices() -> dict:
 def _pick_model(df: pd.DataFrame):
     options = _session_bundles(df)
     saved = _registry_choices()
-    upload = st.sidebar.file_uploader("Or open a model file", type=[pr.EXTENSION.lstrip(".")], key="pd_upload") \
-        if False else None
     labels = list(options) + list(saved) + ["Open a model file..."]
     choice = st.selectbox("Model", labels, key="pd_model")
     if choice in options:

@@ -54,8 +54,11 @@ def _keep_model(res: dict, df: pd.DataFrame, save: Optional[Path], register: Opt
 
 
 @app.command()
-def start(port: int = typer.Option(8501, help="Port for the dashboard.")):
+def start(port: Optional[int] = typer.Option(None, help="Port for the dashboard (default 8501, or [dashboard] port in kikolens.toml).")):
     """Launch the interactive dashboard."""
+    from kikolens.config import dashboard_port
+
+    port = port or dashboard_port()
     app_path = Path(__file__).resolve().parent.parent / "dashboard" / "app.py"
     if not app_path.exists():
         console.print(f"[red]Dashboard not found at {app_path}[/red]")
@@ -584,7 +587,7 @@ def validate(
 ):
     """Check a dataset against validation rules. Exit code 2 when a rule is broken."""
     from kikolens.analyze.quality import infer_types
-    from kikolens.analyze.rules import RuleSet, describe, suggest_rules
+    from kikolens.analyze.rules import RuleSet, suggest_rules
 
     df, _ = infer_types(_load(source))
     try:
@@ -1540,6 +1543,59 @@ def runs(
         console.print("No runs yet. Every `kikolens lab` and every dashboard lab training is recorded here.")
         return
     _print_frame(frame.drop(columns=["task"]).round(4), "Runs, newest first")
+
+
+@app.command()
+def doctor(
+    offline: bool = typer.Option(False, "--offline", help="Skip the check that asks Ollama whether it is running."),
+    as_json: bool = typer.Option(False, "--json", help="Print the checks as JSON, for scripts."),
+):
+    """Check the installation: versions, optional extras, the user folder, Ollama and the configuration. Exit code 1 if something required is missing."""
+    import json
+
+    from rich.markup import escape
+
+    from kikolens import doctor as dr
+
+    checks = dr.run_checks(network=not offline)
+    if as_json:
+        console.print_json(json.dumps(checks))
+    else:
+        table = Table(title="KikoLens doctor")
+        for column in ("check", "status", "detail"):
+            table.add_column(column, overflow="fold")
+        colours = {"ok": "green", "warning": "yellow", "error": "red"}
+        for c in checks:
+            table.add_row(c["name"], f"[{colours[c['status']]}]{c['status']}[/{colours[c['status']]}]", escape(c["detail"]))
+        console.print(table)
+        console.print(dr.summary(checks))
+    if any(c["status"] == "error" for c in checks):
+        raise typer.Exit(code=1)
+
+
+@app.command()
+def benchmark(
+    rows: int = typer.Option(20000, help="Rows of synthetic data."),
+    repeat: int = typer.Option(1, help="Repetitions of each operation; the best time is kept."),
+    only: Optional[str] = typer.Option(None, help="Comma-separated words: run only the operations whose name contains one."),
+    output: Optional[Path] = typer.Option(None, help="Write the results as JSON."),
+):
+    """Time the main operations on synthetic data, to spot regressions and know what to expect with big files."""
+    import json
+
+    from kikolens.benchmark import run_benchmark
+
+    try:
+        with console.status("Measuring..."):
+            res = run_benchmark(rows, repeat, _names(only) or None)
+    except ValueError as e:
+        _fail(e)
+    _print_frame(res["table"], f"{rows:,} rows on {res['machine']}, Python {res['python']}")
+    console.print(res["summary"])
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps({k: v for k, v in res.items() if k != "table"} | {"results": res["table"].to_dict("records")}, indent=2), encoding="utf-8")
+        console.print(f"Results written to {output}")
 
 
 def cli():

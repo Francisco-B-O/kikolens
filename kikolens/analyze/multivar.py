@@ -8,7 +8,6 @@ import pandas as pd
 import plotly.graph_objects as go
 from scipy import stats
 from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.linear_model import RidgeCV
 
 from kikolens.analyze import timeseries
 
