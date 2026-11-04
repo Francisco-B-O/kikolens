@@ -84,6 +84,20 @@ kikolens score new_clean.csv sales-model --output predictions.csv
 kikolens monitor run sales-feed --source examples/sales_new_quarter.csv   # exit code 2: it changed
 ```
 
+## In a notebook
+
+```python
+import kikolens as kl
+
+df = kl.load("sales.csv")
+kl.profile(df)                 # quality and problems
+kl.autopilot(df)               # a first full analysis
+lab = kl.lab(df, "revenue")    # compare models
+lab.plot()
+```
+
+`kikolens jupyter` writes a quickstart notebook and opens JupyterLab; `%load_ext kikolens` adds magics. See the [Python API guide](docs/python-api.md).
+
 ## Install
 
 Requires Python 3.12 or newer.
@@ -94,7 +108,7 @@ cd kikolens
 pip install -e .
 ```
 
-Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
+Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
 
 For the language-model features, install Ollama and pull a model:
 

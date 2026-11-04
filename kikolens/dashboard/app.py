@@ -6,7 +6,7 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.dashboard import i18n, state, theme
-from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, drivers, experiments, explore, export,
+from kikolens.dashboard.views import (anomalies, ask, autopilot, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
                                       features, health, impact, lab, linkage, models, monitoring, survival,
                                       neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
                                       text, timeseries, transform)
@@ -19,7 +19,7 @@ GROUPS = {
     "Data": {"Overview": overview, "Autopilot": autopilot, "Explore": explore, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
              "Match records": linkage,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask},
-    "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions,
+    "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
                  "Compare data": compare, "Segments": clusters,
                  "Text": text, "Survival": survival, "Customers": customers, "Impact": impact,
                  "Why it changed": drivers},
@@ -125,6 +125,15 @@ def _go_to_group() -> None:
     st.session_state.nav = next(iter(GROUPS[st.session_state.nav_group]))
 
 
+def _jump() -> None:
+    """Salta a la sección elegida en el buscador."""
+    target = st.session_state.get("jump")
+    if target in PAGES:
+        st.session_state["nav"] = target
+        st.session_state["nav_group"] = GROUP_OF[target]
+    st.session_state["jump"] = ""
+
+
 def _navigation() -> None:
     """Primero el área y debajo sus secciones. Si se abre una sección de otra área, el área se ajusta sola."""
     current = st.session_state.get("nav")
@@ -132,6 +141,9 @@ def _navigation() -> None:
         st.session_state["nav_group"] = GROUP_OF[current]
     elif "nav_group" not in st.session_state:
         st.session_state["nav_group"] = "Data"
+    ui.label("Go to", sidebar=True)
+    st.sidebar.selectbox("Go to", [""] + sorted(PAGES, key=str.lower), key="jump", on_change=_jump, label_visibility="collapsed",
+                         format_func=lambda name: i18n.t("Type to find a section") if not name else i18n.t(name))
     ui.label("Area", sidebar=True)
     group = st.sidebar.radio("Area", list(GROUPS), key="nav_group", horizontal=True, label_visibility="collapsed",
                              on_change=_go_to_group, format_func=i18n.t)

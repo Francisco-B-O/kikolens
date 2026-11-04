@@ -1277,6 +1277,52 @@ def run(pipeline: Path = typer.Argument(..., help="A pipeline file (.json). See 
         raise typer.Exit(code=2)
 
 
+@app.command()
+def jupyter(
+    folder: Path = typer.Argument(Path("."), help="Folder where the quickstart notebook is written."),
+    no_open: bool = typer.Option(False, "--no-open", help="Only write the notebook; do not start JupyterLab."),
+):
+    """Write a quickstart notebook for the Python API and open it in JupyterLab (if installed)."""
+    import shutil
+
+    from kikolens.report.quickstart import quickstart_notebook
+
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / "kikolens_quickstart.ipynb"
+    path.write_text(quickstart_notebook(), encoding="utf-8")
+    console.print(f"Quickstart notebook written to {path}")
+    if no_open:
+        return
+    lab = shutil.which("jupyter")
+    if lab is None:
+        console.print('JupyterLab is not installed. Install it with:  pip install "kikolens[jupyter]"  then run:  jupyter lab '
+                      f'"{path}"', markup=False)
+        return
+    console.print("Starting JupyterLab (Ctrl+C to stop)...")
+    try:
+        subprocess.run([lab, "lab", str(path)], check=False)
+    except KeyboardInterrupt:
+        pass
+
+
+@app.command()
+def fit(
+    source: str, column: str,
+    only: Optional[str] = typer.Option(None, help="Comma-separated distributions to try; default all."),
+):
+    """Which distribution describes a numeric column best (AIC, Kolmogorov-Smirnov, normality)."""
+    from kikolens.analyze.distributions import fit_distributions
+
+    df = _load(source)
+    _check_target(df, column)
+    try:
+        res = fit_distributions(df[column], _names(only) or None)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "Fits, best first")
+
+
 def cli():
     app()
 

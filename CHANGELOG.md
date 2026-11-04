@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* **Python API for notebooks:** `import kikolens as kl` gives `load`, `profile`, `autopilot`, `lab`, `forecast`, `why`, `regress`, `survival`, `link`, `query` and more; results display as readable tables in Jupyter and keep every field. See `docs/python-api.md`.
+* **IPython magics:** `%load_ext kikolens` adds `%kl_profile`, `%kl_autopilot`, `%kl_privacy` and `%%kl_sql`.
+* **`kikolens jupyter`** writes a self-contained quickstart notebook and opens JupyterLab (optional extra `kikolens[jupyter]`).
+* **Distribution fit:** which distribution describes a column best, with a Q-Q plot and a normality check; `kikolens fit`.
+* **Section finder** in the dashboard sidebar, and `/openapi.json` in the model API.
+
 * **Privacy:** detection of personal data with validated patterns (card check digit, IBAN, DNI/NIE, email, phone, IP, social security number) and by column name; masking, salted fingerprints and removal as recipe steps; k-anonymity. `kikolens privacy`.
 * **Match records:** fuzzy join of two tables by names (accents, order, typos) with ambiguity warnings. `kikolens link`.
 * **Data dictionary** and **Jupyter notebook** export (dashboard and `kikolens dictionary`, `kikolens notebook`); the notebook runs as generated.

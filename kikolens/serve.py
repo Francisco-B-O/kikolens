@@ -20,6 +20,28 @@ def _records(frame: pd.DataFrame) -> list:
     return json.loads(frame.to_json(orient="records", date_format="iso"))
 
 
+def openapi(bundle: dict, info: dict) -> dict:
+    """Descripción OpenAPI 3 de la API para este modelo, con las columnas de entrada que espera."""
+    kinds = {"numeric": {"type": "number"}, "datetime": {"type": "string", "format": "date-time"}, "categorical": {"type": "string"}}
+    inputs = {c: kinds.get(k, {"type": "string"}) for c, k in info["inputs"].items()}
+    return {
+        "openapi": "3.0.3", "info": {"title": f"KikoLens model: {info['name']}", "version": "1"},
+        "paths": {
+            "/health": {"get": {"summary": "Is the server up?", "responses": {"200": {"description": "ok"}}}},
+            "/model": {"get": {"summary": "What the model is and expects", "responses": {"200": {"description": "Metadata"}}}},
+            "/predict": {"post": {
+                "summary": f"Predict {bundle['target']}",
+                "requestBody": {"required": True, "content": {"application/json": {"schema": {
+                    "type": "object", "required": ["rows"], "properties": {
+                        "rows": {"type": "array", "maxItems": MAX_ROWS, "items": {"type": "object", "properties": inputs}},
+                        "raw": {"type": "boolean", "description": "Repeat the cleaning steps used in training first."}}}}}},
+                "responses": {"200": {"description": "Predictions and warnings"}, "400": {"description": "Invalid request"},
+                              "401": {"description": "Missing or wrong token"}}}},
+        },
+        "components": {"securitySchemes": {"bearer": {"type": "http", "scheme": "bearer"}}},
+    }
+
+
 def make_server(bundle: dict, host: str = "127.0.0.1", port: int = 8000, token: str | None = None) -> ThreadingHTTPServer:
     """Crea el servidor sin arrancarlo (así se puede probar con `port=0`)."""
     if host not in LOCAL_HOSTS and not token:
@@ -54,6 +76,8 @@ def make_server(bundle: dict, host: str = "127.0.0.1", port: int = 8000, token: 
                 return self._send(401, {"error": "Missing or wrong token."})
             if self.path == "/model":
                 return self._send(200, info)
+            if self.path == "/openapi.json":
+                return self._send(200, openapi(bundle, info))
             self._send(404, {"error": "Not found. Use /health, /model or POST /predict."})
 
         def do_POST(self):

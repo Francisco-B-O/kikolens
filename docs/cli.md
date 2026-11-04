@@ -21,6 +21,8 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens notebook SOURCE OUTPUT.ipynb [--recipe FILE] [--target COL] [--exclude a,b] [--date COL --value COL] [--horizon N]` | Write a Jupyter notebook that reproduces the analysis. |
 | `kikolens link LEFT RIGHT LEFT_COLUMN RIGHT_COLUMN [--threshold 0.85] [--output FILE]` | Match records whose names are not spelled the same way. |
 | `kikolens run PIPELINE.json` | Run a pipeline file (see below). Exit code `2` when a `fail_on` condition triggers, `1` when something cannot be read. |
+| `kikolens jupyter [FOLDER] [--no-open]` | Write a quickstart notebook for the Python API and open it in JupyterLab if it is installed. See the [Python API guide](python-api.md). |
+| `kikolens fit SOURCE COLUMN [--only normal,gamma]` | Which distribution describes a numeric column best (AIC, Kolmogorov-Smirnov, normality). |
 | `kikolens project FILE.kikolens [--output FILE]` | Show what a project contains (notes, recipe) and optionally export its processed data. |
 
 ## Models

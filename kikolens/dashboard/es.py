@@ -451,4 +451,9 @@ ES = {
     "Models to compare": "Modelos a comparar", "Compare": "Comparar",
     "Save at least two models (or train one in this session and save another) to compare them.":
         "Guarda al menos dos modelos (o entrena uno en esta sesión y guarda otro) para compararlos.",
+    "Distribution fit": "Ajuste de distribuciones", "Go to": "Ir a", "Type to find a section": "Escribe para buscar una sección",
+    "Which distribution describes a column best, and does it look normal?": "¿Qué distribución describe mejor una columna y se parece a una normal?",
+    "Distributions to try": "Distribuciones a probar", "Best fit": "Mejor ajuste", "Excess kurtosis": "Curtosis en exceso",
+    "A lower AIC is better; a difference under 2 means the fits are practically tied. The Kolmogorov-Smirnov p-value is only a rough guide when the parameters were estimated from the same data.":
+        "Un AIC menor es mejor; una diferencia de menos de 2 significa que los ajustes están prácticamente empatados. El valor p de Kolmogorov-Smirnov es solo orientativo cuando los parámetros se estimaron con los mismos datos.",
 }
