@@ -80,6 +80,46 @@ The last command prints `ALERT` and exits with code `2`. Its alerts: drift (5 of
 4. **Classify**, predicting `rating`: it reaches about 44% against 30% for always guessing the commonest rating, which is a modest gain; the page tells you when a classifier is no better than guessing. Ratings are noisy (one star either way), so the text carries only part of the signal.
 5. **Summary** (needs Ollama) asks the local model for the main themes and complaints of a sample.
 
+## 7. Start from a file you have never seen
+
+**Goal:** know what is in a new file in two minutes.
+
+```bash
+kikolens autopilot examples/sales_demo.csv --clean clean.csv --recipe recipe.json --pdf summary.pdf
+```
+
+It cleans, guesses that `revenue` is the column to predict, compares four models against a baseline, forecasts the series and writes a PDF. In the dashboard, *Data* → *Autopilot* does the same and one button applies its cleaning to your data. From there, the *Model lab* is the careful version.
+
+## 8. Retention and a campaign
+
+**Goal:** see whether customers come back, who is worth keeping, and whether a campaign worked.
+
+1. *Analysis* → *Customers* → **Retention** with your customer and date columns: the share of each monthly cohort still active later.
+2. **Segments (RFM)** shows the segments that hold most of the value and who is at risk of leaving.
+3. *Analysis* → *Impact* → **Before and after a date**: pick the metric and the campaign date. Add control series, such as a region the campaign did not reach, to make the estimate much sturdier. The range comes from how wrong the method was on earlier periods.
+
+From the terminal: `kikolens cohorts orders.csv user date`, `kikolens rfm orders.csv user date amount --output segments.csv` and `kikolens impact daily.csv date sales --at 2024-06-01 --control visits`.
+
+## 9. Why did revenue drop?
+
+**Goal:** find which part of the business moved a figure.
+
+1. *Analysis* → *Why it changed*, measure a total of `revenue`, with the date column. The two periods start as the last third of the dates against the one before.
+2. The ranking tells you which column concentrates the change; the waterfall shows each value's contribution, and the combinations table names the regions and channels that moved most together.
+
+From the terminal: `kikolens why sales.csv date --metric revenue --before 2024-03-01,2024-05-01 --after 2024-05-01,2024-07-01`.
+
+## 10. Put a model behind a small API
+
+```bash
+kikolens lab clean.csv revenue --register sales-model
+kikolens serve sales-model --port 8000
+curl -X POST localhost:8000/predict -H "Content-Type: application/json" \
+     -d '{"rows": [{"date": "2023-06-01", "region": "North", "channel": "Online", "units": 120, "unit_price": 3200, "discount": 0.1}]}'
+```
+
+The reply has the predictions (with a range for regression) and warnings about missing columns, unseen categories or out-of-range values. The server listens only on this computer; to open it to the network use `--host 0.0.0.0 --token SECRET` and send `Authorization: Bearer SECRET`. Only serve model files you trust, because opening one can run code.
+
 ## Monitoring from a script or CI
 
 `kikolens drift` returns exit code `2` when the data changed a lot, `0` otherwise. A nightly job can compare the latest export with the data the model was trained on:

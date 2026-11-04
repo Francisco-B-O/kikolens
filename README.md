@@ -1,6 +1,6 @@
 # KikoLens
 
-Private, local-first data analysis. Load a dataset, check its quality and fix it, reshape it, explore it, test hypotheses, compare many models and understand them, forecast, watch a data source over time, and keep what you built: a recipe you can replay, a model you can score new data with, a panel and a report. Nothing leaves your machine; language-model features use [Ollama](https://ollama.com/) running locally.
+Private, local-first data analysis. Load a dataset, let the autopilot take a first pass, check its quality and fix it, reshape it, explore it, test hypotheses, compare many models and understand them, forecast, study customers and the effect of a change, watch a data source over time, and keep what you built: a recipe you can replay, a model you can score new data with (or serve behind a small local API), a panel and a report in HTML or PDF. Nothing leaves your machine; language-model features use [Ollama](https://ollama.com/) running locally.
 
 ![Model lab leaderboard](docs/images/lab-leaderboard-light.png)
 
@@ -28,22 +28,30 @@ The dashboard groups its sections into four areas.
 | **Data** | Load | CSV, TSV, Excel (pick the sheet), JSON / NDJSON, Parquet, a pasted table, `http(s)` links, shared Google Sheets, `s3://` and `gs://` (with the `cloud` extra), and SQLite / PostgreSQL / MySQL (pick a table or run a read-only query). |
 | | Quality and cleaning | Quality score and detection of missing values, duplicates, constant columns, text that is really numbers or dates, and outliers. Missing-data patterns (are the gaps random?), smart fill (KNN, iterative, by group), merging of similar spellings, near-duplicate rows, and your own validation rules. Every fix is undoable; the original file is never touched. |
 | | Transform | Filter, sort and sample rows; formulas for new columns; date parts, bins, scaling, one-hot encoding; lags and rolling statistics; group, pivot and stack; join or append a second file. |
+| | Autopilot | A first full analysis in one click: safe cleaning as a recipe, column roles, findings, a model against a baseline and a forecast when there are dates, with a written summary and next steps. |
 | | Explore, Patterns, Statistics | Charts with filters, automatic findings (strong correlations, dominant categories, identifiers), summary tables and the correlation matrix. |
 | | Ask | Question the data in plain language (a local model writes the SQL) or run your own read-only SQL. |
-| **Analysis** | Experiments | Compare groups (the right test is chosen for you, with effect size and post-hoc comparisons), association between categories, correlation with confidence intervals, A/B tests with sample-size planning, and a screen of every column against a target corrected for testing many at once. |
-| | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged. |
+| **Analysis** | Experiments | Compare groups (the right test is chosen for you, with effect size and post-hoc comparisons), association between categories, correlation with confidence intervals, A/B tests (classical and Bayesian) with sample-size planning, and a screen of every column against a target corrected for testing many at once. |
+| | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged; and periods of a series that are unusual once trend and season are taken out. |
 | | Dimensions | PCA with loadings, t-SNE maps, and a redundancy check (VIF). |
 | | Compare data | What changed between two datasets, two periods, or the raw and the cleaned data: PSI, KS and chi-squared per column. |
 | | Text | For comments and reviews: key terms, what distinguishes each group, themes, a classifier, rough tone, search, and an optional summary from the local model. |
 | | Segments | k-means clustering with a silhouette hint for the number of groups. |
+| | Survival | Kaplan-Meier curves with confidence bands and a log-rank test between groups, counting cases where the event has not happened yet. |
+| | Customers | Retention by cohort, RFM segments, conversion funnels and what is bought together. |
+| | Why it changed | A figure moved between two periods: which regions, channels or products explain it, with a waterfall and mix and rate effects for averages. |
+| | Impact | Did a change move the numbers? Compared with what a control or the earlier trend predicted, with a range that reflects how wrong that method was before; also difference-in-differences. |
 | **Models** | Models | AutoML for regression and classification with a written rationale, feature importance, row explanations and a what-if simulator. |
-| | Model lab | Up to 12 models (a baseline included) compared with cross-validation, the best one tuned, data-leak detection, diagnostics, partial dependence, Shapley values, **where the model fails**, decision thresholds with costs, and a row-by-row comparison of two models. |
+| | Model lab | Up to 12 models (a baseline included) compared with cross-validation, the best one tuned, data-leak detection, diagnostics, partial dependence, Shapley values, **where the model fails**, decision thresholds with costs, a row-by-row comparison of two models, ranges that hold the truth as often as you ask (conformal), the smallest changes that would flip a prediction, and a fairness check across groups. SVM, AdaBoost, Bagging, voting and stacking ensembles, and an optional PyTorch network, are available too. |
+| | Regression | What pushes a result up or down, other things equal: linear or logistic regression with ranges, p-values, odds ratios, each effect in a sentence and warnings when the model cannot be trusted. |
+| | Feature ideas | Tries ratios, products and other new columns and keeps the ones that make a model better, as recipe steps. |
 | | Neural network | Configurable multilayer perceptron with the architecture drawn, the training curve, permutation importance and a comparison with the classical model. |
 | | Time series | Trend and seasonality, then five models (naive, seasonal naive, trend + seasonality, Holt-Winters, boosting on lags) tested on the past, the best one forecast with an honest range, changes of level or trend, special dates, and one forecast per group. |
 | | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
+| | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
 | **Share** | Panel | Pin metrics, charts and tables with global filters, and export them as one self-contained web page. |
-| | Report | One self-contained HTML page (print it to PDF from the browser). |
+| | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
 | | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; or a database table. |
 | | Project | Save everything to a single `.kikolens` file, reopen it later, and repeat the recipe on new data or export it as a Python script. |
 
@@ -84,7 +92,7 @@ cd kikolens
 pip install -e .
 ```
 
-Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[all]"` for everything.
+Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
 
 For the language-model features, install Ollama and pull a model:
 

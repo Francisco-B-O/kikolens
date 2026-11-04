@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.4.0
+
+* **Autopilot:** a first full analysis in one click (dashboard and `kikolens autopilot`): safe cleaning as a replayable recipe, column roles, findings, a model against a baseline and a forecast, with a written summary and next steps.
+* **PDF reports:** a PDF with quality, distributions, correlations, the model and the forecast; `kikolens report --pdf` and a download in the dashboard.
+* **More models:** SVM, AdaBoost, Bagging, voting and stacking ensembles in the lab, and an optional PyTorch network (`pip install "kikolens[torch]"`).
+* **Model lab, three new tabs:** conformal prediction ranges and class sets, counterfactuals ("what would change it"), and a fairness check across groups.
+* **Feature ideas:** automatic search for ratios, products and other columns that improve a model in cross-validation, applied as recipe steps.
+* **New analyses:** survival curves with log-rank test, retention by cohort, RFM segments, funnels, association rules, causal impact of a change and difference-in-differences, Bayesian A/B tests. Matching commands: `survival`, `cohorts`, `rfm`, `basket`, `impact`, `ab-bayes`, `features`.
+* **Why it changed:** breaks the change of a total, an average or a count between two periods into the contribution of every region, channel or product (with mix and rate effects for averages), a waterfall and the pairs that moved most; `kikolens why`.
+* **Regression explained:** linear and logistic regression with ranges, p-values, odds ratios, plain-language effects and diagnostics (collinearity, changing error spread, related errors, separation); `kikolens regress`.
+* **Unusual periods:** anomalies in a time series once trend and season are removed, in the Anomalies section and as `kikolens spikes`.
+* **Model health:** compares a saved model's real accuracy on newer data, period by period, with what it had in testing, and warns of a drop or a steady decline; `kikolens performance`.
+* **Serving:** `kikolens serve` exposes a saved model as a JSON API on this computer, with a token required for anything else.
+* **Spanish interface:** a language menu in the dashboard that translates sections, buttons and labels.
+
 ## 1.3.0
 
 * **Panel:** pin metrics, charts and tables with global filters; export as one self-contained page; saved in projects; `kikolens panel`.

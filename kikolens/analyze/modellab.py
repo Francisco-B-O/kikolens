@@ -170,6 +170,12 @@ def candidates(task: str, seed: int = 42, balance: bool = False) -> dict:
 ADVANCED = ("SVM", "AdaBoost", "Bagging", "Voting Ensemble", "Stacking Ensemble")
 
 
+def advanced_names() -> list:
+    """Los modelos avanzados disponibles: el de PyTorch solo si PyTorch está instalado."""
+    from kikolens.analyze.torchnet import NAME, torch_available
+    return list(ADVANCED) + ([NAME] if torch_available() else [])
+
+
 def advanced_candidates(task: str, seed: int = 42, balance: bool = False) -> dict:
     """Modelos más lentos o que combinan a otros. No entran por defecto: hay que pedirlos por su nombre."""
     cw = "balanced" if balance else None
@@ -186,6 +192,7 @@ def advanced_candidates(task: str, seed: int = 42, balance: bool = False) -> dic
                                                               "model__max_samples": uniform(0.5, 0.5)}),
             "Voting Ensemble": (VotingRegressor(base()), {}),
             "Stacking Ensemble": (StackingRegressor(base(), final_estimator=Ridge(), cv=3), {}),
+            **_torch_candidate("regression", seed),
         }
 
     def base():
@@ -201,13 +208,25 @@ def advanced_candidates(task: str, seed: int = 42, balance: bool = False) -> dic
                                                            "model__max_samples": uniform(0.5, 0.5)}),
         "Voting Ensemble": (VotingClassifier(base(), voting="soft"), {}),
         "Stacking Ensemble": (StackingClassifier(base(), final_estimator=LogisticRegression(max_iter=2000), cv=3), {}),
+        **_torch_candidate("classification", seed),
     }
+
+
+def _torch_candidate(task: str, seed: int) -> dict:
+    from kikolens.analyze.torchnet import NAME, TorchMLPClassifier, TorchMLPRegressor, torch_available
+    if not torch_available():
+        return {}
+    space = {"hidden": [(32,), (64,), (64, 32), (128, 64)], "lr": loguniform(1e-4, 1e-2), "dropout": uniform(0.0, 0.3),
+             "weight_decay": loguniform(1e-6, 1e-2)}
+    if task == "regression":
+        return {NAME: (_scaled(TorchMLPRegressor(seed=seed)), {f"model__regressor__{k}": v for k, v in space.items()})}
+    return {NAME: (TorchMLPClassifier(seed=seed), {f"model__{k}": v for k, v in space.items()})}
 
 
 def model_pool(task: str, seed: int = 42, balance: bool = False, names=None) -> dict:
     """Los modelos por defecto, más los avanzados si alguno aparece por su nombre en `names`."""
     pool = candidates(task, seed, balance)
-    if names and any(n in ADVANCED for n in names):
+    if names and any(n in ADVANCED or n == "PyTorch MLP" for n in names):
         pool.update(advanced_candidates(task, seed, balance))
     return pool
 

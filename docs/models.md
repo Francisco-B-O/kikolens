@@ -28,9 +28,47 @@ The lab exists to answer "which model should I trust?" without fooling yourself.
    * *Imbalance:* when the rarest class is under 10% of the rows accuracy becomes misleading, so the lab recommends balanced accuracy or F1 and offers class weighting.
    * *Learning curve:* shows whether more data would help.
 
+The default list is twelve models. Five more are available on request: an **SVM** (with the target scaled for regression), **AdaBoost**, **Bagging**, a **voting** ensemble (random forest, histogram gradient boosting and a linear model, averaging predictions or probabilities) and a **stacking** ensemble (the same three, combined by a linear model trained on their cross-validated predictions). If PyTorch is installed, a **PyTorch MLP** joins them: Adam, dropout, weight decay and early stopping on 15% of the training rows, with the same preprocessing as every other model.
+
 Primary metrics: R-squared for regression, weighted F1 for classification. Regression also reports RMSE and MAE; classification adds accuracy, balanced accuracy, ROC AUC and, for two classes, the Brier score.
 
 Importance is measured by permutation on the held-out rows. Partial dependence shows the average prediction as one feature changes. The per-row explanation replaces one feature at a time with a typical value and reports how much the prediction moves.
+
+## Uncertainty (conformal prediction)
+Split conformal prediction. Half of the held-out test rows calibrate: for regression the score of a row is the absolute error, for classification one minus the probability given to the true class. The threshold is the `ceil((n + 1) * coverage) / n` quantile of those scores, and it gives a range `prediction ± threshold` or the set of classes whose probability is at least `1 - threshold`. The guarantee, that new rows fall inside about `coverage` of the time, holds without assuming normal errors but only if new data resemble the calibration rows. The other half of the test rows measures the coverage actually obtained.
+
+## Counterfactuals
+For one row, the search tries every value of one variable (15 quantiles of a number, up to 30 categories), then pairs of the six most influential variables, and keeps the changes that give the wanted answer. They are ranked by how many variables change and then by the total standardised distance. Variables you mark as fixed never move. The result says what the model would do, not what would happen in the world.
+
+## Fairness
+For each group of a column: the share of rows that receive the favourable prediction (selection rate), the true positive rate, the false positive rate and the accuracy. The warnings use the four-fifths guideline (the lowest selection rate divided by the highest, below 0.8) and gaps of more than 10 points in the true or false positive rate. Groups under 10 rows are left out.
+
+## Feature search
+Candidates are built from up to eight numeric columns: a logarithm (`log1p`, for non-negative skewed columns), a square, and the product, the two ratios, the sum and the difference of every pair. The 24 most rank-correlated with the target are scored by cross-validated histogram gradient boosting, and added greedily while each improves the score by at least the chosen threshold. Because the evaluation is cross-validated and the formulas are applied with the safe expression interpreter, the gain is not an artefact of the training rows and the result replays on new data.
+
+## Survival
+The Kaplan-Meier estimate multiplies, at each event time, the share of those still at risk that did not have the event; the band is the log-log Greenwood interval. The log-rank test compares observed with expected events in each group at every event time, using the hypergeometric variance. It assumes that censoring is unrelated to the outcome.
+
+## Regression
+Linear regression is solved by least squares; the standard errors are the classical ones, `sigma^2 (X'X)^-1`, with `t` intervals and p-values on the residual degrees of freedom. Categories become indicators with the commonest value as the reference; dates become days since the first. The page reports R-squared and adjusted R-squared, the F test of the whole model, the variance inflation factor of each term, the Durbin-Watson statistic (about 2 when neighbouring errors are unrelated), a Breusch-Pagan test (regressing the squared errors on the terms; a small p-value means their spread changes with the fit) and a Shapiro-Wilk test of the errors. Logistic regression is fitted by Newton-Raphson on standardized columns, so the Wald intervals and p-values come from the inverse information matrix; coefficients are also shown as odds ratios, with McFadden's pseudo R-squared, the likelihood-ratio test, AUC and the accuracy against always guessing the commonest. Rows with an empty value in any used column are left out and counted.
+
+## Model health
+The model scores the rows whose real result is known and the errors are grouped by period. For a number the reference is the mean absolute error measured on the held-out rows when the model was built, and a period is flagged when its error is at least 1.5 times that; for a category it is the accuracy, flagged when 10 points lower. Periods with fewer than 20 rows are reported but not judged. A trend warning appears when the rank correlation (Spearman) between time and the metric of the judged periods is significant (p below 0.05) in the direction of getting worse, with at least four periods.
+
+## Unusual periods in a series
+The expected value of each period is a centred rolling median (the trend) plus the median of what is left at each position of the cycle (the seasonal pattern, with the period guessed from the autocorrelation). The residual is scaled with the median absolute deviation, which a few spikes cannot inflate, and a period is flagged when the scaled value is beyond the sensitivity (3.5 by default). `min_gap` merges runs of neighbouring flags into one.
+
+## Why it changed
+Two periods are compared. For a total or a count, each value of a column contributes the difference of its own total, so the contributions add up to the change exactly. For an average, the change is `sum over values of (w_after - w_before) * (m_before - M_before)` (mix: the value weighs more or less) plus `sum of w_after * (m_after - m_before)` (rate: its average moved), where `w` is the share of rows and `m` the average of the value; the two add up to the change exactly. A value that exists in only one period has all its effect in the mix. Columns are ranked by the share of the total absolute contribution held by their single biggest value.
+
+## Customers
+*Retention*: a cohort is the period of a user's first activity, and the cell for age `a` is the share of that cohort active in period `cohort + a`; ages beyond the last observed period are blank. *RFM*: recency (days since the last activity), frequency and total spend are ranked into five equal groups; the segments are rules over the three scores. *Funnel*: a user is counted at a stage only if they appear at it and at every earlier one. *Association rules*: Apriori finds the sets of items present in at least `support` of the baskets; for each, `confidence` is `P(right | left)` and `lift` is `confidence / P(right)`.
+
+## Impact
+*Before and after a date*: the expected series is a ridge regression of the measure on the control series fitted before the change, or, without controls, the best forecast model of the earlier trend. The uncertainty is taken from the error the same method made on earlier windows of the same length, where nothing happened, and widened with a t distribution because there are few such windows. *Difference in differences*: the coefficient of treated × after in a linear regression of the outcome, with its t interval; it assumes both groups would have moved alike without the treatment.
+
+## Bayesian A/B
+Rates use a Beta posterior (uniform prior unless set). Averages use the t distribution of the mean of each group. The probability that the variant is better is the share of 200,000 draws where it beats the control, and the expected loss is the average shortfall when the choice is wrong.
 
 ## Neural network
 A multilayer perceptron from scikit-learn (`MLPRegressor` or `MLPClassifier`).

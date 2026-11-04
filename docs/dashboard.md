@@ -2,7 +2,7 @@
 
 Start it with `kikolens start` and open <http://localhost:8501>. Pick a file, a link or a database in the sidebar; every section works on the same dataset, and the cleaning and transformation steps carry over to the rest.
 
-The sidebar has two levels: an **area** (Data, Analysis, Models, Share) and, under it, the sections of that area. The interface follows the light or dark theme from Streamlit's settings menu (top right).
+The sidebar has two levels: an **area** (Data, Analysis, Models, Share) and, under it, the sections of that area. The interface follows the light or dark theme from Streamlit's settings menu (top right). The **Language / Idioma** menu at the bottom of the sidebar switches the fixed texts (sections, buttons, labels, help) to Spanish. Messages that report results, such as the sentences a test writes about your data, stay in English.
 
 ## Loading data
 
@@ -14,6 +14,9 @@ The sidebar's **Source** menu offers four ways in: **File** (CSV, TSV, Excel, JS
 Rows, columns, quality score, missing cells and memory use, a table with the type and health of every column, and a preview of the data.
 
 ![Overview](images/overview-light.png)
+
+### Autopilot
+A first full analysis in one click, for when you open a file and do not know where to start. It cleans with the safe fixes (as recipe steps you can apply to your data), classifies the columns (dates, identifiers, free text, categories, numbers), looks for strong relationships and dominant categories, picks a column to predict from typical names such as `target`, `revenue` or `churn` (or the one you choose), compares a few models against a baseline, and, if there is a date column, forecasts the series. Each phase that cannot run says why and the others continue. It ends with a written summary and concrete next steps. *Thorough* compares every model and tunes the best, which takes longer.
 
 ### Explore
 Pick a chart type and the columns to plot. Filters (numeric range, date range, category) narrow the rows first. Scatter and density charts sample 20,000 points so they stay responsive.
@@ -69,12 +72,13 @@ Type a question and a local model writes the SQL; you can edit it before it runs
 ## Analysis
 
 ### Experiments
-Five tabs that answer "is this real or chance?" in plain language. Each result shows the test used, the p-value, the **effect size** with a label (negligible, small, medium, large) and a conclusion that also says what you cannot conclude.
+Six tabs that answer "is this real or chance?" in plain language. Each result shows the test used, the p-value, the **effect size** with a label (negligible, small, medium, large) and a conclusion that also says what you cannot conclude.
 
 * **Compare groups.** Pick a number and a column that splits the rows. Two groups: Welch's t-test, or Mann-Whitney when the data are clearly not normal. Three or more: ANOVA with Tukey comparisons, or Kruskal-Wallis with Holm-adjusted comparisons. The page tells you which was chosen and why.
 * **Two categories.** Chi-squared test (Fisher's exact for small 2x2 tables) with Cramér's V and a map of where the table departs from chance.
 * **Correlation.** Pearson and Spearman with a confidence interval, and a warning when outliers or curvature distort the picture.
 * **A/B test.** Control against treatment on a rate (two-proportion z-test and the probability that the treatment is better) or an average (Welch). Includes a planner that tells you how many rows each group needs before you start.
+* **A/B (Bayesian).** The same comparison without a p-value: the probability that the variant is better, the likely difference and relative lift with their ranges, and the expected loss of choosing wrongly.
 * **What relates to...** Tests every column against a target and corrects for running many tests at once (Benjamini-Hochberg), so a handful of random "hits" are not reported as findings.
 
 ![Experiments](images/experiments-light.png)
@@ -111,6 +115,23 @@ For columns with sentences, such as comments or reviews. Everything runs on this
 ### Segments
 k-means clustering on the numeric columns, with an optional chart of inertia and silhouette scores to help choose the number of groups. Download the data with the segment label attached.
 
+### Survival
+How long until something happens (a customer leaves, a machine fails, a lead buys), counting the cases that have not happened yet. Pick the time column, the column that says whether the event happened (1 or yes, 0 or no) and, optionally, a column to compare groups. You get Kaplan-Meier curves with their confidence bands, the time by which half of each group had the event, and a log-rank test that says whether the groups really differ.
+
+### Customers
+Four tabs for behaviour data.
+
+* **Retention.** Cohorts by the period of each customer's first activity, and the share of each cohort still active one, two, three periods later. Periods that have not happened yet are left blank, not shown as zero.
+* **Segments (RFM).** Recency, frequency and spend scored from 1 to 5 and turned into segments (champions, loyal, big spenders, new or promising, at risk, lost), with the share of the value each one holds. Download every customer with their segment.
+* **Funnel.** Choose the stages in order; users count at a stage only if they also reached the earlier ones, and the biggest drop is named.
+* **Bought together.** Association rules (Apriori) from an order column and an item column, with support, confidence and lift.
+
+### Why it changed
+A figure moved between two periods; which regions, channels or products explain it? Pick the date column, whether to measure a total, an average or the number of rows, and the two periods (by default the last third of the dates against the one before). The page ranks the columns by how much of the change sits in their single biggest value, draws a waterfall of what moved it for any column, and, for totals and counts, lists the combinations of two columns that moved most. For an average the change is split into a **mix** effect (the weight of a value changed) and a **rate** effect (the average inside the value changed).
+
+### Impact
+Did a change move the numbers? **Before and after a date** compares what happened after the change with what the earlier trend (or, much better, control series that the change did not touch) predicted. The range comes from how wrong the same method was at predicting earlier stretches where nothing happened, so it is not overconfident. **Treated and control groups** is a difference-in-differences estimate with a confidence interval. Neither proves causation: they only count as the effect of the change if nothing else changed at the same time.
+
 ## Models
 
 ### Models
@@ -137,6 +158,20 @@ The **Explain** tab adds Shapley values for one row (the contribution of each fe
 
 ![Where the model fails](images/lab-errors-light.png)
 
+Three more tabs look at the trained model from other angles:
+
+* **Uncertainty.** A range around each regression prediction, or a short list of plausible classes for each classification row, that holds the truth about as often as you ask (80 to 99%). It is calibrated on half of the test rows and checked on the other half, and it shows the coverage actually observed.
+* **What would change it.** Pick a test row and the answer you would like (another class, or a value above a number) and the lab searches for the smallest changes to one or two variables that get there, leaving fixed the ones that cannot change (age, country). Useful to explain a decision and to see which levers exist.
+* **Fairness.** For a classifier, how each group of another column is treated: the rate of the favourable result, the true and false positive rates and the accuracy, with a warning when a group gets the favourable result at less than 80% of another group's rate or when error rates differ by more than 10 points. It cannot say what is fair, only what you would need to justify.
+
+The model list also offers SVM, AdaBoost, Bagging, a voting ensemble and a stacking ensemble (slower, so unticked by default) and, if PyTorch is installed (`pip install "kikolens[torch]"`), a PyTorch multilayer network that takes part in the same comparison, tuning and model packages.
+
+### Feature ideas
+Tries new columns (products, ratios, sums, differences, logarithms of skewed columns, squares) and keeps, one at a time, the ones that improve a model in cross-validation by at least the amount you set. The result is a list of formulas; one click adds them to your data as `add_column` steps, so they are in the recipe and replay on new data.
+
+### Regression
+For understanding rather than predicting: what pushes a result up or down, other things equal. A column with numbers gets a linear regression; a column with two values gets a logistic regression. Pick the columns to explain it with and you get each effect with its standard error, its 95% range and its p-value, a coefficient chart, the effect of each term written as a sentence ("each extra unit of size goes with price rising by 3.01, other things equal"; "a support ticket multiplies the odds of leaving by 1.6") and the standardized effect so that terms in different units can be compared. Categories are compared with the commonest value. The page warns about columns that are largely explained by others (unstable coefficients), errors whose spread changes with the fit or that are related from row to row (p-values too optimistic), and, for logistic regression, a column that almost gives the answer away.
+
 ### Neural network
 A multilayer perceptron you configure: hidden layers (presets or your own, e.g. `128, 64, 32`), activation, optimizer, learning rate, L2 regularization, maximum epochs, early stopping and the held-out share for testing. After training you get metrics, the network diagram, the training curve, permutation importance and, if a classical model was trained for the same target, a side-by-side comparison.
 
@@ -158,6 +193,9 @@ Use a model on data it has not seen. Choose a model trained in this session, one
 
 ![Predict](images/predict-light.png)
 
+### Model health
+Is a saved model still as good as when you tested it? Choose a model and upload newer data that includes the real results (the column the model predicts). The page scores every period (or five consecutive parts if there is no date), draws the error or accuracy against what the model had in testing, and warns when a period is clearly worse (an average error 1.5 times higher, or an accuracy 10 points lower) or when it keeps getting worse over time. Drift in the inputs is a clue; this is the proof.
+
 ### Monitoring
 Watches a data source over time. Create a monitor from the data open now (it becomes the baseline), optionally with a saved model and validation rules; then check new data, either a file you upload or the file the monitor watches. Each check records the number of rows, the quality score, drift against the baseline, broken rules and the model's predictions, and raises alerts: drift at the level you chose, a drop in quality, a large change in rows, missing or new columns, columns that changed from numbers to text, model inputs outside what it saw in training, and a shift in the average prediction or in the model's confidence. The history is a chart and a table. KikoLens does not schedule anything itself: the **Schedule it** panel gives the cron and Windows commands.
 
@@ -178,7 +216,7 @@ A page of your own. Add **metrics** (count, sum, mean, median, minimum, maximum,
 ![Export](images/export-light.png)
 
 ### Report
-Builds one self-contained HTML page with quality, statistics, correlations, patterns, any models trained in this session and, optionally, commentary from the local model. Open it in a browser and print to save as PDF.
+Builds one self-contained HTML page with quality, statistics, correlations, patterns, any models trained in this session and, optionally, commentary from the local model. It also builds a PDF (cover, quality, distributions, correlations and, when available, the model and the autopilot's forecast) that you can download directly.
 
 ### Project
 * **Save.** Packs the original data, the recipe, extra datasets, your notes and, if you tick it, the trained models, into one `.kikolens` file.

@@ -23,6 +23,8 @@ CSV = ROOT / "examples" / "sales_demo.csv"
 NEW_CSV = ROOT / "examples" / "sales_new_quarter.csv"
 REGIONS_CSV = ROOT / "examples" / "regions.csv"
 REVIEWS_CSV = ROOT / "examples" / "reviews.csv"
+ORDERS_CSV = ROOT / "examples" / "orders.csv"
+SUBSCRIPTIONS_CSV = ROOT / "examples" / "subscriptions.csv"
 IMAGES = ROOT / "docs" / "images"
 PORT = 8598
 VIEW = {"width": 1360, "height": 860}
@@ -70,6 +72,29 @@ def make_companion_data(df: pd.DataFrame, rng) -> None:
     new["units"] = (new["revenue"] / 14 + rng.normal(0, 6, n)).round(0).clip(lower=1)
     new.to_csv(NEW_CSV, index=False)
     make_reviews(rng)
+    make_behaviour(rng)
+
+
+def make_behaviour(rng) -> None:
+    """Pedidos de clientes (retención, RFM) y suscripciones con baja (supervivencia)."""
+    rows = []
+    for customer in range(1, 401):
+        start = pd.Timestamp("2024-01-01") + pd.Timedelta(days=int(rng.integers(0, 180)))
+        loyal = rng.random() < 0.4
+        for k in range(int(rng.integers(1, 9 if loyal else 3))):
+            day = start + pd.Timedelta(days=int(30 * k * rng.uniform(0.7, 1.3)))
+            rows.append({"customer_id": customer, "date": day.strftime("%Y-%m-%d"),
+                         "amount": round(float(rng.gamma(3, 25 if loyal else 15)), 2),
+                         "category": str(rng.choice(["Home", "Sport", "Books", "Garden"]))})
+    pd.DataFrame(rows).sort_values("date").to_csv(ORDERS_CSV, index=False)
+    n = 500
+    plan = rng.choice(["Basic", "Pro"], n, p=[0.6, 0.4])
+    lifetime = rng.exponential(np.where(plan == "Pro", 18, 8))
+    watched = rng.uniform(2, 24, n)
+    pd.DataFrame({
+        "tenure_months": np.minimum(lifetime, watched).round(2), "churned": (lifetime <= watched).astype(int), "plan": plan,
+        "seats": rng.integers(1, 20, n),
+    }).to_csv(SUBSCRIPTIONS_CSV, index=False)
 
 
 def make_reviews(rng) -> None:
@@ -189,7 +214,7 @@ def capture(browser, mode: str) -> None:
     nav = page.locator('[data-testid="stSidebar"]')
 
     def go(name, area):
-        nav.get_by_text(area, exact=True).first.click()
+        nav.locator('[data-testid="stRadio"]').first.get_by_text(area, exact=True).click()   # el selector de área, no la etiqueta "Data"
         time.sleep(1.5)
         nav.get_by_text(name, exact=True).last.click()  # "Models" es a la vez un área y una sección
         time.sleep(3)
@@ -230,6 +255,29 @@ def capture(browser, mode: str) -> None:
     go("Compare data", "Analysis")
     time.sleep(2)
     page.screenshot(path=IMAGES / f"compare-{mode}.png")
+
+    go("Autopilot", "Data")
+    page.get_by_role("button", name="Analyze everything").click()
+    page.get_by_text("Suggested next steps").wait_for(timeout=120000)
+    time.sleep(2)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"autopilot-{mode}.png")
+
+    go("Impact", "Analysis")
+    pick(page, "Measure", "revenue")
+    page.get_by_role("button", name="Estimate the effect").click()
+    time.sleep(8)
+    page.mouse.move(5, 5)
+    scroll_main(page, 160)
+    page.screenshot(path=IMAGES / f"impact-{mode}.png")
+
+    go("Why it changed", "Analysis")
+    pick(page, "Column", "revenue")
+    page.get_by_role("button", name="Explain the change").click()
+    time.sleep(6)
+    page.mouse.move(5, 5)
+    scroll_main(page, 120)
+    page.screenshot(path=IMAGES / f"why-{mode}.png")
 
     go("Panel", "Share")
     page.get_by_role("button", name="Suggest a panel").click()
@@ -279,6 +327,12 @@ def capture(browser, mode: str) -> None:
     scroll_main(page, 640)
     page.screenshot(path=IMAGES / f"lab-errors-{mode}.png")
 
+    page.get_by_role("tab", name="Uncertainty").click()
+    time.sleep(5)
+    page.mouse.move(5, 5)
+    scroll_main(page, 640)
+    page.screenshot(path=IMAGES / f"lab-uncertainty-{mode}.png")
+
     go("Predict", "Models")
     page.get_by_role("button", name="Predict", exact=True).first.click()
     time.sleep(5)
@@ -291,6 +345,40 @@ def capture(browser, mode: str) -> None:
     time.sleep(3)
     scroll_main(page, 120)
     page.screenshot(path=IMAGES / f"text-{mode}.png")
+
+    page.set_input_files('input[type="file"]', str(ORDERS_CSV))   # clientes: retención y segmentos
+    time.sleep(5)
+    go("Customers", "Analysis")
+    panel = page.locator('[role="tabpanel"]:visible')
+    panel.get_by_role("button", name="Run").click()
+    time.sleep(5)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"customers-{mode}.png")
+
+    page.set_input_files('input[type="file"]', str(SUBSCRIPTIONS_CSV))   # bajas: supervivencia
+    time.sleep(5)
+    go("Survival", "Analysis")
+    pick(page, "Time until the event or until last seen", "tenure_months")
+    pick(page, "Compare groups by", "plan")
+    page.get_by_role("button", name="Draw the curves").click()
+    time.sleep(6)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"survival-{mode}.png")
+    page.close()
+
+
+def capture_spanish(browser) -> None:
+    """Una captura con la interfaz en español."""
+    page = browser.new_page(viewport=VIEW, color_scheme="light")
+    page.goto(f"http://localhost:{PORT}/")
+    page.wait_for_selector("text=KikoLens", timeout=30000)
+    page.set_input_files('input[type="file"]', str(CSV))
+    page.wait_for_selector("text=Overview", timeout=30000)
+    time.sleep(3)
+    pick(page, "Language / Idioma", "Español")
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / "spanish-light.png")
     page.close()
 
 
@@ -312,6 +400,7 @@ def main() -> None:
                 browser = p.chromium.launch(channel="msedge")
             for mode in ("light", "dark"):
                 capture(browser, mode)
+            capture_spanish(browser)
             browser.close()
     finally:
         stop_server(server)
