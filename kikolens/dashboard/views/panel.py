@@ -96,21 +96,22 @@ def _render_tile(tile: dict, value, error, panel: pn.Panel) -> None:
 
 def render(df: pd.DataFrame) -> None:
     panel = _panel()
-    c1, c2, c3 = st.columns([3, 1, 1])
+    c1, c2 = st.columns([4, 1])
     panel.title = c1.text_input("Panel title", panel.title, key="pn_name")
     c2.markdown("<div style='height:1.9rem'></div>", unsafe_allow_html=True)
     if c2.button("Suggest a panel", key="pn_suggest", help="Replaces the tiles with a starting point built from your columns."):
         st.session_state.panel = pn.suggest_panel(df, panel.title)
         st.rerun()
-    upload = c3.file_uploader("Open", type=["json"], key="pn_open", label_visibility="collapsed")
-    if upload is not None and st.session_state.get("pn_loaded") != upload.file_id:
-        try:
-            st.session_state.panel = pn.Panel.from_json(upload.getvalue().decode("utf-8"))
-            st.session_state.pn_loaded = upload.file_id
-        except (ValueError, UnicodeDecodeError) as e:
-            ui.note(str(e), "high")
-        else:
-            st.rerun()
+    with st.expander("Open a saved panel definition"):
+        upload = st.file_uploader("Panel definition (JSON)", type=["json"], key="pn_open")
+        if upload is not None and st.session_state.get("pn_loaded") != upload.file_id:
+            try:
+                st.session_state.panel = pn.Panel.from_json(upload.getvalue().decode("utf-8"))
+                st.session_state.pn_loaded = upload.file_id
+            except (ValueError, UnicodeDecodeError) as e:
+                ui.note(str(e), "high")
+            else:
+                st.rerun()
 
     _filters(df, panel)
     _new_tile(df, panel)

@@ -47,7 +47,7 @@ def free_text_columns(df: pd.DataFrame) -> list:
         if len(s) < MIN_DOCS:
             continue
         words = s.str.split().str.len().mean()
-        if words >= 4 and s.nunique() / len(s) > 0.3:
+        if words >= 4 and (s.nunique() / len(s) > 0.3 or s.nunique() >= 50):
             found.append(col)
     return found
 

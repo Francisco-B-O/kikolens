@@ -49,14 +49,18 @@ def _trend(frame: pd.DataFrame) -> None:
     if len(frame) < 2:
         st.caption("Run the check a few times to see how things move.")
         return
-    fig = go.Figure()
-    for column, label in (("quality", "Quality score"), ("drift share", "Drift share"), ("prediction", "Prediction")):
-        series = pd.to_numeric(frame[column], errors="coerce")
-        if series.notna().sum() >= 2:
-            fig.add_trace(go.Scatter(x=frame["time"], y=series, mode="lines+markers", name=label,
-                                     yaxis="y2" if column == "drift share" else "y"))
-    fig.update_layout(title="Over time", yaxis2=dict(overlaying="y", side="right", range=[0, 1], title="Drift share"))
-    ui.chart(fig, 340)
+    labels = pd.to_datetime(frame["time"]).dt.strftime("%b %d %H:%M")
+    panels = [("drift share", "Drift share (0 to 1)", [0, 1]), ("quality", "Quality score", [0, 100]),
+              ("prediction", "Average prediction", None)]
+    shown = [(col, title, rng) for col, title, rng in panels if pd.to_numeric(frame[col], errors="coerce").notna().sum() >= 2]
+    for column, (col, title, rng) in zip(st.columns(len(shown)), shown):
+        fig = go.Figure(go.Scatter(x=labels, y=pd.to_numeric(frame[col], errors="coerce"), mode="lines+markers", name=title))
+        fig.update_layout(title=title, showlegend=False)
+        fig.update_xaxes(type="category")
+        if rng:
+            fig.update_yaxes(range=rng)
+        with column:
+            ui.chart(fig, 280)
 
 
 def render(df: pd.DataFrame) -> None:

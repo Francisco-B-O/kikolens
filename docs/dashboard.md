@@ -4,6 +4,10 @@ Start it with `kikolens start` and open <http://localhost:8501>. Pick a file, a 
 
 The sidebar has two levels: an **area** (Data, Analysis, Models, Share) and, under it, the sections of that area. The interface follows the light or dark theme from Streamlit's settings menu (top right).
 
+## Loading data
+
+The sidebar's **Source** menu offers four ways in: **File** (CSV, TSV, Excel, JSON, Parquet; for an Excel book with several sheets you pick the sheet), **URL** (any link to those formats, a Google Sheet shared so that anyone with the link can view it, and `s3://` or `gs://` addresses when the `cloud` extra is installed), **Paste** (copy cells from a spreadsheet or a web page, header row included; the separator is detected) and **Database** (SQLite, PostgreSQL or MySQL: pick a table, or type a read-only query).
+
 ## Data
 
 ### Overview
@@ -28,6 +32,14 @@ Lists everything wrong with the data, ordered by how much it matters:
 **Auto-clean** applies only the safe fixes: trim whitespace, drop duplicates, convert mistyped columns, drop constant columns. Everything else is an explicit operation you choose. **Undo** reverts the last action (Auto-clean counts as one) and **Reset** returns to the file as loaded. The original file is never modified.
 
 ![Quality and cleaning](images/quality-light.png)
+
+The **Missing data patterns**, **Near-duplicate rows** and **Validation rules** tabs under the cleaning tools go further:
+
+* **Missing data patterns** tells you which columns are empty together and, more importantly, whether the gaps are random. When the chance of a gap depends on another column (for example, income is missing mostly for one region) filling it with a single typical value would bias the results, and the page says so.
+* **Smart fill** (in the operation list) fills gaps with **KNN** (from the most similar rows), **iterative** (predicting each gap from the other columns) or **by group** (the median or most common value of each group). It can add a column that marks the filled cells.
+* **Merge similar spellings** unifies `New York`, `new york `, `NewYork` and `New Yrok` into the most common form, after showing you what it would merge.
+* **Near-duplicate rows** finds pairs that are almost, but not exactly, the same (a typo in a name, a different case) and lets you remove the ones you confirm.
+* **Validation rules** are checks written by whoever knows the data: not empty, unique, a range, allowed values, a pattern, "end date is not before start date", "not in the future". KikoLens can suggest rules from the current data, shows which rows break each rule, and saves them as JSON for `kikolens validate` and for monitors.
 
 ### Transform
 Six tabs of operations, each recorded as a step:
@@ -84,6 +96,18 @@ See what changed between two datasets: the first part of the data against the re
 
 ![Compare data](images/compare-light.png)
 
+### Text
+For columns with sentences, such as comments or reviews. Everything runs on this computer.
+
+* **Terms:** the words, pairs or triples that appear in the most texts, with a search box that shows each match in context.
+* **By group:** the terms that distinguish each group of another column (log odds), and the terms that go with a higher or lower number such as a rating.
+* **Themes:** groups similar texts and describes each by its key terms and an example.
+* **Classify:** learns to predict a column (a rating, a topic) from the text, tells you whether it beats always guessing the commonest class, shows the terms that point to each class and lets you try a sentence.
+* **Tone:** a rough positive / negative picture from a small word list (English and Spanish). It does not understand irony or negation.
+* **Summary:** asks the local model (Ollama) for the main themes of a sample of the texts.
+
+![Text](images/text-light.png)
+
 ### Segments
 k-means clustering on the numeric columns, with an optional chart of inertia and silhouette scores to help choose the number of groups. Download the data with the segment label attached.
 
@@ -104,6 +128,15 @@ The careful way to choose a model. Pick the target, the columns to leave out and
 
 ![Model lab diagnostics](images/lab-diagnostics-light.png)
 
+The **Explain** tab adds Shapley values for one row (the contribution of each feature, fairer than replacing one at a time when features are related) and a global importance computed from them. The **Errors** tab answers "where does the model fail?":
+
+* segments (a value of a category, a band of a number) where the error is clearly higher than average, with how many times worse and how sure that is
+* the rows it gets most wrong
+* for two-class problems, what each decision threshold gives (precision, recall, F1) and the cheapest threshold for your cost of a false alarm and of a miss
+* a row-by-row comparison of any two models, with a verdict on whether the difference is statistically reliable
+
+![Where the model fails](images/lab-errors-light.png)
+
 ### Neural network
 A multilayer perceptron you configure: hidden layers (presets or your own, e.g. `128, 64, 32`), activation, optimizer, learning rate, L2 regularization, maximum epochs, early stopping and the held-out share for testing. After training you get metrics, the network diagram, the training curve, permutation importance and, if a classical model was trained for the same target, a side-by-side comparison.
 
@@ -114,6 +147,8 @@ Choose a date column and a numeric column. The page resamples to a regular perio
 
 ![Time series](images/timeseries-light.png)
 
+Below the forecast, **Go further** has three tabs. **Compare models** tests five models (naive, seasonal naive, trend + seasonality, Holt-Winters and boosting on lags) by training each on the past and forecasting the stretch that follows, several times; the most accurate wins, and the range comes from the real errors it made. You can list special dates (a campaign, a holiday) that the boosting model uses. **Changes in the series** finds level shifts and trend changes and stays quiet on a series without them. **One forecast per group** forecasts each region or product separately.
+
 ### Predict
 Use a model on data it has not seen. Choose a model trained in this session, one from your saved models, or open a model file, then:
 
@@ -123,7 +158,24 @@ Use a model on data it has not seen. Choose a model trained in this session, one
 
 ![Predict](images/predict-light.png)
 
+### Monitoring
+Watches a data source over time. Create a monitor from the data open now (it becomes the baseline), optionally with a saved model and validation rules; then check new data, either a file you upload or the file the monitor watches. Each check records the number of rows, the quality score, drift against the baseline, broken rules and the model's predictions, and raises alerts: drift at the level you chose, a drop in quality, a large change in rows, missing or new columns, columns that changed from numbers to text, model inputs outside what it saw in training, and a shift in the average prediction or in the model's confidence. The history is a chart and a table. KikoLens does not schedule anything itself: the **Schedule it** panel gives the cron and Windows commands.
+
+![Monitoring](images/monitoring-light.png)
+
 ## Share
+
+### Panel
+A page of your own. Add **metrics** (count, sum, mean, median, minimum, maximum, distinct values), **charts** (bar, line, area, scatter, histogram, box, pie) and **tables**, set filters that apply to the whole panel, and reorder or remove tiles. **Suggest a panel** builds a starting point from your columns. Download it as one self-contained web page (charts included, the data is not) or as a JSON definition that you can reload and that is saved in your project.
+
+![Panel](images/panel-light.png)
+
+### Export
+* **Files:** CSV, TSV, Excel, Parquet, JSON, JSON lines or Feather.
+* **Excel workbook:** one file with the data, the column profile, statistics, quality issues, the recipe, rule results, model metrics and the last predictions, each on its own sheet, with a highlighted header, frozen first row, filters and sensible widths. Text that starts with `=` is stored as text, never as a formula.
+* **Database:** writes the current data as a table. It stops if the table exists unless you choose to add rows or to replace it, and replacing needs a confirmation.
+
+![Export](images/export-light.png)
 
 ### Report
 Builds one self-contained HTML page with quality, statistics, correlations, patterns, any models trained in this session and, optionally, commentary from the local model. Open it in a browser and print to save as PDF.

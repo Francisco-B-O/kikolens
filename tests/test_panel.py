@@ -139,3 +139,12 @@ def test_cli_panel(tmp_path, df):
     assert result.exit_code == 0 and out.exists() and (tmp_path / "p.json").exists()
     assert runner.invoke(app, ["panel", str(source), str(tmp_path / "p.json"), "--output", str(out)]).exit_code == 0
     assert runner.invoke(app, ["panel", str(source), str(tmp_path / "missing.json")]).exit_code == 1
+
+
+def test_partial_first_and_last_periods_are_not_summed_as_if_complete():
+    idx = pd.date_range("2024-01-05", "2024-08-20")            # viernes a martes: semanas incompletas en los dos extremos
+    df = pd.DataFrame({"date": idx, "v": 10.0})
+    out = pn._grouped(df, "date", "v", "sum", 10)
+    assert (out["v"] == 70).all() and len(out) >= 8              # solo semanas completas
+    means = pn._grouped(df, "date", "v", "mean", 10)
+    assert len(means) == len(out) + 2                            # una media no se distorsiona: se conservan los extremos

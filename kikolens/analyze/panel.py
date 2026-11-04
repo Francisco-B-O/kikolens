@@ -5,6 +5,7 @@ import json
 import uuid
 from dataclasses import dataclass, field
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -64,13 +65,22 @@ def _grouped(df: pd.DataFrame, x: str, y: str | None, agg: str, top: int) -> pd.
         raise ValueError(f"Aggregation must be one of {AGGS}.")
     if y and agg not in ("count", "nunique") and not _numeric(df[y]):
         raise ValueError(f"'{y}' must be numeric for {agg}.")
-    data = df
-    if pd.api.types.is_datetime64_any_dtype(df[x]):
+    data, by_date = df, pd.api.types.is_datetime64_any_dtype(df[x])
+    if by_date:
         data = df.assign(**{x: df[x].dt.to_period(_period(df[x])).dt.start_time})
     if y:
         out = data.groupby(x, dropna=True)[y].agg(agg).reset_index()
     else:
         out = data.groupby(x, dropna=True).size().reset_index(name="rows")
+    if by_date and (agg in ("sum", "count", "nunique") or not y) and len(out) >= 4:
+        # el primer y el último periodo suelen estar a medias: sumarlos como si estuvieran completos engaña
+        rows = data.groupby(x, dropna=True).size().reindex(out[x]).to_numpy()
+        typical = float(np.median(rows))
+        keep = np.ones(len(out), dtype=bool)
+        for edge in (0, -1):
+            if rows[edge] < 0.6 * typical:
+                keep[edge] = False
+        out = out[keep].reset_index(drop=True)
     return out
 
 
