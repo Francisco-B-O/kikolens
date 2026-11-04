@@ -3,9 +3,10 @@ import streamlit as st
 
 from kikolens.dashboard import components as ui
 from kikolens.report.builder import build_report
+from kikolens.report.pdf import build_pdf
 
 TITLE = "Report"
-SUBTITLE = "One self-contained page you can share or print to PDF."
+SUBTITLE = "One self-contained page, or a PDF, that you can share."
 
 
 def render(df: pd.DataFrame) -> None:
@@ -31,8 +32,15 @@ def render(df: pd.DataFrame) -> None:
                 ai_text = get_ai_insights(df)
         with st.spinner("Building report..."):
             st.session_state.rp_html = build_report(df, name=name, models=available, ai_text=ai_text)
+            pilot = st.session_state.get("pilot_res")
+            st.session_state.rp_pdf = build_pdf(df, name=name, autopilot=pilot,
+                                                model=next(iter(available.values()), None) if available else None)
 
     page = st.session_state.get("rp_html")
     if page:
-        ui.note(f"Report ready ({len(page) / 1e6:.1f} MB). Open it in a browser and print to save as PDF.", "ok")
-        st.download_button("Download report (HTML)", page.encode("utf-8"), "kikolens_report.html", "text/html", key="rp_dl")
+        ui.note(f"Report ready ({len(page) / 1e6:.1f} MB).", "ok")
+        left, right = st.columns(2)
+        left.download_button("Download report (HTML)", page.encode("utf-8"), "kikolens_report.html", "text/html", key="rp_dl")
+        if st.session_state.get("rp_pdf"):
+            right.download_button("Download report (PDF)", st.session_state.rp_pdf, "kikolens_report.pdf", "application/pdf",
+                                  key="rp_dl_pdf")

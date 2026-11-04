@@ -753,8 +753,9 @@ def report(
     target: Optional[str] = typer.Option(None, help="Include AutoML for this column."),
     nn: bool = typer.Option(False, "--nn", help="Also train a neural network for the target."),
     ai: bool = typer.Option(False, "--ai", help="Add commentary from the local LLM."),
+    pdf: Optional[Path] = typer.Option(None, "--pdf", help="Also write a PDF report to this path."),
 ):
-    """Build a self-contained HTML report (print it to PDF from the browser)."""
+    """Build a self-contained HTML report, and optionally a PDF."""
     from kikolens.report.builder import save_report
 
     df = _load(source)
@@ -776,6 +777,58 @@ def report(
         ai_text = get_ai_insights(df)
     path = save_report(df, output, name=Path(str(source)).stem or "dataset", models=models, ai_text=ai_text)
     console.print(f"Report written to [bold]{path}[/bold]")
+    if pdf:
+        from kikolens.report.pdf import build_pdf
+        pdf.parent.mkdir(parents=True, exist_ok=True)
+        pdf.write_bytes(build_pdf(df, name=Path(str(source)).stem or "dataset"))
+        console.print(f"PDF written to [bold]{pdf}[/bold]")
+
+
+@app.command()
+def autopilot(
+    source: str,
+    target: Optional[str] = typer.Option(None, help="Column to predict; guessed when omitted."),
+    horizon: int = typer.Option(12, help="Periods to forecast when the data has dates."),
+    thorough: bool = typer.Option(False, "--thorough", help="Compare every model and tune the best (slower)."),
+    clean: Optional[Path] = typer.Option(None, help="Write the cleaned data to this file."),
+    recipe: Optional[Path] = typer.Option(None, help="Write the cleaning steps as a recipe (JSON)."),
+    pdf: Optional[Path] = typer.Option(None, "--pdf", help="Write a PDF report."),
+):
+    """Analyze a dataset end to end: clean, find patterns, model a column and forecast dates."""
+    from kikolens.analyze.autopilot import next_steps, run_autopilot
+
+    df = _load(source)
+    if target:
+        _check_target(df, target)
+    try:
+        with console.status("Working..."):
+            result = run_autopilot(df, target, forecast_horizon=horizon, fast=not thorough)
+    except ValueError as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(result["narrative"])
+    for line in result["steps"]:
+        console.print(f"  - {line}")
+    for line in result["problems"]:
+        console.print(f"[yellow]  - {line}[/yellow]")
+    if result["model"]:
+        _print_frame(result["model"]["leaderboard"][["model", result["model"]["primary_metric"]]], "Models")
+    console.print("[bold]Next[/bold]")
+    for line in next_steps(result):
+        console.print(f"  - {line}")
+    if clean:
+        clean.parent.mkdir(parents=True, exist_ok=True)
+        result["clean"].to_csv(clean, index=False)
+        console.print(f"Cleaned data written to {clean}")
+    if recipe:
+        recipe.parent.mkdir(parents=True, exist_ok=True)
+        recipe.write_text(result["recipe"].to_json(), encoding="utf-8")
+        console.print(f"Recipe written to {recipe}")
+    if pdf:
+        from kikolens.report.pdf import build_pdf
+        pdf.parent.mkdir(parents=True, exist_ok=True)
+        pdf.write_bytes(build_pdf(result["clean"], name=Path(str(source)).stem or "dataset", autopilot=result))
+        console.print(f"PDF written to {pdf}")
 
 
 def cli():

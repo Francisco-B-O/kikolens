@@ -16,13 +16,15 @@ SUBTITLE = "Compare many models fairly, tune the best one and check it for probl
 def _controls(df: pd.DataFrame) -> dict:
     target = st.selectbox("Column to predict", df.columns, index=len(df.columns) - 1, key="lab_target")
     task = lab.detect_task(df[target].dropna()) if df[target].notna().any() else "classification"
-    pool = list(lab.candidates(task))
+    default_pool = list(lab.candidates(task))
+    pool = default_pool + list(lab.ADVANCED)
 
     left, right = st.columns(2, gap="large")
     with left:
         exclude = st.multiselect("Leave out columns", [c for c in df.columns if c != target], key="lab_exclude",
                                  help="Use this for columns that would not be known when making a real prediction.")
-        models = st.multiselect(f"Models to compare ({task})", pool, default=pool, key=f"lab_models_{task}")
+        models = st.multiselect(f"Models to compare ({task})", pool, default=default_pool, key=f"lab_models_{task}",
+                                help="SVM, AdaBoost, Bagging and the voting and stacking ensembles are slower, so they start unticked.")
     with right:
         folds = st.slider("Cross-validation folds", 3, 10, 5, key="lab_folds",
                           help="Each model is trained and scored this many times on different slices of the training data.")
