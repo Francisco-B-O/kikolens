@@ -96,3 +96,15 @@ def test_cli_serve_refuses_an_open_network_address(bundle, tmp_path):
     path = save_bundle(bundle, path=tmp_path / "m.klmodel")
     out = CliRunner().invoke(app, ["serve", str(path), "--host", "0.0.0.0"])
     assert out.exit_code == 1 and "token" in out.output
+
+
+def test_openapi_describes_the_inputs_and_needs_the_token(bundle):
+    server, url = start(bundle, token="t")
+    try:
+        assert call(url + "/openapi.json")[0] == 401
+        status, spec = call(url + "/openapi.json", token="t")
+        assert status == 200 and spec["openapi"].startswith("3.")
+        props = spec["paths"]["/predict"]["post"]["requestBody"]["content"]["application/json"]["schema"]["properties"]["rows"]["items"]["properties"]
+        assert props["x"] == {"type": "number"} and props["g"] == {"type": "string"}
+    finally:
+        server.shutdown()

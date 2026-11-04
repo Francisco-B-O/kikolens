@@ -13,7 +13,7 @@ APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
-         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records"]
+         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit"]
 
 
 @pytest.fixture(scope="module")
@@ -487,3 +487,21 @@ def test_export_dictionary_and_notebook_tabs_render(data):
     at = open_page(data, "Export")
     assert_clean(at)
     assert [t.label for t in at.tabs][-2:] == ["Data dictionary", "Notebook"]
+
+
+def test_section_finder_jumps_to_any_section(data):
+    at = open_page(data, "Overview")
+    at.selectbox(key="jump").set_value("Survival").run()
+    assert_clean(at)
+    assert at.session_state["nav"] == "Survival" and at.session_state["nav_group"] == "Analysis"
+    assert at.session_state["jump"] == ""
+    at.selectbox(key="jump").set_value("Model lab").run()
+    assert at.session_state["nav_group"] == "Models"
+
+
+def test_distribution_page_fits_a_column(data):
+    at = open_page(data, "Distribution fit")
+    at.selectbox(key="di_c").set_value("x")
+    at.run()
+    assert_clean(at)
+    assert any("fits best" in m.value for m in at.markdown)

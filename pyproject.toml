@@ -55,6 +55,7 @@ cloud = ["fsspec>=2023.1.0", "s3fs", "gcsfs"]
 postgres = ["psycopg2-binary"]
 mysql = ["pymysql", "cryptography"]
 torch = ["torch>=2.2"]
+jupyter = ["jupyterlab>=4.0", "ipykernel>=6.0"]
 all = ["fsspec>=2023.1.0", "s3fs", "gcsfs", "psycopg2-binary", "pymysql", "cryptography"]
 dev = [
     "pytest>=8.0.0",
