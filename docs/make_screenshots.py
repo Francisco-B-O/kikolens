@@ -214,7 +214,7 @@ def capture(browser, mode: str) -> None:
     nav = page.locator('[data-testid="stSidebar"]')
 
     def go(name, area):
-        nav.get_by_text(area, exact=True).first.click()
+        nav.locator('[data-testid="stRadio"]').first.get_by_text(area, exact=True).click()   # el selector de área, no la etiqueta "Data"
         time.sleep(1.5)
         nav.get_by_text(name, exact=True).last.click()  # "Models" es a la vez un área y una sección
         time.sleep(3)
@@ -270,6 +270,14 @@ def capture(browser, mode: str) -> None:
     page.mouse.move(5, 5)
     scroll_main(page, 160)
     page.screenshot(path=IMAGES / f"impact-{mode}.png")
+
+    go("Why it changed", "Analysis")
+    pick(page, "Column", "revenue")
+    page.get_by_role("button", name="Explain the change").click()
+    time.sleep(6)
+    page.mouse.move(5, 5)
+    scroll_main(page, 120)
+    page.screenshot(path=IMAGES / f"why-{mode}.png")
 
     go("Panel", "Share")
     page.get_by_role("button", name="Suggest a panel").click()

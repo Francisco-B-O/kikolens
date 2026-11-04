@@ -8,6 +8,10 @@
 * **Model lab, three new tabs:** conformal prediction ranges and class sets, counterfactuals ("what would change it"), and a fairness check across groups.
 * **Feature ideas:** automatic search for ratios, products and other columns that improve a model in cross-validation, applied as recipe steps.
 * **New analyses:** survival curves with log-rank test, retention by cohort, RFM segments, funnels, association rules, causal impact of a change and difference-in-differences, Bayesian A/B tests. Matching commands: `survival`, `cohorts`, `rfm`, `basket`, `impact`, `ab-bayes`, `features`.
+* **Why it changed:** breaks the change of a total, an average or a count between two periods into the contribution of every region, channel or product (with mix and rate effects for averages), a waterfall and the pairs that moved most; `kikolens why`.
+* **Regression explained:** linear and logistic regression with ranges, p-values, odds ratios, plain-language effects and diagnostics (collinearity, changing error spread, related errors, separation); `kikolens regress`.
+* **Unusual periods:** anomalies in a time series once trend and season are removed, in the Anomalies section and as `kikolens spikes`.
+* **Model health:** compares a saved model's real accuracy on newer data, period by period, with what it had in testing, and warns of a drop or a steady decline; `kikolens performance`.
 * **Serving:** `kikolens serve` exposes a saved model as a JSON API on this computer, with a token required for anything else.
 * **Spanish interface:** a language menu in the dashboard that translates sections, buttons and labels.
 

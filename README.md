@@ -32,20 +32,23 @@ The dashboard groups its sections into four areas.
 | | Explore, Patterns, Statistics | Charts with filters, automatic findings (strong correlations, dominant categories, identifiers), summary tables and the correlation matrix. |
 | | Ask | Question the data in plain language (a local model writes the SQL) or run your own read-only SQL. |
 | **Analysis** | Experiments | Compare groups (the right test is chosen for you, with effect size and post-hoc comparisons), association between categories, correlation with confidence intervals, A/B tests (classical and Bayesian) with sample-size planning, and a screen of every column against a target corrected for testing many at once. |
-| | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged. |
+| | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged; and periods of a series that are unusual once trend and season are taken out. |
 | | Dimensions | PCA with loadings, t-SNE maps, and a redundancy check (VIF). |
 | | Compare data | What changed between two datasets, two periods, or the raw and the cleaned data: PSI, KS and chi-squared per column. |
 | | Text | For comments and reviews: key terms, what distinguishes each group, themes, a classifier, rough tone, search, and an optional summary from the local model. |
 | | Segments | k-means clustering with a silhouette hint for the number of groups. |
 | | Survival | Kaplan-Meier curves with confidence bands and a log-rank test between groups, counting cases where the event has not happened yet. |
 | | Customers | Retention by cohort, RFM segments, conversion funnels and what is bought together. |
+| | Why it changed | A figure moved between two periods: which regions, channels or products explain it, with a waterfall and mix and rate effects for averages. |
 | | Impact | Did a change move the numbers? Compared with what a control or the earlier trend predicted, with a range that reflects how wrong that method was before; also difference-in-differences. |
 | **Models** | Models | AutoML for regression and classification with a written rationale, feature importance, row explanations and a what-if simulator. |
 | | Model lab | Up to 12 models (a baseline included) compared with cross-validation, the best one tuned, data-leak detection, diagnostics, partial dependence, Shapley values, **where the model fails**, decision thresholds with costs, a row-by-row comparison of two models, ranges that hold the truth as often as you ask (conformal), the smallest changes that would flip a prediction, and a fairness check across groups. SVM, AdaBoost, Bagging, voting and stacking ensembles, and an optional PyTorch network, are available too. |
+| | Regression | What pushes a result up or down, other things equal: linear or logistic regression with ranges, p-values, odds ratios, each effect in a sentence and warnings when the model cannot be trusted. |
 | | Feature ideas | Tries ratios, products and other new columns and keeps the ones that make a model better, as recipe steps. |
 | | Neural network | Configurable multilayer perceptron with the architecture drawn, the training curve, permutation importance and a comparison with the classical model. |
 | | Time series | Trend and seasonality, then five models (naive, seasonal naive, trend + seasonality, Holt-Winters, boosting on lags) tested on the past, the best one forecast with an honest range, changes of level or trend, special dates, and one forecast per group. |
 | | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
+| | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
 | **Share** | Panel | Pin metrics, charts and tables with global filters, and export them as one self-contained web page. |
 | | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |

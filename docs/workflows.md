@@ -100,7 +100,16 @@ It cleans, guesses that `revenue` is the column to predict, compares four models
 
 From the terminal: `kikolens cohorts orders.csv user date`, `kikolens rfm orders.csv user date amount --output segments.csv` and `kikolens impact daily.csv date sales --at 2024-06-01 --control visits`.
 
-## 9. Put a model behind a small API
+## 9. Why did revenue drop?
+
+**Goal:** find which part of the business moved a figure.
+
+1. *Analysis* → *Why it changed*, measure a total of `revenue`, with the date column. The two periods start as the last third of the dates against the one before.
+2. The ranking tells you which column concentrates the change; the waterfall shows each value's contribution, and the combinations table names the regions and channels that moved most together.
+
+From the terminal: `kikolens why sales.csv date --metric revenue --before 2024-03-01,2024-05-01 --after 2024-05-01,2024-07-01`.
+
+## 10. Put a model behind a small API
 
 ```bash
 kikolens lab clean.csv revenue --register sales-model

@@ -53,6 +53,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens rfm SOURCE CUSTOMER DATE AMOUNT [--output FILE]` | Recency, frequency and spend segments. `--output` writes every customer with their segment. |
 | `kikolens basket SOURCE TRANSACTION ITEM [--support 0.02] [--confidence 0.3]` | Association rules: what is bought together. |
 | `kikolens impact SOURCE DATE VALUE --at YYYY-MM-DD [--control a,b] [--agg mean\|sum]` | Estimate the effect of a change against what would have happened. |
+| `kikolens regress SOURCE TARGET [--using a,b] [--positive VALUE] [--output FILE]` | Linear regression for a number and logistic for a two-valued column: coefficients with ranges and p-values, each effect in a sentence, and warnings about collinearity or unreliable errors. |
+| `kikolens spikes SOURCE DATE VALUE [--agg mean\|sum] [--sensitivity 3.5] [--output FILE]` | Unusual periods in a series once trend and season are taken out. |
+| `kikolens why SOURCE DATE [--metric COL] [--agg sum\|mean\|count] [--before START,END] [--after START,END] [--by a,b]` | Explain why a figure changed between two periods: which values of which columns account for it. The end date is not included; by default it compares the last third of the dates with the one before. |
 | `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |
 | `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 
@@ -60,6 +63,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 
 | Command | What it does |
 | :--- | :--- |
+| `kikolens performance SOURCE MODEL [--date COL] [--period Day\|Week\|Month\|Quarter] [--raw]` | Is a saved model still good? Scores newer data whose real results are known, period by period, against the accuracy it had in testing. Exit code `2` on a warning. |
 | `kikolens monitor create NAME SOURCE [--baseline DATA] [--recipe FILE] [--model NAME] [--rules FILE] [--webhook URL] [--drift-level high\|medium] [--quality-drop 10]` | Create a monitor. The baseline (the source as it is now, unless you give another) is stored inside the monitor. |
 | `kikolens monitor run NAME [--source FILE]` | One check. Exit code `0` fine or warnings only, `2` alerts, `1` the data could not be read. |
 | `kikolens monitor list` / `history NAME [--last N]` | The monitors and the past checks of one. |
