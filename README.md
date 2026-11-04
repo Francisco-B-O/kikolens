@@ -27,6 +27,8 @@ The dashboard groups its sections into four areas.
 | :--- | :--- | :--- |
 | **Data** | Load | CSV, TSV, Excel (pick the sheet), JSON / NDJSON, Parquet, a pasted table, `http(s)` links, shared Google Sheets, `s3://` and `gs://` (with the `cloud` extra), and SQLite / PostgreSQL / MySQL (pick a table or run a read-only query). |
 | | Quality and cleaning | Quality score and detection of missing values, duplicates, constant columns, text that is really numbers or dates, and outliers. Missing-data patterns (are the gaps random?), smart fill (KNN, iterative, by group), merging of similar spellings, near-duplicate rows, and your own validation rules. Every fix is undoable; the original file is never touched. |
+| | Privacy | Finds personal data (validated patterns and column names), masks, hashes or removes it as recipe steps, and measures how identifiable people are with k-anonymity. |
+| | Match records | Joins two tables whose names are spelled differently (accents, order, typos), with ambiguity warnings. |
 | | Transform | Filter, sort and sample rows; formulas for new columns; date parts, bins, scaling, one-hot encoding; lags and rolling statistics; group, pivot and stack; join or append a second file. |
 | | Autopilot | A first full analysis in one click: safe cleaning as a recipe, column roles, findings, a model against a baseline and a forecast when there are dates, with a written summary and next steps. |
 | | Explore, Patterns, Statistics | Charts with filters, automatic findings (strong correlations, dominant categories, identifiers), summary tables and the correlation matrix. |
@@ -52,7 +54,7 @@ The dashboard groups its sections into four areas.
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
 | **Share** | Panel | Pin metrics, charts and tables with global filters, and export them as one self-contained web page. |
 | | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
-| | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; or a database table. |
+| | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; a database table; a data dictionary; or a Jupyter notebook that reproduces the session. |
 | | Project | Save everything to a single `.kikolens` file, reopen it later, and repeat the recipe on new data or export it as a Python script. |
 
 ## Try it

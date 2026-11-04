@@ -1,7 +1,9 @@
 import pandas as pd
 import streamlit as st
 
+from kikolens.analyze.dictionary import build_dictionary, to_markdown
 from kikolens.dashboard import components as ui
+from kikolens.report.notebook import build_notebook
 from kikolens.report.workbook import build_analysis_workbook
 from kikolens.utils import writers as wr
 
@@ -78,12 +80,43 @@ def _database(df: pd.DataFrame) -> None:
             ui.note(f"{n:,} rows written to '{table}'.", "ok")
 
 
+def _dictionary(df: pd.DataFrame) -> None:
+    st.caption("One entry per column: what it holds, how many values are empty, typical values, ranges and warnings. "
+               "Write the descriptions yourself; the rest is calculated.")
+    table = build_dictionary(df, st.session_state.get("dict_descriptions", {}))
+    shown = table[["column", "description", "meaning", "empty %", "distinct", "typical values", "notes"]]
+    edited = st.data_editor(shown, disabled=[c for c in shown.columns if c != "description"], hide_index=True, width="stretch", key="ex_dict")
+    st.session_state.dict_descriptions = {r["column"]: r["description"] for _, r in edited.iterrows() if r["description"]}
+    full = build_dictionary(df, st.session_state.dict_descriptions)
+    left, right = st.columns(2)
+    left.download_button("Download as Markdown", to_markdown(full, _name(), len(df)).encode("utf-8"), f"{_name()}_dictionary.md",
+                         "text/markdown", key="ex_dl_md")
+    right.download_button("Download as CSV", full.to_csv(index=False).encode("utf-8"), f"{_name()}_dictionary.csv", "text/csv",
+                          key="ex_dl_dict_csv")
+
+
+def _notebook(df: pd.DataFrame) -> None:
+    st.caption("A Jupyter notebook that reloads the file, repeats every step recorded in this session and, if you wish, "
+               "trains a model. Set the path to the file in its first data cell if it is not next to the notebook.")
+    target = st.selectbox("Add a model for", ["(none)"] + list(df.columns), key="ex_nb_target")
+    exclude = []
+    if target != "(none)":
+        exclude = st.multiselect("Leave out of the model", [c for c in df.columns if c != target], key="ex_nb_drop")
+    text = build_notebook(str(st.session_state.filename or "data.csv"), st.session_state.recipe,
+                          None if target == "(none)" else target, exclude, title=f"Analysis of {_name()}")
+    st.download_button("Download the notebook", text.encode("utf-8"), f"{_name()}.ipynb", "application/x-ipynb+json", key="ex_dl_nb")
+
+
 def render(df: pd.DataFrame) -> None:
     ui.stats([("Rows", f"{len(df):,}"), ("Columns", len(df.columns)), ("Steps recorded", len(st.session_state.recipe))])
-    tabs = st.tabs(["Files", "Excel workbook", "Database"])
+    tabs = st.tabs(["Files", "Excel workbook", "Database", "Data dictionary", "Notebook"])
     with tabs[0]:
         _files(df)
     with tabs[1]:
         _workbook(df)
     with tabs[2]:
         _database(df)
+    with tabs[3]:
+        _dictionary(df)
+    with tabs[4]:
+        _notebook(df)

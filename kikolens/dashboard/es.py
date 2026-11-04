@@ -417,4 +417,38 @@ ES = {
         "Periodos que destacan una vez quitadas la tendencia y el patrón semanal, mensual o anual.",
     "Sensitivity (lower finds more)": "Sensibilidad (menor encuentra más)", "Download the unusual periods": "Descargar los periodos inusuales",
     "Unusual periods need a date column and a numeric column.": "Los periodos inusuales necesitan una columna de fechas y otra numérica.",
+    "Privacy": "Privacidad", "Match records": "Cruzar registros", "Data dictionary": "Diccionario de datos", "Notebook": "Cuaderno",
+    "Check a model": "Comprobar un modelo", "Compare models": "Comparar modelos", "Personal data": "Datos personales",
+    "How identifiable": "Qué tan identificable",
+    "Find personal data, mask or replace it, and check how easily a person could be recognised. All on this computer.":
+        "Encuentra datos personales, ocúltalos o sustitúyelos y comprueba lo fácil que sería reconocer a una persona. Todo en este ordenador.",
+    "Join two tables whose names are not spelled the same way: accents, word order, typos.":
+        "Une dos tablas cuyos nombres no se escriben igual: acentos, orden de las palabras, erratas.",
+    "Keep": "Conservar", "Mask (keep the last 2 characters)": "Ocultar (dejar los 2 últimos caracteres)",
+    "Replace with a fingerprint": "Sustituir por una huella", "Remove the column": "Quitar la columna",
+    "#### What to do with each": "#### Qué hacer con cada una", "Salt for fingerprints": "Sal para las huellas",
+    "Equal values get equal fingerprints, so counts and joins still work. The salt is saved in the recipe: do not share the recipe if the fingerprints must stay unlinkable.":
+        "Los valores iguales reciben la misma huella, así que los recuentos y cruces siguen funcionando. La sal se guarda en la receta: no la compartas si las huellas deben seguir sin poder enlazarse.",
+    "A person is easier to recognise when few others share the same age, postal code, sex or city. k is the size of the smallest group a person hides in.":
+        "Una persona es más fácil de reconocer cuando pocas otras comparten la misma edad, código postal, sexo o ciudad. k es el tamaño del grupo más pequeño en el que se esconde una persona.",
+    "Columns that describe a person": "Columnas que describen a una persona", "Wanted k": "k deseada", "Pick at least one column.": "Elige al menos una columna.",
+    "Smallest group": "Grupo más pequeño", "Rows in a group below k": "Filas en un grupo menor que k", "Unique rows": "Filas únicas",
+    "File to match against": "Archivo con el que cruzar", "Name column in the open data": "Columna de nombres en los datos abiertos",
+    "Name column in the uploaded file": "Columna de nombres en el archivo subido", "Minimum similarity": "Similitud mínima",
+    "Find matches": "Buscar coincidencias", "Matched": "Con pareja", "Not matched": "Sin pareja", "Need a look": "A revisar",
+    "#### Matches that are not exact": "#### Coincidencias que no son exactas",
+    "Add the matching columns to my data": "Añadir las columnas de la pareja a mis datos",
+    "Adds the columns of the uploaded file (ending in _right) and the score. You can undo it.":
+        "Añade las columnas del archivo subido (terminan en _right) y la puntuación. Puedes deshacerlo.",
+    "Upload the second table. Each row of the open data looks for its best partner in it.":
+        "Sube la segunda tabla. Cada fila de los datos abiertos busca en ella a su mejor pareja.",
+    "One entry per column: what it holds, how many values are empty, typical values, ranges and warnings. Write the descriptions yourself; the rest is calculated.":
+        "Una ficha por columna: qué contiene, cuántos valores faltan, valores típicos, rangos y avisos. Escribe tú las descripciones; el resto se calcula.",
+    "Download as Markdown": "Descargar como Markdown", "Download as CSV": "Descargar como CSV",
+    "A Jupyter notebook that reloads the file, repeats every step recorded in this session and, if you wish, trains a model. Set the path to the file in its first data cell if it is not next to the notebook.":
+        "Un cuaderno de Jupyter que vuelve a cargar el archivo, repite cada paso registrado en esta sesión y, si quieres, entrena un modelo. Ajusta la ruta del archivo en su primera celda de datos si no está junto al cuaderno.",
+    "Add a model for": "Añadir un modelo para", "Leave out of the model": "Dejar fuera del modelo", "Download the notebook": "Descargar el cuaderno",
+    "Models to compare": "Modelos a comparar", "Compare": "Comparar",
+    "Save at least two models (or train one in this session and save another) to compare them.":
+        "Guarda al menos dos modelos (o entrena uno en esta sesión y guarda otro) para compararlos.",
 }

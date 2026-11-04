@@ -270,6 +270,25 @@ def models_info(name: str, card: Optional[Path] = typer.Option(None, help="Write
         console.print(f"Model card written to {card}")
 
 
+@models_app.command("compare")
+def models_compare(
+    source: str, models: list[str] = typer.Argument(..., help="Two or more saved model names or .klmodel files."),
+    raw: bool = typer.Option(False, "--raw", help="The file is uncleaned: repeat the cleaning steps used in training first."),
+):
+    """Which of several saved models predicts better on data whose real results are known, and is the gap reliable?"""
+    from kikolens.analyze.champion import compare_saved_models
+    from kikolens.analyze.predict import load_bundle, resolve_model
+
+    df = _load(source)
+    try:
+        bundles = {Path(m).stem if Path(m).suffix else m: load_bundle(resolve_model(m)) for m in models}
+        res = compare_saved_models(bundles, df, raw)
+    except ValueError as e:
+        _fail(e)
+    _print_frame(res["table"].round(4), "Models")
+    console.print(res["summary"])
+
+
 @models_app.command("delete")
 def models_delete(name: str):
     """Delete a saved model."""
@@ -1101,6 +1120,160 @@ def performance(
     for line in res["alerts"]:
         console.print(f"[yellow]  ! {line}[/yellow]")
     if res["status"] == "alert":
+        raise typer.Exit(code=2)
+
+
+def _names(text: Optional[str]) -> list:
+    return [c.strip() for c in text.split(",") if c.strip()] if text else []
+
+
+@app.command()
+def privacy(
+    source: str,
+    scan: bool = typer.Option(False, "--scan", help="List the columns that look like personal data."),
+    mask: Optional[str] = typer.Option(None, help="Comma-separated columns to mask, keeping the last 2 characters."),
+    hash: Optional[str] = typer.Option(None, help="Comma-separated columns to replace with salted SHA-256 fingerprints."),
+    drop: Optional[str] = typer.Option(None, help="Comma-separated columns to remove."),
+    salt: str = typer.Option("", help="Salt for --hash. It is stored in the recipe, so keep the recipe private."),
+    output: Optional[Path] = typer.Option(None, help="Write the anonymised data (.csv or .parquet)."),
+    recipe: Optional[Path] = typer.Option(None, help="Write the steps as a recipe (JSON)."),
+    k: Optional[int] = typer.Option(None, help="Check k-anonymity: the smallest group a person can hide in."),
+    quasi: Optional[str] = typer.Option(None, help="Columns that describe a person, for --k (default: guessed from names)."),
+):
+    """Find personal data, mask or hash it, and measure how identifiable people are. Everything stays on this computer."""
+    from kikolens.analyze import privacy as pv
+    from kikolens.pipeline.recipe import Recipe
+
+    df = _load(source)
+    if scan or not (mask or hash or drop or k):
+        found = pv.scan(df)
+        console.print("No personal data found." if found.empty else f"{len(found)} column(s) look like personal data.")
+        if not found.empty:
+            _print_frame(found.round(2), "Personal data")
+    plan = {**{c: "mask" for c in _names(mask)}, **{c: "hash" for c in _names(hash)}, **{c: "drop" for c in _names(drop)}}
+    result = df
+    if plan:
+        for column in plan:
+            _check_target(df, column)
+        try:
+            result, steps = pv.anonymize(df, plan, salt)
+        except ValueError as e:
+            _fail(e)
+        for _, _, message in steps:
+            console.print(f"  - {message}")
+        if output:
+            _write_frame(result, output)
+            console.print(f"Anonymised data written to {output}")
+        if recipe:
+            r = Recipe()
+            for op, params, message in steps:
+                r.add(op, params, message)
+            recipe.parent.mkdir(parents=True, exist_ok=True)
+            recipe.write_text(r.to_json(), encoding="utf-8")
+            console.print(f"Recipe written to {recipe}")
+    if k:
+        columns = _names(quasi) or pv.suggest_quasi_identifiers(result)
+        try:
+            check = pv.k_anonymity(result, columns, k)
+        except ValueError as e:
+            _fail(e)
+        console.print(f"Columns used: {', '.join(columns)}")
+        console.print(check["summary"])
+        _print_frame(check["smallest_groups"], "The smallest groups")
+
+
+@app.command()
+def notebook(
+    source: str, output: Path = typer.Argument(..., help="Where to write the notebook (.ipynb)."),
+    recipe: Optional[Path] = typer.Option(None, help="Include these cleaning steps (a recipe JSON)."),
+    target: Optional[str] = typer.Option(None, help="Add a model for this column."),
+    exclude: Optional[str] = typer.Option(None, help="Comma-separated columns to leave out of the model."),
+    date: Optional[str] = typer.Option(None, help="With --value, add a forecast."),
+    value: Optional[str] = typer.Option(None, help="Numeric column to forecast."),
+    horizon: int = typer.Option(12, help="Periods to forecast."),
+):
+    """Write a Jupyter notebook that reproduces the analysis."""
+    from kikolens.pipeline.recipe import Recipe
+    from kikolens.report.notebook import build_notebook
+
+    if output.suffix.lower() != ".ipynb":
+        console.print("[red]The output must end in .ipynb[/red]")
+        raise typer.Exit(code=1)
+    try:
+        loaded = Recipe.from_json(recipe.read_text(encoding="utf-8")) if recipe else None
+    except (OSError, ValueError) as e:
+        _fail(e)
+    if target or date or value:
+        df = _load(source)
+        for column in filter(None, [target, date, value]):
+            _check_target(df, column)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(build_notebook(source, loaded, target, _names(exclude), date, value, horizon), encoding="utf-8")
+    console.print(f"Notebook written to {output}")
+
+
+@app.command()
+def dictionary(source: str, output: Optional[Path] = typer.Option(None, help="Write the dictionary (.md, .csv or .xlsx).")):
+    """Describe every column: meaning, empty share, typical values, ranges and warnings."""
+    from kikolens.analyze.dictionary import build_dictionary, to_markdown
+
+    df = _load(source)
+    table = build_dictionary(df)
+    if not output:
+        _print_frame(table[["column", "meaning", "empty %", "distinct", "typical values", "notes"]], "Data dictionary", max_rows=100)
+        return
+    output.parent.mkdir(parents=True, exist_ok=True)
+    suffix = output.suffix.lower()
+    if suffix == ".md":
+        output.write_text(to_markdown(table, Path(str(source)).stem, len(df)), encoding="utf-8")
+    elif suffix in (".csv", ".xlsx"):
+        _write_frame(table, output)
+    else:
+        console.print("[red]The output must end in .md, .csv or .xlsx[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"Dictionary written to {output}")
+
+
+@app.command()
+def link(
+    left: str, right: str, left_on: str = typer.Argument(..., help="Name column in the first file."),
+    right_on: str = typer.Argument(..., help="Name column in the second file."),
+    threshold: float = typer.Option(0.85, help="Minimum similarity, 0.5 to 1."),
+    output: Optional[Path] = typer.Option(None, help="Write the first file with the matching columns of the second."),
+):
+    """Match records whose names are not spelled the same way (accents, order, typos)."""
+    from kikolens.analyze.linkage import link_records, merge_linked
+
+    a, b = _load(left), _load(right)
+    try:
+        res = link_records(a, b, left_on, right_on, threshold)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    inexact = res["matches"][~res["matches"]["exact"]]
+    if len(inexact):
+        _print_frame(inexact.drop(columns=["left row", "right row", "exact"]), "Matches that are not exact", max_rows=20)
+    if output:
+        _write_frame(merge_linked(a, b, res["matches"]), output)
+        console.print(f"Linked data written to {output}")
+
+
+@app.command()
+def run(pipeline: Path = typer.Argument(..., help="A pipeline file (.json). See docs/cli.md.")):
+    """Run a pipeline file: recipe, validation, drift against a baseline and scoring. Exit code 2 when a fail_on condition triggers."""
+    from kikolens.pipeline.runner import run_pipeline
+
+    try:
+        result = run_pipeline(pipeline)
+    except (ValueError, OSError) as e:
+        _fail(e)
+    colors = {"ok": "green", "warning": "yellow", "alert": "red"}
+    for step in result["steps"]:
+        console.print(f"[{colors[step['status']]}]{step['status']:>7}[/{colors[step['status']]}]  {step['step']}: {step['message']}")
+    for path in result["written"]:
+        console.print(f"  wrote {path}")
+    if result["status"] == "alert":
+        console.print(f"[red]{len(result['alerts'])} condition(s) triggered.[/red]")
         raise typer.Exit(code=2)
 
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+* **Privacy:** detection of personal data with validated patterns (card check digit, IBAN, DNI/NIE, email, phone, IP, social security number) and by column name; masking, salted fingerprints and removal as recipe steps; k-anonymity. `kikolens privacy`.
+* **Match records:** fuzzy join of two tables by names (accents, order, typos) with ambiguity warnings. `kikolens link`.
+* **Data dictionary** and **Jupyter notebook** export (dashboard and `kikolens dictionary`, `kikolens notebook`); the notebook runs as generated.
+* **Pipelines:** `kikolens run pipeline.json` runs a recipe, validation rules, a drift check against a baseline and model scoring, writes the outputs and exits with `2` when a chosen condition triggers.
+* **Champion and challenger:** `kikolens models compare` and a tab in Model health say which saved model predicts better and whether the gap is reliable.
+* Fix: the model API now reads the request body before answering an error, so clients on Windows no longer see a dropped connection on 401 and 404.
+
 ## 1.4.0
 
 * **Autopilot:** a first full analysis in one click (dashboard and `kikolens autopilot`): safe cleaning as a replayable recipe, column roles, findings, a model against a baseline and a forecast, with a written summary and next steps.

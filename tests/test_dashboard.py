@@ -13,7 +13,7 @@ APP = str(Path(dashboard_app.__file__))
 PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform", "Patterns", "Statistics", "Ask", "Models",
          "Model lab", "Neural network", "Predict", "Time series", "Segments", "Report", "Project",
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
-         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health"]
+         "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records"]
 
 
 @pytest.fixture(scope="module")
@@ -357,7 +357,7 @@ def test_pasting_a_table_loads_it():
 def test_export_page_offers_every_route(data):
     at = open_page(data, "Export")
     assert_clean(at)
-    assert [t.label for t in at.tabs] == ["Files", "Excel workbook", "Database"]
+    assert [t.label for t in at.tabs] == ["Files", "Excel workbook", "Database", "Data dictionary", "Notebook"]
 
 
 @pytest.fixture(scope="module")
@@ -469,3 +469,21 @@ def test_anomalies_has_a_tab_for_unusual_periods(data):
     at = open_page(data, "Anomalies")
     assert_clean(at)
     assert [t.label for t in at.tabs][:2] == ["Unusual rows", "Unusual periods"]
+
+
+def test_privacy_page_masks_personal_columns_and_records_the_steps():
+    df = pd.DataFrame({"email": [f"u{i}@example.com" for i in range(60)], "age": range(20, 80), "city": ["A", "B"] * 30})
+    at = open_page(df, "Privacy")
+    assert_clean(at)
+    at.selectbox(key="pv_a_email").set_value("hash")
+    at.run()                                        # el botón se habilita al elegir una acción
+    at.button(key="pv_go").click().run()
+    assert_clean(at)
+    assert not at.session_state["df"]["email"].str.contains("@").any()
+    assert [s.op for s in at.session_state["recipe"].steps] == ["hash_column"]
+
+
+def test_export_dictionary_and_notebook_tabs_render(data):
+    at = open_page(data, "Export")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][-2:] == ["Data dictionary", "Notebook"]

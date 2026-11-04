@@ -44,6 +44,12 @@ The **Missing data patterns**, **Near-duplicate rows** and **Validation rules** 
 * **Near-duplicate rows** finds pairs that are almost, but not exactly, the same (a typo in a name, a different case) and lets you remove the ones you confirm.
 * **Validation rules** are checks written by whoever knows the data: not empty, unique, a range, allowed values, a pattern, "end date is not before start date", "not in the future". KikoLens can suggest rules from the current data, shows which rows break each rule, and saves them as JSON for `kikolens validate` and for monitors.
 
+### Privacy
+Finds the columns that hold personal data and lets you decide what to do with each: keep it, mask it (everything but the last two characters), replace it with a salted SHA-256 fingerprint (equal values keep equal fingerprints, so counts and joins still work, but the original cannot be recovered) or remove the column. Detection looks at the content with validated patterns (email, phone, IP address, credit card with its check digit, IBAN with its check, Spanish DNI/NIE with its letter, US social security number) and at column names such as `name` or `birth`. The steps go into the recipe. The second tab, **How identifiable**, measures k-anonymity: for the columns that describe a person (age, postal code, sex, city...) it shows the size of the smallest group a person hides in, how many rows are in a group smaller than the k you want, and the groups that stand out.
+
+### Match records
+Joins two tables whose names are not spelled the same way (accents, word order, typos). Upload the second file, pick the name columns and a minimum similarity; every row of the open data gets its best partner if one is good enough. Matches that are not exact are listed for review, and those with a close runner-up are flagged. One click adds the partner's columns (ending in `_right`) and the score, and it can be undone.
+
 ### Transform
 Six tabs of operations, each recorded as a step:
 
@@ -194,7 +200,7 @@ Use a model on data it has not seen. Choose a model trained in this session, one
 ![Predict](images/predict-light.png)
 
 ### Model health
-Is a saved model still as good as when you tested it? Choose a model and upload newer data that includes the real results (the column the model predicts). The page scores every period (or five consecutive parts if there is no date), draws the error or accuracy against what the model had in testing, and warns when a period is clearly worse (an average error 1.5 times higher, or an accuracy 10 points lower) or when it keeps getting worse over time. Drift in the inputs is a clue; this is the proof.
+Is a saved model still as good as when you tested it? Choose a model and upload newer data that includes the real results (the column the model predicts). The page scores every period (or five consecutive parts if there is no date), draws the error or accuracy against what the model had in testing, and warns when a period is clearly worse (an average error 1.5 times higher, or an accuracy 10 points lower) or when it keeps getting worse over time. Drift in the inputs is a clue; this is the proof. The **Compare models** tab scores several saved models on the same data and says which predicts better and whether the gap is reliable or could be chance.
 
 ### Monitoring
 Watches a data source over time. Create a monitor from the data open now (it becomes the baseline), optionally with a saved model and validation rules; then check new data, either a file you upload or the file the monitor watches. Each check records the number of rows, the quality score, drift against the baseline, broken rules and the model's predictions, and raises alerts: drift at the level you chose, a drop in quality, a large change in rows, missing or new columns, columns that changed from numbers to text, model inputs outside what it saw in training, and a shift in the average prediction or in the model's confidence. The history is a chart and a table. KikoLens does not schedule anything itself: the **Schedule it** panel gives the cron and Windows commands.
@@ -214,6 +220,9 @@ A page of your own. Add **metrics** (count, sum, mean, median, minimum, maximum,
 * **Database:** writes the current data as a table. It stops if the table exists unless you choose to add rows or to replace it, and replacing needs a confirmation.
 
 ![Export](images/export-light.png)
+
+### Data dictionary and notebook
+Two more tabs in *Export*. The **data dictionary** has one entry per column (meaning, empty share, distinct values, typical values, range, warnings such as "mostly empty" or "may contain personal data") and you write the descriptions in the table itself; download it as Markdown or CSV to hand over with the data. The **notebook** is a Jupyter file that reloads the data, repeats every recipe step of the session and, if you choose a column, trains a model with the lab; it runs as is.
 
 ### Report
 Builds one self-contained HTML page with quality, statistics, correlations, patterns, any models trained in this session and, optionally, commentary from the local model. It also builds a PDF (cover, quality, distributions, correlations and, when available, the model and the autopilot's forecast) that you can download directly.
