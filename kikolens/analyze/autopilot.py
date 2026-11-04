@@ -3,7 +3,6 @@ pasos reproducibles (una receta), describe los datos, busca hallazgos, elige una
 compara unos pocos modelos y, si hay fechas, prevé la serie. Cada fase que falla se anota y no detiene a las demás."""
 import re
 
-import numpy as np
 import pandas as pd
 
 from kikolens.analyze import forecasting, timeseries
@@ -11,7 +10,7 @@ from kikolens.analyze.discovery import run_discovery_engine
 from kikolens.analyze.modellab import candidates, detect_task, run_model_lab
 from kikolens.analyze.quality import auto_clean_steps, infer_types, profile_quality
 from kikolens.pipeline.recipe import Recipe
-from kikolens.utils.dtypes import categorical_columns, is_text
+from kikolens.utils.dtypes import is_text
 
 TARGET_HINTS = ("target", "label", "outcome", "churn", "class", "status", "revenue", "sales", "price", "amount",
                 "total", "profit", "score", "y")

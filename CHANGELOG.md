@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* **Engineering:** lint (ruff) and a compatibility matrix (pandas 2 and 3, Linux and Windows, plus macOS and Python 3.13 as warnings) in CI; CodeQL, Dependabot, a release workflow that builds the package and creates the GitHub release from the changelog; pre-commit; contributing guide, code of conduct, security policy and issue and pull request templates; documentation site with MkDocs (built in strict mode in CI).
+* **`kikolens doctor`** checks versions, optional extras, the user folder, Ollama and the configuration (exit code 1 when something required is missing; `--json` for scripts).
+* **`kikolens.toml`** configuration (Ollama host, model and timeout, dashboard port and language), with environment variables taking precedence and bad files never stopping startup.
+* **`kikolens benchmark`** times the main operations on generated data.
+* Tidied dead code, unused imports and 12 repeated Spanish translation keys found by the linter.
+
 * **Home page, data story and chart gallery:** a quality ring, sparklines and one-click actions on a new home page; the data told as chapters with charts; nine new charts (Sankey, treemap, radar, grouped correlations, correlation network, calendar, ridgelines, parallel coordinates, small multiples); built-in example datasets on the welcome screen; coloured tables.
 * **Bayesian hyperparameter optimisation** in the model lab (`lab --bayes`), with the search history.
 * **Sequential A/B tests** (mSPRT) that stay valid when checked after every visitor, a simulation planner and a Thompson-sampling bandit simulator (`ab-seq`, `bandit`).

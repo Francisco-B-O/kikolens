@@ -11,7 +11,6 @@ import kikolens as kl
 from kikolens import api
 from kikolens.analyze import distributions as dist
 from kikolens.cli.main import app
-from kikolens.ipython import register
 from kikolens.report.quickstart import quickstart_notebook
 
 runner = CliRunner()

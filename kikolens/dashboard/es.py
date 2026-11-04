@@ -10,12 +10,12 @@ ES = {
     "Experiments": "Experimentos", "Anomalies": "Anomalías", "Dimensions": "Dimensiones", "Compare data": "Comparar datos",
     "Segments": "Segmentos", "Text": "Texto", "Survival": "Supervivencia", "Customers": "Clientes", "Impact": "Impacto",
     "Why it changed": "Por qué cambió", "Model lab": "Laboratorio de modelos", "Feature ideas": "Ideas de variables", "Neural network": "Red neuronal",
-    "Time series": "Series temporales", "Predict": "Predecir", "Monitoring": "Monitorización",
+    "Time series": "Series temporales", "Monitoring": "Monitorización",
     "Panel": "Panel", "Report": "Informe", "Export": "Exportar", "Project": "Proyecto",
     "Private data analysis": "Análisis de datos privado",
     # Origen de datos
     "File": "Archivo", "URL": "Enlace", "Paste": "Pegar", "Database": "Base de datos", "Source": "Origen",
-    "Engine": "Motor", "Path to the .db file": "Ruta del archivo .db", "Host": "Servidor", "Port": "Puerto", "User": "Usuario",
+    "Engine": "Motor", "Path to the .db file": "Ruta del archivo .db", "Host": "Servidor", "Port": "Puerto", 
     "Password": "Contraseña", "Sheet": "Hoja", "Table": "Tabla", "Loading...": "Cargando...",
     "Link to a file or a shared Google Sheet": "Enlace a un archivo o a una hoja de Google compartida",
     "CSV, JSON, Excel or Parquet. s3:// and gs:// work if s3fs or gcsfs is installed.":
@@ -134,7 +134,7 @@ ES = {
     "This replaces the data with one row per group. Undo brings it back.": "Esto sustituye los datos por una fila por grupo. Deshacer los recupera.",
     "#### What was done": "#### Qué se hizo", "No steps yet. Cleaning and transformations you apply are recorded here.":
         "Aún no hay pasos. Aquí se anotan la limpieza y las transformaciones que apliques.",
-    "Download recipe (JSON)": "Descargar receta (JSON)", "Download as Python script": "Descargar como script de Python",
+    "Download recipe (JSON)": "Descargar receta (JSON)", 
     "#### Repeat a recipe on another file": "#### Repetir una receta con otro archivo",
     "Upload a recipe and a new file with the same columns; the cleaned result is ready to download.":
         "Sube una receta y un archivo nuevo con las mismas columnas; el resultado limpio queda listo para descargar.",
@@ -195,7 +195,7 @@ ES = {
     # Texto
     "Text column": "Columna de texto", "Terms": "Términos", "Themes": "Temas", "Classify": "Clasificar", "Tone": "Tono", "Summary": "Resumen",
     "By group": "Por grupo", "Texts": "Textos", "Words per text": "Palabras por texto", "Texts used": "Textos usados",
-    "Look at": "Mirar", "Terms to show": "Términos a mostrar", "Group the texts": "Agrupar los textos",
+    "Terms to show": "Términos a mostrar", "Group the texts": "Agrupar los textos",
     "Find a word or phrase": "Buscar una palabra o frase", "Generate summary": "Generar resumen", "Train the classifier": "Entrenar el clasificador",
     "Try a text": "Probar un texto", "Learn to predict": "Aprender a predecir", "Sequences": "Secuencias", "Number": "Número",
     "No text columns.": "No hay columnas de texto.", "No text columns found. This section is for columns with sentences, such as comments or reviews.":
@@ -219,12 +219,12 @@ ES = {
     # Supervivencia, clientes, impacto
     "Time until the event or until last seen": "Tiempo hasta el suceso o hasta la última vez visto", "Did the event happen?": "¿Ocurrió el suceso?",
     "1 or yes when it happened; 0 or no when the case is still waiting.": "1 o sí cuando ocurrió; 0 o no cuando el caso sigue esperando.",
-    "Compare groups by": "Comparar grupos por", "Draw the curves": "Dibujar las curvas", "Log-rank statistic": "Estadístico log-rank", "Groups": "Grupos",
+    "Compare groups by": "Comparar grupos por", "Draw the curves": "Dibujar las curvas", "Log-rank statistic": "Estadístico log-rank", 
     "This needs a numeric duration column and a column saying whether the event happened (two values, such as 0/1).":
         "Esto necesita una columna numérica de duración y otra que diga si ocurrió el suceso (dos valores, como 0/1).",
     "Retention": "Retención", "Segments (RFM)": "Segmentos (RFM)", "Funnel": "Embudo", "Bought together": "Comprado junto",
     "Customer or user": "Cliente o usuario", "Date of activity": "Fecha de actividad", "Cohort period": "Periodo de la cohorte",
-    "Customer": "Cliente", "Amount spent": "Importe gastado", "Every customer": "Todos los clientes", "Run": "Ejecutar",
+    "Customer": "Cliente", "Amount spent": "Importe gastado", "Every customer": "Todos los clientes", 
     "User": "Usuario", "Stage": "Etapa", "Stages in order, first to last": "Etapas en orden, de la primera a la última",
     "Pick at least two stages, in the order users go through them.": "Elige al menos dos etapas, en el orden en que las recorren los usuarios.",
     "Order or basket id": "Identificador de pedido o cesta", "Item": "Artículo", "Minimum share of baskets": "Porcentaje mínimo de cestas",
@@ -244,7 +244,7 @@ ES = {
     "This needs a numeric outcome and two columns with two values each: treated or not, and before or after.":
         "Esto necesita un resultado numérico y dos columnas de dos valores: tratado o no, y antes o después.",
     # Modelos
-    "Train": "Entrenar", "Training...": "Entrenando...", "Models to compare": "Modelos a comparar", "Leave out columns": "Dejar fuera columnas",
+    "Train": "Entrenar", "Training...": "Entrenando...", "Leave out columns": "Dejar fuera columnas",
     "Use this for columns that would not be known when making a real prediction.": "Úsalo para columnas que no se conocerían al hacer una predicción real.",
     "Cross-validation folds": "Particiones de validación cruzada", "Share kept aside for the final test": "Parte reservada para la prueba final",
     "Tune the best model": "Ajustar el mejor modelo", "Tuning attempts": "Intentos de ajuste", "Balance classes": "Equilibrar las clases",
@@ -304,11 +304,11 @@ ES = {
     "No numeric features available to explain this row.": "No hay variables numéricas para explicar esta fila.",
     "None of the most influential features can be simulated directly.": "Ninguna de las variables más influyentes se puede simular directamente.",
     "Backtest error (MAE)": "Error en la prueba histórica (MAE)", "Accuracy": "Exactitud", "F1 (weighted)": "F1 (ponderado)",
-    "Always guessing the commonest": "Adivinar siempre lo más común", "cross-validated": "validación cruzada", "held-out test": "prueba reservada",
+    "cross-validated": "validación cruzada", "held-out test": "prueba reservada",
     "Mean prediction": "Predicción media", "Prediction": "Predicción",
     # Series temporales
     "Date column": "Columna de fechas", "Value": "Valor", "Combine rows by": "Combinar filas con", "Period": "Periodo", "Periods": "Periodos",
-    "Trend": "Tendencia", "Seasonal period": "Periodo estacional", "Compare models": "Comparar modelos", "Changes in the series": "Cambios en la serie",
+    "Trend": "Tendencia", "Seasonal period": "Periodo estacional", "Changes in the series": "Cambios en la serie",
     "One forecast per group": "Una previsión por grupo", "Forecast every group": "Prever cada grupo", "Forecast table": "Tabla de previsión",
     "Forecasting each group...": "Prediciendo cada grupo...", "Testing the models...": "Probando los modelos...", "Sensitivity": "Sensibilidad",
     "Lower finds more changes.": "Un valor menor encuentra más cambios.",
@@ -336,7 +336,7 @@ ES = {
     "Apply the cleaning steps used for training first": "Aplicar antes los pasos de limpieza usados al entrenar",
     "Use this when the file is raw, as it was before any cleaning.": "Úsalo cuando el archivo esté en bruto, como estaba antes de limpiarlo.",
     "The new data matches what the model saw in training.": "Los datos nuevos coinciden con lo que el modelo vio al entrenar.",
-    "Predicts": "Predice", "Trained on": "Entrenado con", "Algorithm": "Algoritmo", "Rows used": "Filas usadas", "Columns used": "Columnas usadas",
+    "Predicts": "Predice", "Trained on": "Entrenado con", "Algorithm": "Algoritmo", "Columns used": "Columnas usadas",
     # Monitorización
     "Create a monitor from the data open now": "Crear un monitor con los datos abiertos ahora", "Create monitor": "Crear monitor", "Monitor": "Monitor",
     "Data to check now": "Datos a comprobar ahora", "Check the uploaded file": "Comprobar el archivo subido", "Check the watched source": "Comprobar el origen vigilado",
@@ -373,10 +373,10 @@ ES = {
     "Open a project": "Abrir un proyecto", "Also load the models inside (only for files you trust)": "Cargar también los modelos que contiene (solo con archivos de confianza)",
     "Models are stored with joblib. Only open projects with models if you trust their source.": "Los modelos se guardan con joblib. Abre proyectos con modelos solo si confías en su origen.",
     "Models restored. Find them in Predict.": "Modelos restaurados. Los encontrarás en Predecir.", "Download as Python script": "Descargar como script de Python",
-    "Save": "Guardar", "Open": "Abrir", "Name": "Nombre", "Add": "Añadir", "Keep": "Conservar", "Take": "Tomar", "Values": "Valores",
+    "Save": "Guardar", "Open": "Abrir", "Name": "Nombre", "Add": "Añadir", "Take": "Tomar", "Values": "Valores",
     "Start": "Empezar", "Summarize": "Resumir", "Parts": "Partes", "Statistic": "Estadístico", "Test": "Prueba",
     "Preset": "Preajuste", "Features": "Variables", "Keep as identifiers": "Conservar como identificadores",
-    "Analyze": "Analizar", "Compare": "Comparar", "Between": "Entre", "With": "Con",
+    "Analyze": "Analizar", "Between": "Entre", "With": "Con",
     "Value (comma separated for 'in')": "Valor (separado por comas para 'in')", "Order by": "Ordenar por", "Order rows by": "Ordenar las filas por",
     "This column": "Esta columna", "Highest": "Más alto", "Lowest": "Más bajo",
     "How often": "Con qué frecuencia",

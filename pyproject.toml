@@ -71,3 +71,14 @@ include = ["kikolens*"]
 
 [tool.coverage.run]
 relative_files = true
+
+[tool.ruff]
+line-length = 140
+target-version = "py312"
+extend-exclude = ["kikolens.egg-info", "kikolens_output"]
+
+[tool.ruff.lint]
+select = ["E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+"kikolens/__init__.py" = ["F401", "F811"]    # reexporta la API pública; `cli` es a la vez un módulo y la función de entrada

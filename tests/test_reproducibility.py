@@ -118,7 +118,7 @@ def pipeline_files(tmp_path, source_df=None):
     cleaned, _ = recipe.apply(train)
     res = run_model_lab(cleaned, "revenue", models=["Ridge"], folds=3, tune=False, drop=["date"])
     save_bundle(build_bundle(res, cleaned, name="pipe-model"), path=tmp_path / "m.klmodel")
-    from kikolens.analyze.rules import RuleSet, suggest_rules
+    from kikolens.analyze.rules import suggest_rules
     (tmp_path / "rules.json").write_text(suggest_rules(cleaned).to_json())
     spec = {"source": "today.csv", "recipe": "recipe.json", "rules": "rules.json", "baseline": "train.csv", "model": "m.klmodel",
             "outputs": {"data": "out/clean.csv", "predictions": "out/scored.csv", "report": "out/report.html", "log": "out/log.json"},

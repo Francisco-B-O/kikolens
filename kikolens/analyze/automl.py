@@ -1,17 +1,14 @@
 import pandas as pd
 import numpy as np
-import joblib
-from pathlib import Path
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier, GradientBoostingRegressor, GradientBoostingClassifier
-from sklearn.linear_model import Ridge, Lasso, ElasticNet, LogisticRegression
+from sklearn.linear_model import Ridge, Lasso, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import mean_squared_error, r2_score, accuracy_score, confusion_matrix
 import plotly.express as px
-import plotly.graph_objects as go
 
 from kikolens.analyze.quality import infer_types
 from kikolens.utils.dtypes import categorical_columns, expand_datetime_columns, is_text

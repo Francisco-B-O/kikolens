@@ -51,7 +51,7 @@ def explain_dimension(before: pd.DataFrame, after: pd.DataFrame, metric: str, di
             rows.append({"value": key, "before": vb, "after": va, "change": va - vb, "contribution": va - vb})
     else:
         n_b, n_a = max(len(before), 1), max(len(after), 1)
-        mean_b, mean_a = _total(before, metric, agg), _total(after, metric, agg)
+        mean_b = _total(before, metric, agg)
         for key in keys:
             wb, wa = (b == key).sum() / n_b, (a == key).sum() / n_a
             sb, sa = before.loc[b == key, metric], after.loc[a == key, metric]

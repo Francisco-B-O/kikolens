@@ -84,7 +84,6 @@ def _over_time(df, typed, roles, quality):
     series = timeseries.prepare_series(typed, dates[0], value, agg="mean")
     if len(series) < 12:
         return None
-    summary = timeseries.trend_summary(series)
     fig = go.Figure(go.Scatter(x=series.index, y=series.values, mode="lines", name=value))
     fig.update_layout(title=f"{value} over time", showlegend=False)
     spikes = None

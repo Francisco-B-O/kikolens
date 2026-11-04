@@ -10,6 +10,24 @@ on:
       - develop
 
 jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check the code with ruff
+        run: |
+          pip install ruff
+          ruff check kikolens tests
+
   test:
     name: Tests
     runs-on: ubuntu-latest
@@ -36,6 +54,36 @@ jobs:
           name: coverage-report
           path: coverage.xml
 
+  compatibility:
+    name: Compatibility (${{ matrix.os }}, Python ${{ matrix.python }}, ${{ matrix.pandas }})
+    runs-on: ${{ matrix.os }}
+    # Las combinaciones experimentales avisan pero no bloquean: la principal es el trabajo "Tests".
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: "3.12", pandas: "pandas<3", experimental: false}
+          - {os: windows-latest, python: "3.12", pandas: "pandas>=3", experimental: false}
+          - {os: macos-latest, python: "3.12", pandas: "pandas>=3", experimental: true}
+          - {os: ubuntu-latest, python: "3.13", pandas: "pandas>=3", experimental: true}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]" "${{ matrix.pandas }}"
+
+      - name: Run tests
+        run: pytest tests/ -q
+
   package:
     name: Build package
     runs-on: ubuntu-latest
@@ -61,6 +109,26 @@ jobs:
           kikolens --help
           kikolens models
           kikolens monitor list
+          kikolens doctor --offline
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Build the documentation site
+        run: |
+          pip install mkdocs-material
+          mkdocs build --strict
 
   sonar:
     name: SonarCloud

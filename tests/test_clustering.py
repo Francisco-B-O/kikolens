@@ -39,7 +39,6 @@ def test_handles_missing_values():
 
 
 def test_suggest_k_scores_each_k():
-    import numpy as np
     from kikolens.analyze.clustering import suggest_k
 
     rng = np.random.default_rng(0)

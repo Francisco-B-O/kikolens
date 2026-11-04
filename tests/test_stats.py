@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-import pytest
 from kikolens.analyze.stats import basic_statistics, correlation_matrix
 
 
