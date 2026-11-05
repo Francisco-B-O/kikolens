@@ -132,31 +132,7 @@ def _read_by_extension(name: str, source, sheet=None) -> pd.DataFrame:
         return _read_json(source)
     if ext == ".parquet":
         return pd.read_parquet(source)
-    frame = _plugin_loader(name, source)
-    if frame is not None:
-        return frame
     raise ValueError(f"Unsupported source format: {name}")
-
-
-def _plugin_loader(name: str, source):
-    """Los formatos que añade un plugin (ver `kikolens.plugins`). Un archivo subido se guarda un momento en disco porque los lectores trabajan con rutas."""
-    from kikolens import plugins
-
-    registered = next((ext for ext in plugins.loaders() if ext == Path(name).suffix.lower()), None)       # la extensión sale de la lista registrada, no del texto recibido
-    if registered is None:
-        return None
-    if isinstance(source, str):
-        return plugins.read_with_loader(source)
-    if not isinstance(source, io.IOBase):                                  # solo un archivo subido de verdad (nunca texto, que podría ser una cadena de conexión)
-        return None
-    import shutil
-    import tempfile
-
-    with tempfile.TemporaryDirectory() as folder:
-        target = Path(folder) / ("upload" + registered)
-        with open(target, "wb") as handle:
-            shutil.copyfileobj(source, handle)                             # por trozos: no carga el archivo entero en memoria
-        return plugins.read_with_loader(str(target))
 
 
 def _load_from_database(uri: str, table: str | None = None, query: str | None = None) -> pd.DataFrame:

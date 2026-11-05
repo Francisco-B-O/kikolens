@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from kikolens import api_server, plugins
+from kikolens import api_server
 from kikolens.analyze import predict as pr
 from kikolens.analyze.modellab import run_model_lab
 
@@ -114,7 +114,7 @@ def test_functions_run_with_json_results_and_clear_errors(started, rows):
     server = started()
     ident = call(server, "POST", "/datasets", {"rows": rows})[1]["id"]
     listing = {f["name"]: f for f in call(server, "GET", "/functions")[1]["functions"]}
-    assert {"profile", "regress", "effect", "marketing_mix", "forecast"} <= set(listing) and "target" in listing["regress"]["parameters"]
+    assert {"profile", "regress", "effect", "forecast"} <= set(listing) and "target" in listing["regress"]["parameters"]
     assert not {"load", "save_model", "analyst", "score"} & set(listing)
     status, out = call(server, "POST", "/run/regress", {"dataset": ident, "args": {"target": "y", "features": ["x", "z"]}})
     assert status == 200 and out["function"] == "regress" and "summary" in out["result"] and out["seconds"] >= 0
@@ -154,24 +154,6 @@ def test_jobs_run_in_the_background(started, rows):
     assert failed["status"] == "failed" and "nope" in failed["error"]
     assert call(server, "GET", "/jobs/ffffffffffff")[0] == 404
     assert call(server, "POST", "/jobs", {"function": "ghost", "dataset": ident})[0] == 404
-
-
-def test_plugin_analyses_are_served_too(started, rows, tmp_path, monkeypatch):
-    monkeypatch.setenv("KIKOLENS_HOME", str(tmp_path / "home"))
-    (tmp_path / "home" / "plugins").mkdir(parents=True)
-    (tmp_path / "home" / "plugins" / "mine.py").write_text(
-        'def register(registry):\n    registry.analysis("mean_of", "Mean of a column.", params={"col": "column"})(lambda df, col: {"summary": "ok", "mean": df[col].mean()})\n',
-        encoding="utf-8")
-    plugins.reset()
-    try:
-        server = started()
-        ident = call(server, "POST", "/datasets", {"rows": rows})[1]["id"]
-        assert any(f["name"] == "mean_of" and f["source"] == "plugin mine" for f in call(server, "GET", "/functions")[1]["functions"])
-        out = call(server, "POST", "/run/mean_of", {"dataset": ident, "args": {"col": "x"}})[1]["result"]
-        assert out["summary"] == "ok" and out["mean"] == pytest.approx(np.mean([r["x"] for r in rows]))
-        assert call(server, "POST", "/run/mean_of", {"dataset": ident, "args": {"col": "nope"}})[0] == 400
-    finally:
-        plugins.reset()
 
 
 def test_models_are_served_only_when_named_at_startup(started, rows, tmp_path, monkeypatch):

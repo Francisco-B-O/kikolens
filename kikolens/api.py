@@ -356,45 +356,6 @@ def instrumental(df: pd.DataFrame, outcome: str, endogenous: str, instruments: l
     return _wrap("instrumental variables", iv_2sls(df, outcome, endogenous, instruments, covariates))
 
 
-def simulate(inputs, expression: str, n: int = 10000, correlations=None, **kwargs) -> Result:
-    """Monte Carlo: `inputs` es un diccionario de distribuciones o un DataFrame (se remuestrea y se conserva la correlación)."""
-    from kikolens.analyze import simulation as sim
-    if isinstance(inputs, pd.DataFrame):
-        inputs, found = sim.inputs_from_data(inputs)
-        correlations = found if correlations is None else correlations
-    res = sim.monte_carlo(inputs, expression, n, correlations, **kwargs)
-    return _wrap("simulation", res, table=res["sensitivity"])
-
-
-def optimize(expression_or_objective, bounds=None, constraints=None, **kwargs) -> Result:
-    """Optimiza una fórmula (texto) con límites `{"x": (0, 10)}` y restricciones `["x + y <= 20"]`, o un programa lineal si le das un diccionario de coeficientes."""
-    from kikolens.analyze import simulation as sim
-    if isinstance(expression_or_objective, dict):
-        res = sim.linear_program(expression_or_objective, constraints or [], bounds, **kwargs)
-        return _wrap("linear program", res, table=res["constraints"])
-    res = sim.optimize_expression(expression_or_objective, bounds or {}, constraints, **kwargs)
-    return _wrap("optimization", res, table=res["solution"].rename("value").rename_axis("variable").reset_index())
-
-
-def marketing_mix(df: pd.DataFrame, date: str, target: str, channels: list, controls: list | None = None, **kwargs) -> Result:
-    """Cuánto aporta cada canal a las ventas (arrastre, saturación, tendencia y estacionalidad). Pásalo a `budget` para repartir el gasto."""
-    from kikolens.analyze.marketing import marketing_mix as run
-    return _wrap("marketing mix", run(df, date, target, channels, controls, **kwargs))
-
-
-def budget(model, total: float | None = None, low: float = 0.5, high: float = 2.0) -> Result:
-    """Reparto del presupuesto entre canales con las curvas de respuesta de `marketing_mix`."""
-    from kikolens.analyze.marketing import optimize_budget
-    return _wrap("budget", optimize_budget(dict(model), total, low, high))
-
-
-def elasticity(df: pd.DataFrame, quantity: str, price: str, controls: list | None = None, **kwargs) -> Result:
-    """Elasticidad-precio de la demanda (log-log), por grupo y con instrumento si el precio depende de la demanda."""
-    from kikolens.analyze.marketing import price_elasticity
-    res = price_elasticity(df, quantity, price, controls, **kwargs)
-    return _wrap("price elasticity", res, table=res["groups"] if res["groups"] is not None else res["curve"])
-
-
 def panel(df: pd.DataFrame, path: str | None = None, definition=None, title: str = "Panel", where: list | None = None):
     """Un panel de métricas, gráficos y tablas. Con `path` termina en .html, .pptx o .docx y lo escribe; sin él devuelve el `Panel` para ir añadiendo tarjetas.
     `definition` es un `Panel`, un diccionario/JSON guardado o nada (se propone uno); `where` son condiciones como "region in North,West"."""
@@ -411,29 +372,11 @@ def panel(df: pd.DataFrame, path: str | None = None, definition=None, title: str
         return built
     from pathlib import Path
     target = Path(path)
-    suffix = target.suffix.lower()
-    if suffix not in (".html", ".pptx", ".docx"):
-        raise ValueError("The file must end in .html, .pptx or .docx.")
+    if target.suffix.lower() != ".html":
+        raise ValueError("The file must end in .html.")
     target.parent.mkdir(parents=True, exist_ok=True)
-    if suffix == ".html":
-        target.write_text(pn.panel_html(df, built), encoding="utf-8")
-    else:
-        from kikolens.report import office
-        target.write_bytes((office.panel_pptx if suffix == ".pptx" else office.panel_docx)(df, built))
+    target.write_text(pn.panel_html(df, built), encoding="utf-8")
     return target
-
-
-def run(name: str, df: pd.DataFrame, **args) -> Result:
-    """Ejecuta un análisis añadido por un plugin (ver `kl.list_plugins()` y `docs/plugins.md`)."""
-    from kikolens import plugins
-    return _wrap(name, plugins.run(name, df, **args))
-
-
-def list_plugins() -> dict:
-    """Los plugins cargados: sus análisis (con parámetros), los formatos que leen y los errores al cargarlos."""
-    from kikolens import plugins as registry
-    return {"analyses": [{"name": a.name, "description": a.description, "plugin": a.plugin, "params": a.params} for a in registry.analyses().values()],
-            "loaders": sorted(registry.loaders()), "loaded": registry.loaded(), "errors": registry.errors()}
 
 
 def _series(df: pd.DataFrame, date: str, value: str, agg: str = "mean") -> pd.Series:
@@ -615,68 +558,6 @@ def cuped(df: pd.DataFrame, group: str, outcome: str, pre: str, control) -> Resu
     return _wrap("cuped", ex.cuped(df, group, outcome, pre, control))
 
 
-def control_chart(df: pd.DataFrame, value: str, chart: str = "individuals", **kwargs) -> Result:
-    """Carta de control (`individuals`, `xbar`, `p`, `u`, `c`) con las reglas de señal; `baseline=` fija cuántos puntos iniciales calculan los límites."""
-    from kikolens.analyze import spc
-    return _wrap("control chart", spc.control_chart(df, value, chart, **kwargs))
-
-
-def process_capability(df: pd.DataFrame, value: str, lsl: float | None = None, usl: float | None = None, target: float | None = None) -> Result:
-    """Cp, Cpk, Pp y Ppk frente a los límites de especificación."""
-    from kikolens.analyze import spc
-    return _wrap("capability", spc.capability(df[value], lsl, usl, target))
-
-
-def shift_detection(df: pd.DataFrame, value: str, target: float | None = None, sigma: float | None = None, baseline: int | None = None) -> Result:
-    """CUSUM y EWMA juntos para ver cambios pequeños y sostenidos: `res.cusum`, `res.ewma`."""
-    from kikolens.analyze import spc
-    one, two = spc.cusum(df[value], target, sigma, baseline=baseline), spc.ewma(df[value], target=target, sigma=sigma, baseline=baseline)
-    return _wrap("shift detection", {"cusum": one, "ewma": two, "notes": [], "summary": f"CUSUM: {one['summary']} EWMA: {two['summary']}"})
-
-
-def abc_xyz(df: pd.DataFrame, item: str, quantity: str, date: str | None = None, value: str | None = None, freq: str = "W") -> Result:
-    """Clasificación ABC (valor) y, con `date`, XYZ (variación de la demanda) y clase de demanda de cada artículo."""
-    from kikolens.analyze import inventory
-    return _wrap("abc xyz", inventory.classify_items(df, item, quantity, date, value, freq))
-
-
-def newsvendor(unit_cost: float, price: float, salvage: float = 0.0, mean: float | None = None, sd: float | None = None, samples=None) -> Result:
-    """Cuánto pedir de un producto de una sola venta (con demanda normal o con ventas pasadas en `samples`)."""
-    from kikolens.analyze import inventory
-    return _wrap("newsvendor", inventory.newsvendor(unit_cost, price, salvage, mean, sd, samples))
-
-
-def eoq(annual_demand: float, order_cost: float, holding_cost: float, unit_cost: float = 0.0) -> Result:
-    """Lote económico de pedido."""
-    from kikolens.analyze import inventory
-    return _wrap("eoq", inventory.eoq(annual_demand, order_cost, holding_cost, unit_cost))
-
-
-def reorder_policy(demand_mean: float, demand_sd: float, lead_time: float, lead_time_sd: float = 0.0, service_level: float = 0.95, order_quantity: float | None = None) -> Result:
-    """Stock de seguridad y punto de pedido para un nivel de servicio."""
-    from kikolens.analyze import inventory
-    return _wrap("reorder policy", inventory.reorder_policy(demand_mean, demand_sd, lead_time, lead_time_sd, service_level, order_quantity))
-
-
-def simulate_stock_policy(demand_mean: float, demand_sd: float, lead_time: int, order_quantity: float, reorder_point: float, **kwargs) -> Result:
-    """Simula una política (s, Q) durante muchos años para ver el servicio real."""
-    from kikolens.analyze import inventory
-    return _wrap("stock simulation", inventory.simulate_policy(demand_mean, demand_sd, lead_time, order_quantity, reorder_point, **kwargs))
-
-
-def inventory_plan(df: pd.DataFrame, item: str, date: str, quantity: str, lead_time_days: float, **kwargs) -> Result:
-    """Una política de reposición para cada artículo de una tabla de ventas."""
-    from kikolens.analyze import inventory
-    return _wrap("inventory plan", inventory.plan(df, item, date, quantity, lead_time_days, **kwargs))
-
-
-def attribution(df: pd.DataFrame, user: str, time: str, channel: str, converted: str, value: str | None = None, **kwargs) -> Result:
-    """Atribución multicanal: reparte el mérito de las conversiones entre los canales con siete modelos (primer y último contacto, lineal, caída en el tiempo, posición, Markov y Shapley)."""
-    from kikolens.analyze import attribution as at
-    res = at.attribute(df, user, time, channel, converted, value, **kwargs)
-    return _wrap("attribution", res, table=res["table"])
-
-
 def likert(df: pd.DataFrame, items: list, scale: tuple | None = None, reverse: list | None = None) -> Result:
     """Resumen de preguntas de escala (números o textos como «Totalmente de acuerdo»): media, % favorable y desfavorable y reparto."""
     from kikolens.analyze import survey
@@ -748,4 +629,4 @@ def glossary(term: str | None = None, lang: str = "en"):
 
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality", "concepts", "concept", "glossary")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "panel", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality", "concepts", "concept", "glossary")

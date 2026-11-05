@@ -10,7 +10,7 @@
   GET    /models, POST /models/{nombre}/predict   -> los modelos que se indicaron al arrancar
   GET    /openapi.json
 
-Solo se ejecutan las funciones de una lista cerrada (más los análisis de plugins): nunca código, rutas ni consultas arbitrarias. Los archivos solo se leen
+Solo se ejecutan las funciones de una lista cerrada: nunca código, rutas ni consultas arbitrarias. Los archivos solo se leen
 de la carpeta indicada con `data_dir`. Escucha solo en esta máquina salvo que se pida otra dirección, y entonces exige una clave."""
 import hmac
 import inspect
@@ -27,7 +27,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from kikolens import plugins
 from kikolens.analyze.predict import input_warnings, metadata, predict_frame
 
 MAX_BODY = 25_000_000
@@ -38,7 +37,7 @@ MAX_RESULT_ROWS = 200
 LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 ALLOWED = ("profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes", "why", "regress", "survival", "cohorts", "rfm",
            "select_features", "segment", "ab_sequential", "granger", "forecast_drivers", "synthesize", "effect", "uplift", "discontinuity", "synthetic_control",
-           "instrumental", "marketing_mix", "elasticity", "query")
+           "instrumental", "query")
 ID = re.compile(r"[a-z0-9]{12}")
 
 
@@ -169,9 +168,6 @@ def functions() -> dict:
         params = {k: ("required" if p.default is inspect.Parameter.empty else repr(p.default)) for k, p in list(inspect.signature(fn).parameters.items())[1:]
                   if p.kind not in (inspect.Parameter.VAR_KEYWORD, inspect.Parameter.VAR_POSITIONAL)}
         out[name] = {"fn": fn, "description": (fn.__doc__ or "").strip().split("\n")[0], "params": params, "source": "built-in"}
-    for name, analysis in plugins.analyses().items():
-        out[name] = {"fn": None, "description": analysis.description, "params": {k: s["type"] + ("" if "default" in s else " (required)") for k, s in analysis.params.items()},
-                     "source": f"plugin {analysis.plugin}"}
     return out
 
 
@@ -184,10 +180,7 @@ def run_function(store: Store, name: str, dataset: str, args: dict, figures: boo
     df = store.dataset(dataset)
     started = time.time()
     try:
-        if catalog[name]["fn"] is None:
-            result = plugins.run(name, df, **args)
-        else:
-            result = catalog[name]["fn"](df, **args)
+        result = catalog[name]["fn"](df, **args)
     except ApiError:
         raise
     except TypeError as e:

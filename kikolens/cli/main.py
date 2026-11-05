@@ -402,17 +402,14 @@ def ab(
 def panel(
     source: str,
     definition: Optional[Path] = typer.Argument(None, help="A panel definition (.json). Without it a panel is suggested from the data."),
-    output: Optional[Path] = typer.Option(None, help="Where to write the file (default: kikolens_output/panel.html, .pptx or .docx)."),
+    output: Optional[Path] = typer.Option(None, help="Where to write the file (default: kikolens_output/panel.html)."),
     save: Optional[Path] = typer.Option(None, help="Also write the panel definition to this .json."),
-    format: str = typer.Option("html", "--format", help="html, pptx (PowerPoint) or docx (Word). The last two need kikolens[office]."),
     where: list[str] = typer.Option([], "--where", help='Keep only matching rows in every tile, such as "region in North,West". Repeat it.'),
 ):
-    """Build a one-page panel (metrics, charts, tables) from a file, as a web page, a PowerPoint or a Word document."""
+    """Build a one-page panel (metrics, charts, tables) from a file, as a web page."""
     from kikolens.analyze.panel import Panel, panel_html, parse_filter, suggest_panel
     from kikolens.analyze.quality import infer_types
 
-    if format not in ("html", "pptx", "docx"):
-        _fail(ValueError("The format must be html, pptx or docx."))
     df, _ = infer_types(_load(source))
     try:
         loaded = Panel.from_json(definition.read_text(encoding="utf-8")) if definition else suggest_panel(df, Path(str(source)).stem)
@@ -424,16 +421,9 @@ def panel(
     for tile, _, error in results:
         if error:
             console.print(f"[yellow]{tile.get('title') or tile['type']}: {error}[/yellow]")
-    output = output or Path(f"kikolens_output/panel.{format}")
+    output = output or Path("kikolens_output/panel.html")
     output.parent.mkdir(parents=True, exist_ok=True)
-    if format == "html":
-        output.write_text(panel_html(df, loaded), encoding="utf-8")
-    else:
-        from kikolens.report import office
-        try:
-            output.write_bytes((office.panel_pptx if format == "pptx" else office.panel_docx)(df, loaded))
-        except ImportError as e:
-            _fail(e)
+    output.write_text(panel_html(df, loaded), encoding="utf-8")
     console.print(f"Panel with {len(loaded.tiles)} tile(s) written to [bold]{output}[/bold]")
     if save:
         save.parent.mkdir(parents=True, exist_ok=True)
@@ -1800,187 +1790,6 @@ def iv(
         console.print(f"[yellow]{note}[/yellow]")
 
 
-@app.command()
-def simulate(
-    formula: str,
-    data: Optional[str] = typer.Option(None, help="File whose numeric columns are resampled as inputs (their correlation is kept)."),
-    input: list[str] = typer.Option([], "--input", help="An input as name=distribution(args), such as price=normal(10,2). Repeat it; it overrides a column of --data."),
-    corr: list[str] = typer.Option([], "--corr", help="Correlation between two inputs as a,b=0.6. Repeat it."),
-    n: int = typer.Option(10000, help="Number of simulations."),
-    threshold: Optional[float] = typer.Option(None, help="Report the chance that the result goes above this value."),
-    output: Optional[Path] = typer.Option(None, help="Write every simulation to this CSV."),
-    seed: int = typer.Option(0, help="Seed, for repeatable runs."),
-):
-    """Monte Carlo: spread the uncertainty of several inputs through a formula (price * volume - cost)."""
-    from kikolens.analyze import simulation as sim
-
-    try:
-        inputs, correlations = {}, {}
-        if data:
-            inputs, found = sim.inputs_from_data(_load(data))
-            if found is not None:
-                correlations = {(a, b): found.loc[a, b] for a in found.index for b in found.columns if a < b}
-        for text in input:
-            name, spec = sim.parse_input(text)
-            inputs[name] = spec
-            correlations = {k: v for k, v in correlations.items() if name not in k}
-        for text in corr:
-            pair, _, rho = text.partition("=")
-            a, _, b = pair.partition(",")
-            correlations[(a.strip(), b.strip())] = float(rho)
-        res = sim.monte_carlo(inputs, formula, n, correlations or None, threshold, seed=seed)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    _print_frame(res["sensitivity"].round(4), "What moves the result")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-    if output:
-        res["samples"].to_csv(output, index=False)
-        console.print(f"Simulations written to {output}")
-
-
-@app.command()
-def optimize(
-    formula: str,
-    var: list[str] = typer.Option(..., "--var", help="A variable with its bounds as name=min:max. Repeat it."),
-    constraint: list[str] = typer.Option([], "--constraint", help="A restriction such as 'a + b <= 100'. Repeat it."),
-    minimize: bool = typer.Option(False, "--minimize", help="Look for the lowest value instead of the highest."),
-):
-    """Find the values of some variables that make a formula as high (or low) as possible, within limits."""
-    from kikolens.analyze import simulation as sim
-
-    try:
-        res = sim.optimize_expression(formula, dict(sim.parse_variable(v) for v in var), constraint, maximize=not minimize)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command()
-def lp(problem: Path = typer.Argument(..., help="JSON with objective, constraints, bounds, maximize and integer (see docs/models.md).")):
-    """Solve a linear or integer program from a JSON file: allocations, mixes, schedules."""
-    import json
-
-    from kikolens.analyze import simulation as sim
-
-    try:
-        spec = json.loads(problem.read_text(encoding="utf-8"))
-        bounds = {k: tuple(v) for k, v in spec.get("bounds", {}).items()}
-        res = sim.linear_program(spec["objective"], spec.get("constraints", []), bounds, spec.get("maximize", True), spec.get("integer"))
-    except (OSError, ValueError, KeyError) as e:
-        _fail(e)
-    console.print(res["summary"])
-    _print_frame(res["constraints"].round(4), "Constraints")
-
-
-@app.command()
-def mmm(
-    source: str, date: str, target: str,
-    channels: str = typer.Option(..., help="Comma-separated spend columns."),
-    controls: Optional[str] = typer.Option(None, help="Comma-separated columns that also move the target (price, weather...)."),
-    budget: Optional[float] = typer.Option(None, help="Also propose how to split this spend per period (default: today's total)."),
-    reallocate: bool = typer.Option(False, "--reallocate", help="Propose a split of today's total spend."),
-):
-    """Marketing mix model: what each channel contributes, with carry-over and saturation."""
-    from kikolens.analyze import marketing as mk
-
-    df = _load(source)
-    try:
-        res = mk.marketing_mix(df, date, target, _names(channels), _names(controls))
-        plan = mk.optimize_budget(res, budget) if (budget or reallocate) else None
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    _print_frame(res["table"].round(4), "By channel")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-    if plan:
-        console.print(plan["summary"])
-        _print_frame(plan["table"].round(3), "Proposed spend per period")
-
-
-@app.command()
-def elasticity(
-    source: str, quantity: str, price: str,
-    controls: Optional[str] = typer.Option(None, help="Comma-separated columns that also move demand."),
-    group: Optional[str] = typer.Option(None, help="Estimate one elasticity per value of this column."),
-    instrument: Optional[str] = typer.Option(None, help="Comma-separated columns that move the price but not demand (a cost, a tax)."),
-    unit_cost: Optional[float] = typer.Option(None, help="Unit cost, to find the price that maximises margin."),
-):
-    """Price elasticity of demand (log-log), with the revenue or margin curve."""
-    from kikolens.analyze.marketing import price_elasticity
-
-    df = _load(source)
-    try:
-        res = price_elasticity(df, quantity, price, _names(controls), group, _names(instrument) or None, unit_cost)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    if res["groups"] is not None:
-        _print_frame(res["groups"].round(3), "By group")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command("plugin")
-def run_plugin(
-    name: str, source: str,
-    arg: list[str] = typer.Option([], "--arg", help="An argument as name=value. Repeat it. Lists of columns are comma-separated."),
-    output: Optional[Path] = typer.Option(None, help="Write the main table to this file."),
-):
-    """Run an analysis added by a plugin (see `kikolens plugins`)."""
-    from kikolens import plugins
-
-    df = _load(source)
-    try:
-        found = plugins.analyses().get(name)
-        if found is None:
-            raise ValueError(f"No plugin analysis called '{name}'." + (f" Available: {', '.join(plugins.analyses())}." if plugins.analyses() else " No plugins are loaded."))
-        args = {}
-        for text in arg:
-            key, sep, value = text.partition("=")
-            if not sep or not key.strip():
-                raise ValueError(f"Cannot read '{text}'. Write arguments as name=value.")
-            key = key.strip()
-            args[key] = _names(value) if found.params.get(key, {}).get("type") == "columns" else value
-        res = plugins.run(name, df, **args)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    table = next((v for v in res.values() if isinstance(v, pd.DataFrame)), None)
-    if table is not None:
-        _print_frame(table.round(4))
-        if output:
-            _write_frame(table, output)
-            console.print(f"Table saved to {output}")
-
-
-@app.command()
-def plugins():
-    """List the plugins that are loaded: their analyses, the formats they read and anything that failed to load."""
-    from kikolens import plugins as registry
-
-    if not registry.enabled():
-        console.print("Plugins are turned off (KIKOLENS_PLUGINS=0).")
-        return
-    found = registry.analyses()
-    for item in registry.loaded():
-        console.print(f"[bold]{item['plugin']}[/bold]  {item['source']}  ({item['analyses']} analyses, {item['loaders']} loaders)")
-    if found:
-        _print_frame(pd.DataFrame([{"analysis": a.name, "plugin": a.plugin, "arguments": ", ".join(a.params) or "-", "description": a.description} for a in found.values()]),
-                     "Analyses (run with: kikolens plugin NAME SOURCE --arg name=value)")
-    if registry.loaders():
-        console.print("Formats: " + ", ".join(sorted(registry.loaders())))
-    for message in registry.errors():
-        console.print(f"[red]{message}[/red]")
-    if not found and not registry.loaders() and not registry.errors():
-        from kikolens.config import home_dir
-        console.print(f"No plugins found. Put a .py file with a register(registry) function in {home_dir() / 'plugins'} or list paths under [plugins] in kikolens.toml.")
-
-
 @app.command("api")
 def api_server_command(
     port: int = typer.Option(8000, help="Port to listen on."),
@@ -1990,7 +1799,7 @@ def api_server_command(
     model: list[str] = typer.Option([], "--model", help="A saved model to serve at /models/NAME/predict. Repeat it. Model files are code: use only ones you trust."),
     cors: Optional[str] = typer.Option(None, help="Allow browser pages from this origin (for example http://localhost:3000)."),
 ):
-    """Serve KikoLens as a JSON API: datasets in memory, every analysis, background jobs, models and plugins. See /openapi.json."""
+    """Serve KikoLens as a JSON API: datasets in memory, every analysis, background jobs and models. See /openapi.json."""
     from kikolens import api_server
     from kikolens.analyze.predict import load_bundle, resolve_model
 
@@ -2587,195 +2396,6 @@ def cuped(file: str, group: str, outcome: str, pre: str, control: str):
     _print_frame(res["table"].round(4), "Raw and adjusted effect")
     for note in res["notes"]:
         console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command("control-chart")
-def control_chart(
-    file: str, value: str, chart: str = typer.Option("individuals", help="individuals, xbar, p, u or c."), order: Optional[str] = typer.Option(None, help="Column that gives the time order."),
-    subgroup: Optional[str] = typer.Option(None, help="For xbar: the column that identifies each subgroup."), size: Optional[str] = typer.Option(None, help="For p and u: examined or units."),
-    baseline: Optional[int] = typer.Option(None, help="How many initial points set the limits; the rest are monitored."),
-    rules: str = typer.Option("1,4", help="Signal rules, 1 to 6 (more rules find changes sooner and give more false alarms)."),
-):
-    """Control chart with signal rules: is the process stable, or did something change?"""
-    from kikolens.analyze import spc
-
-    df = _load(file)
-    try:
-        res = spc.control_chart(df, value, chart, order, subgroup, size, baseline, True, tuple(int(r) for r in rules.split(",")))
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    if len(res["signals"]):
-        shown = res["signals"][["position", "rule", "meaning"]].copy()
-        shown["position"] += 1
-        _print_frame(shown.head(15), "Signals")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command()
-def capability(file: str, value: str, lsl: Optional[float] = typer.Option(None, help="Lower specification limit."), usl: Optional[float] = typer.Option(None, help="Upper specification limit."),
-               target: Optional[float] = typer.Option(None, help="Target value, for Cpm.")):
-    """Process capability (Cp, Cpk, Pp, Ppk) against the specification limits."""
-    from kikolens.analyze import spc
-
-    df = _load(file)
-    if value not in df.columns:
-        _fail(ValueError(f"Column '{value}' not found."))
-    try:
-        res = spc.capability(df[value], lsl, usl, target)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    _print_frame(res["table"].round(3), "Indices")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command("shift-detect")
-def shift_detect(file: str, value: str, target: Optional[float] = typer.Option(None, help="The value the process should have (default: the baseline mean)."),
-                 sigma: Optional[float] = typer.Option(None, help="Its standard deviation (default: from the baseline)."), baseline: Optional[int] = typer.Option(None, help="Initial points that define normal.")):
-    """CUSUM and EWMA: small, sustained shifts that an ordinary control chart takes long to see."""
-    from kikolens.analyze import spc
-
-    df = _load(file)
-    if value not in df.columns:
-        _fail(ValueError(f"Column '{value}' not found."))
-    try:
-        one, two = spc.cusum(df[value], target, sigma, baseline=baseline), spc.ewma(df[value], target=target, sigma=sigma, baseline=baseline)
-    except ValueError as e:
-        _fail(e)
-    console.print(f"CUSUM: {one['summary']}")
-    console.print(f"EWMA: {two['summary']}")
-
-
-@app.command("abc-xyz")
-def abc_xyz(file: str, item: str, quantity: str, date: Optional[str] = typer.Option(None, help="Date column: needed for XYZ and the demand classes."),
-            value: Optional[str] = typer.Option(None, help="Column with the value of each sale (default: the quantity)."), freq: str = typer.Option("W", help="D, W or M periods."),
-            output: Optional[Path] = typer.Option(None, help="Write the classification to this file.")):
-    """Classify items by value (ABC), by how much their demand varies (XYZ) and by pattern (smooth, erratic, intermittent, lumpy)."""
-    from kikolens.analyze import inventory
-
-    df = _load(file)
-    try:
-        res = inventory.classify_items(df, item, quantity, date, value, freq)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    if res["matrix"] is not None:
-        _print_frame(res["matrix"].reset_index(), "Items by ABC and XYZ")
-    _print_frame(res["table"].head(15).round(3), "Highest-value items")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-    if output:
-        _write_frame(res["table"], output)
-        console.print(f"Classification written to {output}")
-
-
-@app.command()
-def newsvendor(cost: float = typer.Option(..., help="Unit cost."), price: float = typer.Option(..., help="Selling price."), salvage: float = typer.Option(0.0, help="Value of an unsold unit."),
-               mean: Optional[float] = typer.Option(None, help="Mean demand."), sd: Optional[float] = typer.Option(None, help="Standard deviation of demand.")):
-    """How much to order of something sold once (a season, a perishable), from the critical ratio."""
-    from kikolens.analyze import inventory
-
-    try:
-        res = inventory.newsvendor(cost, price, salvage, mean, sd)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command()
-def eoq(demand: float = typer.Option(..., help="Demand per year."), order_cost: float = typer.Option(..., help="Cost of placing one order."),
-        holding_cost: float = typer.Option(..., help="Cost of holding one unit for a year."), unit_cost: float = typer.Option(0.0, help="Cost per unit, to include the purchase in the total.")):
-    """Economic order quantity: the order size that minimises ordering plus holding cost."""
-    from kikolens.analyze import inventory
-
-    try:
-        res = inventory.eoq(demand, order_cost, holding_cost, unit_cost)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-
-
-@app.command()
-def reorder(mean: float = typer.Option(..., help="Mean demand per period."), sd: float = typer.Option(..., help="Standard deviation of demand per period."),
-            lead_time: float = typer.Option(..., help="Delivery time, in the same periods."), lead_time_sd: float = typer.Option(0.0, help="Its standard deviation."),
-            service_level: float = typer.Option(0.95, help="Chance of no stockout in a cycle."), order_quantity: Optional[float] = typer.Option(None, help="To also get the fill rate.")):
-    """Safety stock and reorder point for a service level."""
-    from kikolens.analyze import inventory
-
-    try:
-        res = inventory.reorder_policy(mean, sd, lead_time, lead_time_sd, service_level, order_quantity)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-
-
-@app.command("stock-simulate")
-def stock_simulate(mean: float = typer.Option(..., help="Mean demand per day."), sd: float = typer.Option(..., help="Standard deviation of daily demand."),
-                   lead_time: int = typer.Option(..., help="Delivery time in days."), order_quantity: float = typer.Option(..., help="Units per order."),
-                   reorder_point: float = typer.Option(..., help="Order when stock plus open orders falls to this."), lead_time_sd: float = typer.Option(0.0, help="Its standard deviation."),
-                   days: int = typer.Option(365, help="Days per run."), runs: int = typer.Option(300, help="Number of simulated years."),
-                   lost_sales: bool = typer.Option(False, "--lost-sales", help="Unmet demand is lost instead of waiting.")):
-    """Simulate a reorder policy for many years to see the service it really gives."""
-    from kikolens.analyze import inventory
-
-    try:
-        res = inventory.simulate_policy(mean, sd, lead_time, order_quantity, reorder_point, lead_time_sd, days, runs, lost_sales)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-
-
-@app.command("inventory-plan")
-def inventory_plan(file: str, item: str, date: str, quantity: str, lead_time: float = typer.Option(..., help="Delivery time in days."),
-                   service_level: float = typer.Option(0.95, help="Chance of no stockout in a cycle."), order_cost: Optional[float] = typer.Option(None, help="Cost of one order, for the EOQ."),
-                   holding_cost: Optional[float] = typer.Option(None, help="Cost of holding a unit a year, for the EOQ."), lead_time_sd: float = typer.Option(0.0, help="Delivery time standard deviation in days."),
-                   freq: str = typer.Option("D", help="D or W: the period of the demand figures."), output: Optional[Path] = typer.Option(None, help="Write the plan to this file.")):
-    """A reorder policy (safety stock, reorder point, order quantity) for every item in a table of sales."""
-    from kikolens.analyze import inventory
-
-    df = _load(file)
-    try:
-        res = inventory.plan(df, item, date, quantity, lead_time, service_level, order_cost, holding_cost, lead_time_sd, freq)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    _print_frame(res["table"].head(20).round(2), "Policy by item")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-    if output:
-        _write_frame(res["table"], output)
-        console.print(f"Plan written to {output}")
-
-
-@app.command()
-def attribution(
-    file: str, user: str, time: str, channel: str, converted: str,
-    value: Optional[str] = typer.Option(None, help="A numeric column with the value of the conversion (on the converting row)."),
-    half_life: float = typer.Option(7.0, help="Days after which a contact counts half, for the time-decay model."),
-    output: Optional[Path] = typer.Option(None, help="Write the credit of each channel under every model to this file."),
-):
-    """Share the credit for conversions between channels: first, last, linear, time decay, position, Markov chain and Shapley."""
-    from kikolens.analyze import attribution as at
-
-    df = _load(file)
-    try:
-        res = at.attribute(df, user, time, channel, converted, value, half_life)
-    except ValueError as e:
-        _fail(e)
-    console.print(res["summary"])
-    _print_frame(res["shares"].reset_index(names="channel").round(3), "Share of the credit by model")
-    for note in res["notes"]:
-        console.print(f"[yellow]{note}[/yellow]")
-    if output:
-        _write_frame(res["credit"].reset_index(names="channel"), output)
-        console.print(f"Credit written to {output}")
 
 
 def _survey(file: str, items: Optional[str] = None):

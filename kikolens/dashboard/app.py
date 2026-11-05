@@ -5,11 +5,11 @@ from urllib.parse import quote
 import streamlit as st
 
 from kikolens.dashboard import components as ui
-from kikolens import config, demo, plugins
+from kikolens import config, demo
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, classic_series, clusters, concept_lab, compare, customers, dimensions, distribution, drivers, experiments, explore, export, geography,
-                                      features, gallery, glossary_view, governance_view, health, history, home, impact, inventory, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
-                                      neural, network_view, overview, patterns, plugins_view, predict, privacy, process_control, project, quality, panel, regression, report, simulation, statistics,
+                                      features, gallery, glossary_view, governance_view, health, history, home, impact, lab, linkage, models, monitoring, survival, multivariate, recommender, selection, sequential, synthetic,
+                                      neural, network_view, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
                                       story, survey, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
@@ -30,10 +30,9 @@ GROUPS = {
     "Learn": {"Concept lab": concept_lab, "Glossary": glossary_view},
     "Share": {"Panel": panel, "Report": report, "Export": export, "Project": project},
     # Secciones de nicho o de apoyo: siguen disponibles, pero fuera del recorrido principal.
-    "Advanced": {"Text": text, "Customers": customers, "Impact": impact, "Recommendations": recommender, "Segment explorer": segment_explorer,
-                 "Marketing mix": marketing, "Simulation": simulation, "Survey": survey, "Inventory": inventory,
-                 "Process control": process_control, "Network": network_view, "Geography": geography,
-                 "Model governance": governance_view, "Synthetic data": synthetic, "Plugins": plugins_view},
+    "Advanced": {"Text": text, "Customers": customers, "Impact": impact, "Recommendations": recommender,
+                 "Survey": survey, "Network": network_view, "Geography": geography,
+                 "Model governance": governance_view, "Synthetic data": synthetic},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
 GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}
@@ -62,7 +61,7 @@ def _source_picker():
     mode = st.sidebar.selectbox("Source", ["File", "URL", "Paste", "Database"], key="source_mode", label_visibility="collapsed",
                                 format_func=i18n.t)
     if mode == "File":
-        upload = st.sidebar.file_uploader("File", type=FILE_TYPES + [e.lstrip(".") for e in plugins.loaders()], key="upload", label_visibility="collapsed")
+        upload = st.sidebar.file_uploader("File", type=FILE_TYPES, key="upload", label_visibility="collapsed")
         options, name = {}, getattr(upload, "name", None)
         if upload is not None and name.lower().endswith((".xlsx", ".xls")):
             try:
