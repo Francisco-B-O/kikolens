@@ -17,18 +17,23 @@ st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial
 
 # Las secciones se agrupan por áreas para que la barra lateral no sea una lista interminable.
 GROUPS = {
-    "Data": {"Home": home, "Overview": overview, "Data story": story, "Autopilot": autopilot, "Explore": explore, "Chart gallery": gallery, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
-             "Match records": linkage,
+    "Data": {"Home": home, "Overview": overview, "Data story": story, "Autopilot": autopilot, "Explore": explore, "Chart gallery": gallery,
+             "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform, "Match records": linkage,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask, "Analyst": analyst},
-    "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
-                 "Compare data": compare, "Segments": clusters,
-                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Causal effect": causal_effect, "Simulation": simulation, "Marketing mix": marketing, "Plugins": plugins_view, "Network": network_view, "Geography": geography, "Process control": process_control, "Inventory": inventory, "Survey": survey, "Sequential tests": sequential, "Segment explorer": segment_explorer,
-                 "Recommendations": recommender,
-                 "Why it changed": drivers},
-    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries, "Classical series": classic_series, "Model governance": governance_view,
-               "Predict": predict, "Model health": health, "Monitoring": monitoring},
+    "Analysis": {"Experiments": experiments, "Sequential tests": sequential, "Anomalies": anomalies, "Dimensions": dimensions,
+                 "Distribution fit": distribution, "Compare data": compare, "Segments": clusters, "Why it changed": drivers,
+                 "Causal effect": causal_effect, "Survival": survival},
+    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Regression": regression,
+               "Neural network": neural, "Time series": timeseries, "Classical series": classic_series,
+               "Forecast with drivers": multivariate, "Predict": predict, "Model health": health, "Monitoring": monitoring,
+               "Run history": history},
     "Learn": {"Concept lab": concept_lab, "Glossary": glossary_view},
-    "Share": {"Panel": panel, "Report": report, "Export": export, "Synthetic data": synthetic, "Project": project},
+    "Share": {"Panel": panel, "Report": report, "Export": export, "Project": project},
+    # Secciones de nicho o de apoyo: siguen disponibles, pero fuera del recorrido principal.
+    "Advanced": {"Text": text, "Customers": customers, "Impact": impact, "Recommendations": recommender, "Segment explorer": segment_explorer,
+                 "Marketing mix": marketing, "Simulation": simulation, "Survey": survey, "Inventory": inventory,
+                 "Process control": process_control, "Network": network_view, "Geography": geography,
+                 "Model governance": governance_view, "Synthetic data": synthetic, "Plugins": plugins_view},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
 GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}

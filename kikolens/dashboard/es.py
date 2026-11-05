@@ -3,7 +3,7 @@ Los mensajes que se construyen con números o nombres de columnas (resultados de
 
 ES = {
     # Áreas y secciones
-    "Data": "Datos", "Analysis": "Análisis", "Models": "Modelos", "Share": "Compartir",
+    "Data": "Datos", "Analysis": "Análisis", "Models": "Modelos", "Share": "Compartir", "Advanced": "Avanzado",
     "Area": "Área", "Sections": "Secciones", "Section": "Sección",
     "Overview": "Resumen", "Autopilot": "Piloto automático", "Explore": "Explorar", "Quality and cleaning": "Calidad y limpieza",
     "Transform": "Transformar", "Patterns": "Patrones", "Statistics": "Estadísticas", "Ask": "Preguntar",
