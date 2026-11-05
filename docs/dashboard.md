@@ -256,7 +256,7 @@ Watches a data source over time. Create a monitor from the data open now (it bec
 ## Share
 
 ### Panel
-A page of your own. Add **metrics** (count, sum, mean, median, minimum, maximum, distinct values), **charts** (bar, line, area, scatter, histogram, box, pie) and **tables**, set filters that apply to the whole panel, and reorder or remove tiles. **Suggest a panel** builds a starting point from your columns. Download it as one self-contained web page (charts included, the data is not) or as a JSON definition that you can reload and that is saved in your project.
+A page of your own. Add **metrics** (count, sum, mean, median, minimum, maximum, distinct values), **charts** (bar, line, area, scatter, histogram, box, pie) and **tables**, set filters that apply to the whole panel, and reorder or remove tiles. **Suggest a panel** builds a starting point from your columns. **Click a bar or slice, or drag a box on a histogram, scatter or line, and the other tiles filter to what you selected** (the chart you clicked keeps showing every option so you can change your mind); the active selections are listed above the tiles and **Clear the selections** removes them. Download it as one self-contained web page (charts included, the data is not), as a **PowerPoint** (a cover with the filters, key figures, one slide per chart with a native chart you can edit, tables) or a **Word** document (charts as images), both including the current selection, or as a JSON definition that you can reload and that is saved in your project. PowerPoint and Word need `pip install "kikolens[office]"`; they are prepared when you ask for them.
 
 ![Panel](images/panel-light.png)
 

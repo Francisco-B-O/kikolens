@@ -402,16 +402,21 @@ def ab(
 def panel(
     source: str,
     definition: Optional[Path] = typer.Argument(None, help="A panel definition (.json). Without it a panel is suggested from the data."),
-    output: Path = typer.Option(Path("kikolens_output/panel.html"), help="Where to write the web page."),
+    output: Optional[Path] = typer.Option(None, help="Where to write the file (default: kikolens_output/panel.html, .pptx or .docx)."),
     save: Optional[Path] = typer.Option(None, help="Also write the panel definition to this .json."),
+    format: str = typer.Option("html", "--format", help="html, pptx (PowerPoint) or docx (Word). The last two need kikolens[office]."),
+    where: list[str] = typer.Option([], "--where", help='Keep only matching rows in every tile, such as "region in North,West". Repeat it.'),
 ):
-    """Build a one-page panel (metrics, charts, tables) from a file."""
-    from kikolens.analyze.panel import Panel, panel_html, suggest_panel
+    """Build a one-page panel (metrics, charts, tables) from a file, as a web page, a PowerPoint or a Word document."""
+    from kikolens.analyze.panel import Panel, panel_html, parse_filter, suggest_panel
     from kikolens.analyze.quality import infer_types
 
+    if format not in ("html", "pptx", "docx"):
+        _fail(ValueError("The format must be html, pptx or docx."))
     df, _ = infer_types(_load(source))
     try:
         loaded = Panel.from_json(definition.read_text(encoding="utf-8")) if definition else suggest_panel(df, Path(str(source)).stem)
+        loaded.filters += [parse_filter(w) for w in where]
         _, results = loaded.evaluate(df)
     except (OSError, ValueError) as e:
         console.print(f"[red]{e}[/red]")
@@ -419,8 +424,16 @@ def panel(
     for tile, _, error in results:
         if error:
             console.print(f"[yellow]{tile.get('title') or tile['type']}: {error}[/yellow]")
+    output = output or Path(f"kikolens_output/panel.{format}")
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(panel_html(df, loaded), encoding="utf-8")
+    if format == "html":
+        output.write_text(panel_html(df, loaded), encoding="utf-8")
+    else:
+        from kikolens.report import office
+        try:
+            output.write_bytes((office.panel_pptx if format == "pptx" else office.panel_docx)(df, loaded))
+        except ImportError as e:
+            _fail(e)
     console.print(f"Panel with {len(loaded.tiles)} tile(s) written to [bold]{output}[/bold]")
     if save:
         save.parent.mkdir(parents=True, exist_ok=True)

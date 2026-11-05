@@ -393,6 +393,34 @@ def elasticity(df: pd.DataFrame, quantity: str, price: str, controls: list | Non
     return _wrap("price elasticity", res, table=res["groups"] if res["groups"] is not None else res["curve"])
 
 
+def panel(df: pd.DataFrame, path: str | None = None, definition=None, title: str = "Panel", where: list | None = None):
+    """Un panel de métricas, gráficos y tablas. Con `path` termina en .html, .pptx o .docx y lo escribe; sin él devuelve el `Panel` para ir añadiendo tarjetas.
+    `definition` es un `Panel`, un diccionario/JSON guardado o nada (se propone uno); `where` son condiciones como "region in North,West"."""
+    import json
+    from kikolens.analyze import panel as pn
+    if definition is None:
+        built = pn.suggest_panel(df, title)
+    elif isinstance(definition, pn.Panel):
+        built = definition
+    else:
+        built = pn.Panel.from_json(definition if isinstance(definition, str) else json.dumps(definition))
+    built.filters += [pn.parse_filter(w) for w in where or []]
+    if path is None:
+        return built
+    from pathlib import Path
+    target = Path(path)
+    suffix = target.suffix.lower()
+    if suffix not in (".html", ".pptx", ".docx"):
+        raise ValueError("The file must end in .html, .pptx or .docx.")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if suffix == ".html":
+        target.write_text(pn.panel_html(df, built), encoding="utf-8")
+    else:
+        from kikolens.report import office
+        target.write_bytes((office.panel_pptx if suffix == ".pptx" else office.panel_docx)(df, built))
+    return target
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel")

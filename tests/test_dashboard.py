@@ -592,3 +592,26 @@ def test_marketing_mix_page_estimates_splits_the_budget_and_measures_elasticity(
     at.button(key="pe_go").click().run()
     assert_clean(at)
     assert "pe_res" in at.session_state
+
+
+def test_panel_cross_filter_and_office_downloads(data):
+    at = open_page(data, "Panel")
+    at.button(key="pn_suggest").click().run()
+    assert_clean(at)
+    chart = next(t for t in at.session_state["panel"].tiles if t["type"] == "chart" and t["kind"] == "bar")
+    column = chart["x"]
+    value = str(data[column].iloc[0])
+    at.session_state["pn_cross"] = {chart["id"]: [{"column": column, "op": "in", "value": [value]}]}
+    at.run()
+    assert_clean(at)
+    shown = int((data[column].astype(str) == value).sum())
+    assert any(f"Showing {shown:,} of {len(data):,} rows" in str(c.value) for c in at.caption)
+    at.button(key="pn_pptx_make").click().run()
+    assert_clean(at)
+    assert at.session_state["pn_pptx_ready"][1][:2] == b"PK"
+    at.button(key="pn_docx_make").click().run()
+    assert_clean(at)
+    assert at.session_state["pn_docx_ready"][1][:2] == b"PK"
+    at.button(key="pn_clear_cross").click().run()
+    assert_clean(at)
+    assert at.session_state["pn_cross"] == {}

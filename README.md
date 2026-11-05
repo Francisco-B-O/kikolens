@@ -69,7 +69,7 @@ The dashboard groups its sections into four areas.
 | | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
 | | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
-| **Share** | Panel | Pin metrics, charts and tables with global filters, and export them as one self-contained web page. |
+| **Share** | Panel | Pin metrics, charts and tables with global filters, click a chart to filter the others, and export to a web page, PowerPoint (native charts) or Word. |
 | | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
 | | Synthetic data | A table with the same distributions and correlations as yours but not real people, with fidelity, privacy and utility reports. |
 | | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; a database table; a data dictionary; or a Jupyter notebook that reproduces the session. |
@@ -130,7 +130,7 @@ kikolens doctor        # checks versions, optional extras, Ollama and your confi
 Settings (the Ollama model, the port, the language the dashboard opens in) go in a `kikolens.toml`: see [Configuration](docs/configuration.md).
 To contribute, read [CONTRIBUTING.md](CONTRIBUTING.md); the documentation is built with `mkdocs` (`docs/`).
 
-Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
+Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[office]"` for PowerPoint and Word export, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
 
 For the language-model features, install Ollama and pull a model:
 
@@ -180,6 +180,7 @@ kikolens text reviews.csv review --group product --themes 4
 kikolens drift reference.csv current.csv          # exit code 2 when the data changed a lot
 kikolens monitor create NAME SOURCE / run / list / history / watch / schedule / delete
 kikolens panel data.csv --output panel.html
+kikolens panel data.csv --format pptx --where "region in North,West"
 kikolens export data.csv out.xlsx --workbook      # formatted workbook with the analysis
 kikolens to-db data.csv sqlite:///results.db results
 kikolens report data.csv --target revenue --nn --output report.html

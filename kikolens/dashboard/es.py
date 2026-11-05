@@ -352,8 +352,7 @@ ES = {
     "Panel title": "Título del panel", "Suggest a panel": "Sugerir un panel", "Open a saved panel definition": "Abrir una definición de panel guardada",
     "Add a tile": "Añadir un bloque", "Add to panel": "Añadir al panel", "Replaces the tiles with a starting point built from your columns.":
         "Sustituye los bloques por un punto de partida creado con tus columnas.", "The panel is empty. Add a tile above or press Suggest a panel.":
-        "El panel está vacío. Añade un bloque arriba o pulsa Sugerir un panel.", "Download as a web page": "Descargar como página web",
-    "Download panel definition (JSON)": "Descargar definición del panel (JSON)", "Panel definition (JSON)": "Definición del panel (JSON)",
+        "El panel está vacío. Añade un bloque arriba o pulsa Sugerir un panel.", "Panel definition (JSON)": "Definición del panel (JSON)",
     "One self-contained page with the charts. The data is not included.": "Una página autónoma con los gráficos. No incluye los datos.",
     "Title": "Título", "Type": "Tipo", "Calculation": "Cálculo", "Filter": "Filtro", "Operation": "Operación", "Condition": "Condición",
     "Report title": "Título del informe", "Include models trained in this session": "Incluir los modelos entrenados en esta sesión",
@@ -639,4 +638,17 @@ ES = {
     "Error on last periods": "Error en los últimos periodos",
     "From the baseline": "Viene de la base",
     "Elasticity": "Elasticidad",
+    "Clear the selections": "Borrar las selecciones",
+    "Selected in the charts:": "Seleccionado en los gráficos:",
+    "Click bars or slices, or drag a box on a chart, to filter the other tiles.": "Haz clic en barras o sectores, o arrastra un recuadro en un gráfico, para filtrar las demás tarjetas.",
+    "Web page": "Página web",
+    "PowerPoint": "PowerPoint",
+    "Word": "Word",
+    "PowerPoint and Word export needs  pip install kikolens[office]": "Exportar a PowerPoint y Word necesita  pip install kikolens[office]",
+    "Download PowerPoint": "Descargar PowerPoint",
+    "Download Word": "Descargar Word",
+    "Prepare PowerPoint": "Preparar PowerPoint",
+    "Prepare Word": "Preparar Word",
+    "Native, editable charts. Includes the current selection.": "Gráficos nativos y editables. Incluye la selección actual.",
+    "Charts as images. Includes the current selection.": "Gráficos como imágenes. Incluye la selección actual.",
 }

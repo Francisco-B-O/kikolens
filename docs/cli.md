@@ -60,7 +60,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens ab SOURCE GROUP OUTCOME --control VALUE [--success VALUE]` | Compare a control and a treatment group on rates or averages. |
 | `kikolens drift REFERENCE CURRENT [--output FILE]` | Compare two datasets column by column. Exits with code `2` when the data changed a lot, so it works as an alarm in scripts and CI. |
 | `kikolens text SOURCE COLUMN [--group COL] [--ngram 1\|2\|3] [--themes K]` | Key terms of a free-text column, the terms that distinguish each group, and themes. |
-| `kikolens panel SOURCE [PANEL.json] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables; without a definition, one is suggested from the data. |
+| `kikolens panel SOURCE [PANEL.json] [--format html\|pptx\|docx] [--where "region in North,West"] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables as a web page, a PowerPoint with native charts or a Word document (the last two need `kikolens[office]`); without a definition, one is suggested from the data. `--where` keeps only matching rows and can be repeated. |
 | `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE] [--pdf FILE]` | Build the HTML report, and a PDF with `--pdf`. |
 | `kikolens survival SOURCE DURATION EVENT [--group COL]` | Kaplan-Meier medians and a log-rank test between groups. |
 | `kikolens cohorts SOURCE USER DATE [--period Day\|Week\|Month]` | Retention by cohort. |
