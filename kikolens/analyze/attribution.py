@@ -28,7 +28,7 @@ def build_journeys(df: pd.DataFrame, user: str, time: str, channel: str, convert
     data[time] = pd.to_datetime(data[time], errors="coerce")
     data = data.dropna(subset=[time])
     flag = data[converted]
-    if flag.dtype == object:
+    if not (pd.api.types.is_bool_dtype(flag) or pd.api.types.is_numeric_dtype(flag)):
         flag = flag.astype(str).str.lower().isin(["1", "true", "yes", "y", "si", "sí", "converted"])
     data["_conv"] = flag.fillna(False).astype(bool)
     data = data.sort_values([user, time], kind="stable")
