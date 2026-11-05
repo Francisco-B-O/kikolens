@@ -69,6 +69,7 @@ An unknown field raises an error that lists what is available. Text from your da
 | `budget(model, total=None, low=0.5, high=2.0)` | A split of the spend per period from a `marketing_mix` result; `res.table`, `res.gain`. |
 | `elasticity(df, quantity, price, controls=None, group=None, instrument=None, unit_cost=None)` | Price elasticity (log-log); `res.elasticity`, `res.interval`, `res.groups`, `res.optimal_price`. |
 | `panel(df, path=None, definition=None, where=None)` | A panel of metrics, charts and tables. With a `path` ending in `.html`, `.pptx` or `.docx` it writes the file; without one it returns the `Panel` to add tiles to. |
+| `run(name, df, **args)` / `list_plugins()` | Run an analysis added by a plugin; list the loaded plugins, their analyses, formats and load errors. See [Plugins](plugins.md). |
 | `recommender(df, user, item, rating=None)` | An item-based recommender: `.recommend(person)`, `.similar_items(item)`, `.popular()`. |
 | `synthesize(df, n=None)` | Synthetic data; `res.data` is the table and `res.report` the fidelity and privacy figures. |
 | `runs(target=None)` | The history of model lab runs (the dashboard and `kikolens lab` record them). |

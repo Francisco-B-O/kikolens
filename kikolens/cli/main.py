@@ -1925,6 +1925,94 @@ def elasticity(
         console.print(f"[yellow]{note}[/yellow]")
 
 
+@app.command("plugin")
+def run_plugin(
+    name: str, source: str,
+    arg: list[str] = typer.Option([], "--arg", help="An argument as name=value. Repeat it. Lists of columns are comma-separated."),
+    output: Optional[Path] = typer.Option(None, help="Write the main table to this file."),
+):
+    """Run an analysis added by a plugin (see `kikolens plugins`)."""
+    from kikolens import plugins
+
+    df = _load(source)
+    try:
+        found = plugins.analyses().get(name)
+        if found is None:
+            raise ValueError(f"No plugin analysis called '{name}'." + (f" Available: {', '.join(plugins.analyses())}." if plugins.analyses() else " No plugins are loaded."))
+        args = {}
+        for text in arg:
+            key, sep, value = text.partition("=")
+            if not sep or not key.strip():
+                raise ValueError(f"Cannot read '{text}'. Write arguments as name=value.")
+            key = key.strip()
+            args[key] = _names(value) if found.params.get(key, {}).get("type") == "columns" else value
+        res = plugins.run(name, df, **args)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    table = next((v for v in res.values() if isinstance(v, pd.DataFrame)), None)
+    if table is not None:
+        _print_frame(table.round(4))
+        if output:
+            _write_frame(table, output)
+            console.print(f"Table saved to {output}")
+
+
+@app.command()
+def plugins():
+    """List the plugins that are loaded: their analyses, the formats they read and anything that failed to load."""
+    from kikolens import plugins as registry
+
+    if not registry.enabled():
+        console.print("Plugins are turned off (KIKOLENS_PLUGINS=0).")
+        return
+    found = registry.analyses()
+    for item in registry.loaded():
+        console.print(f"[bold]{item['plugin']}[/bold]  {item['source']}  ({item['analyses']} analyses, {item['loaders']} loaders)")
+    if found:
+        _print_frame(pd.DataFrame([{"analysis": a.name, "plugin": a.plugin, "arguments": ", ".join(a.params) or "-", "description": a.description} for a in found.values()]),
+                     "Analyses (run with: kikolens plugin NAME SOURCE --arg name=value)")
+    if registry.loaders():
+        console.print("Formats: " + ", ".join(sorted(registry.loaders())))
+    for message in registry.errors():
+        console.print(f"[red]{message}[/red]")
+    if not found and not registry.loaders() and not registry.errors():
+        from kikolens.config import home_dir
+        console.print(f"No plugins found. Put a .py file with a register(registry) function in {home_dir() / 'plugins'} or list paths under [plugins] in kikolens.toml.")
+
+
+@app.command("api")
+def api_server_command(
+    port: int = typer.Option(8000, help="Port to listen on."),
+    host: str = typer.Option("127.0.0.1", help="Address to listen on. Anything but this computer needs --token."),
+    token: Optional[str] = typer.Option(None, help="Require this bearer token on every request except /health."),
+    data_dir: Optional[Path] = typer.Option(None, "--data-dir", help="A folder whose files clients may load by name. Without it, clients can only send rows or csv text."),
+    model: list[str] = typer.Option([], "--model", help="A saved model to serve at /models/NAME/predict. Repeat it. Model files are code: use only ones you trust."),
+    cors: Optional[str] = typer.Option(None, help="Allow browser pages from this origin (for example http://localhost:3000)."),
+):
+    """Serve KikoLens as a JSON API: datasets in memory, every analysis, background jobs, models and plugins. See /openapi.json."""
+    from kikolens import api_server
+    from kikolens.analyze.predict import load_bundle, resolve_model
+
+    try:
+        bundles = {}
+        for reference in model:
+            bundle = load_bundle(resolve_model(reference))
+            bundles[bundle.get("name") or reference] = bundle
+        server = api_server.make_server(host, port, token, data_dir, bundles, cors)
+    except (ValueError, OSError) as e:
+        console.print(f"[red]{e}[/red]")
+        raise typer.Exit(code=1)
+    console.print(f"KikoLens API at http://{host}:{server.server_address[1]}  (docs: /openapi.json, analyses: /functions). Ctrl+C to stop.")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+        server.store.pool.shutdown(wait=False, cancel_futures=True)
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

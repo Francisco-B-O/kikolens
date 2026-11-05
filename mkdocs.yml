@@ -41,6 +41,8 @@ nav:
       - Command line: cli.md
       - Python API and Jupyter: python-api.md
       - Workflows: workflows.md
+      - Plugins: plugins.md
+      - API server: api-server.md
   - How it works: models.md
   - Setup and development:
       - Configuration: configuration.md

@@ -184,6 +184,8 @@ def why(df: pd.DataFrame, metric: str | None, date: str, **kwargs) -> Result:
 def regress(df: pd.DataFrame, target: str, features=None, **kwargs) -> Result:
     """Regresión explicada: lineal para un número, logística para una columna de dos valores."""
     from kikolens.analyze import regression
+    if target not in df.columns:
+        raise ValueError(f"Column '{target}' not found.")
     two = df[target].nunique(dropna=True) == 2
     res = regression.logit(df, target, features, **kwargs) if two else regression.ols(df, target, features, **kwargs)
     return _wrap("regression", res, notes=res["sentences"] + res["flags"], figure=regression.coefficient_figure(res))
@@ -421,6 +423,19 @@ def panel(df: pd.DataFrame, path: str | None = None, definition=None, title: str
     return target
 
 
+def run(name: str, df: pd.DataFrame, **args) -> Result:
+    """Ejecuta un análisis añadido por un plugin (ver `kl.list_plugins()` y `docs/plugins.md`)."""
+    from kikolens import plugins
+    return _wrap(name, plugins.run(name, df, **args))
+
+
+def list_plugins() -> dict:
+    """Los plugins cargados: sus análisis (con parámetros), los formatos que leen y los errores al cargarlos."""
+    from kikolens import plugins as registry
+    return {"analyses": [{"name": a.name, "description": a.description, "plugin": a.plugin, "params": a.params} for a in registry.analyses().values()],
+            "loaders": sorted(registry.loaders()), "loaded": registry.loaded(), "errors": registry.errors()}
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins")

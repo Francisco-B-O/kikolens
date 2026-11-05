@@ -651,4 +651,10 @@ ES = {
     "Prepare Word": "Preparar Word",
     "Native, editable charts. Includes the current selection.": "Gráficos nativos y editables. Incluye la selección actual.",
     "Charts as images. Includes the current selection.": "Gráficos como imágenes. Incluye la selección actual.",
+    "Plugins": "Plugins",
+    "Analyses and file formats added by your own Python files. They run on this computer with your permissions.": "Análisis y formatos de archivo añadidos por tus propios archivos de Python. Se ejecutan en este ordenador con tus permisos.",
+    "Plugins are turned off (KIKOLENS_PLUGINS=0).": "Los plugins están desactivados (KIKOLENS_PLUGINS=0).",
+    "Only use plugins you wrote or have read: loading one runs its code.": "Usa solo plugins que hayas escrito o leído: cargar uno ejecuta su código.",
+    "Could not load": "No se pudo cargar",
+    "No plugins found. Put a .py file with a register(registry) function in the folder below or list paths under [plugins] in kikolens.toml; see the plugins guide.": "No hay plugins. Pon un archivo .py con una función register(registry) en la carpeta de abajo o indica rutas en [plugins] de kikolens.toml; mira la guía de plugins.",
 }

@@ -48,6 +48,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens forecast ... --changes` | Also list level shifts and trend changes in the series. |
 | `kikolens forecast ... --by COLUMN` | One forecast per value of a column (the 20 with the most activity). |
 | `kikolens serve MODEL [--port 8000] [--host 127.0.0.1] [--token T]` | Serve a saved model as a small JSON API. `POST /predict` with `{"rows": [{...}]}` returns predictions and warnings; `GET /model` describes the inputs; `GET /health`. It listens only on this computer unless you give another `--host`, which requires `--token` (sent as `Authorization: Bearer T`). |
+| `kikolens api [--port 8000] [--host 127.0.0.1] [--token T] [--data-dir DIR] [--model NAME] [--cors ORIGIN]` | The whole toolkit as a JSON API: datasets, analyses, background jobs, models and plugins. See [API server](api-server.md). |
+| `kikolens plugins` | The loaded plugins, their analyses and formats, and anything that failed to load. |
+| `kikolens plugin NAME SOURCE [--arg name=value] [--output FILE]` | Run an analysis added by a plugin. See [Plugins](plugins.md). |
 
 `predict` and `lab` take `--save PATH` to write a model package to a file and `--register NAME` to keep it with your saved models. `lab` also takes `--folds`, `--no-tune`, `--bayes` (Bayesian optimisation instead of a random search), `--models "Ridge,Random Forest"`, `--balance` and `--exclude col1,col2`. Besides the default models, `--models` accepts `SVM`, `AdaBoost`, `Bagging`, `Voting Ensemble`, `Stacking Ensemble` and, with PyTorch installed, `PyTorch MLP`.
 
