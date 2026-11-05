@@ -2352,6 +2352,81 @@ def readability(source: str, column: str, language: Optional[str] = typer.Option
     console.print(res["notes"][0])
 
 
+def _edges(source_file: str, source: str, target: str, weight):
+    df = _load(source_file)
+    for column in (source, target, weight):
+        if column and column not in df.columns:
+            _fail(ValueError(f"Column '{column}' not found."))
+    return df
+
+
+@app.command()
+def network(
+    file: str, source: str, target: str, weight: Optional[str] = typer.Option(None, help="A numeric column with the strength of each link."),
+    directed: bool = typer.Option(False, "--directed", help="Links have a direction (from source to target)."), top: int = typer.Option(15, help="How many nodes to list."),
+    output: Optional[Path] = typer.Option(None, help="Write every node with its measures to this file."),
+):
+    """Analyse a network from a list of links: important nodes, communities, connectivity and distances."""
+    from kikolens.analyze import network as nw
+
+    df = _edges(file, source, target, weight)
+    try:
+        res = nw.analyze(df, source, target, weight, directed)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].head(top).round(4), "Most important nodes (by PageRank)")
+    _print_frame(res["communities"].round(4), "Communities")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        _write_frame(res["table"], output)
+        console.print(f"Nodes written to {output}")
+
+
+@app.command("network-path")
+def network_path(file: str, source: str, target: str, start: str, end: str, directed: bool = typer.Option(False, "--directed")):
+    """The path with the fewest steps between two nodes."""
+    from kikolens.analyze import network as nw
+
+    df = _edges(file, source, target, None)
+    try:
+        res = nw.shortest_path(df, source, target, start, end, None, directed)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command("suggest-links")
+def suggest_links(file: str, source: str, target: str, top: int = typer.Option(10, help="How many suggestions.")):
+    """Pairs of nodes that are not linked but share many neighbours: the most likely missing links."""
+    from kikolens.analyze import network as nw
+
+    df = _edges(file, source, target, None)
+    try:
+        res = nw.suggest_links(df, source, target, None, top)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(3), "Suggested links")
+
+
+@app.command("network-robustness")
+def network_robustness(file: str, source: str, target: str, steps: int = typer.Option(10, help="How many removal steps up to half the nodes.")):
+    """How fast the network falls apart when its best-connected nodes are removed, against removing random ones."""
+    from kikolens.analyze import network as nw
+
+    df = _edges(file, source, target, None)
+    try:
+        res = nw.robustness(df, source, target, None, steps)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(3), "Largest piece as nodes are removed")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

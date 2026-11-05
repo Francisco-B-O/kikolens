@@ -73,6 +73,8 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens near-duplicates SOURCE COLUMN [--threshold 0.9]` / `similar SOURCE COLUMN "a phrase" [--n 5]` | Groups of near-identical texts; the texts most like a phrase. |
 | `kikolens patterns SOURCE COLUMN [--kinds email,url,...]` | Emails, links, phones, amounts, percentages, dates, hashtags and mentions. |
 | `kikolens keyphrases SOURCE COLUMN` / `readability SOURCE COLUMN` | Key phrases (RAKE); reading ease per text. |
+| `kikolens network FILE SOURCE TARGET [--weight COL] [--directed] [--output FILE]` | Important nodes, communities and connectivity of a network given as a list of links. |
+| `kikolens network-path FILE SOURCE TARGET START END` / `suggest-links FILE SOURCE TARGET` / `network-robustness FILE SOURCE TARGET` | The shortest path between two nodes; the links that are probably missing; how the network breaks when hubs are removed. |
 | `kikolens panel SOURCE [PANEL.json] [--format html\|pptx\|docx] [--where "region in North,West"] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables as a web page, a PowerPoint with native charts or a Word document (the last two need `kikolens[office]`); without a definition, one is suggested from the data. `--where` keeps only matching rows and can be repeated. |
 | `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE] [--pdf FILE]` | Build the HTML report, and a PDF with `--pdf`. |
 | `kikolens survival SOURCE DURATION EVENT [--group COL]` | Kaplan-Meier medians and a log-rank test between groups. |

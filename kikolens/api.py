@@ -530,6 +530,30 @@ def readability(df: pd.DataFrame, text: str, language: str | None = None) -> Res
     return _wrap("readability", textmining.readability(df[text], language))
 
 
+def network(df: pd.DataFrame, source: str, target: str, weight: str | None = None, directed: bool = False, **kwargs) -> Result:
+    """Análisis de una red a partir de una lista de enlaces: nodos importantes (PageRank, intermediación), comunidades, conectividad y distancias."""
+    from kikolens.analyze import network as nw
+    return _wrap("network", nw.analyze(df, source, target, weight, directed, **kwargs))
+
+
+def network_path(df: pd.DataFrame, source: str, target: str, start, end, weight: str | None = None, directed: bool = False) -> Result:
+    """El camino con menos saltos entre dos nodos."""
+    from kikolens.analyze import network as nw
+    return _wrap("network path", nw.shortest_path(df, source, target, start, end, weight, directed))
+
+
+def suggest_links(df: pd.DataFrame, source: str, target: str, weight: str | None = None, top: int = 10) -> Result:
+    """Enlaces que faltan: pares sin enlace que comparten muchos vecinos (Adamic-Adar)."""
+    from kikolens.analyze import network as nw
+    return _wrap("suggested links", nw.suggest_links(df, source, target, weight, top))
+
+
+def network_robustness(df: pd.DataFrame, source: str, target: str, weight: str | None = None, steps: int = 10) -> Result:
+    """Cuánto se rompe la red al quitar los nodos más conectados frente a quitar nodos al azar."""
+    from kikolens.analyze import network as nw
+    return _wrap("network robustness", nw.robustness(df, source, target, weight, steps))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness")

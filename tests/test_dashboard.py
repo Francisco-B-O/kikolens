@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network"]
 
 
 @pytest.fixture(scope="module")
@@ -648,3 +648,17 @@ def test_text_page_new_tabs_run():
     at.button(key="tx_topics_go").click().run()
     assert_clean(at)
     assert "over_time" in at.session_state["tx_topics"][1]
+
+
+def test_network_page_runs_every_tab():
+    from tests.test_network import planted
+    edges, _ = planted(20, 3)
+    at = open_page(edges, "Network")
+    assert_clean(at)
+    at.button(key="nw_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["nw_res"][1]["nodes"] >= 55
+    for key in ("nw_path_go", "nw_links_go", "nw_rob_go"):
+        at.button(key=key).click().run()
+        assert_clean(at)
+    assert all(k in at.session_state for k in ("nw_path", "nw_links", "nw_rob"))
