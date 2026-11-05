@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Francisco-B-O/kikolens/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/Francisco-B-O/kikolens/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Francisco-B-O/kikolens/actions/workflows/codeql.yml/badge.svg?branch=develop)](https://github.com/Francisco-B-O/kikolens/actions/workflows/codeql.yml)
+[![PyPI](https://img.shields.io/pypi/v/kikolens)](https://pypi.org/project/kikolens/)
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Local first](https://img.shields.io/badge/data-never%20leaves%20your%20machine-9a3412)
@@ -84,6 +85,13 @@ lab.plot()
 ## Install
 
 Requires Python 3.12 or newer.
+
+```bash
+pip install kikolens
+kikolens doctor        # checks versions, optional extras, Ollama and your configuration
+```
+
+Or from the source:
 
 ```bash
 git clone https://github.com/Francisco-B-O/kikolens.git
