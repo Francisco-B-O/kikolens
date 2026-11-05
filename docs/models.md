@@ -198,6 +198,11 @@ Inputs are drawn through a Gaussian copula: correlated normals are turned into u
 
 A problem file for `kikolens lp` looks like `{"objective": {"x": 3, "y": 5}, "constraints": [{"coefs": {"x": 1}, "op": "<=", "rhs": 4}], "bounds": {"y": [0, 10]}, "maximize": true, "integer": ["x"]}`.
 
+## Marketing mix and price elasticity
+Each channel is transformed by a geometric adstock (`a_t = x_t + decay * a_{t-1}`) and a Hill curve (`a^k / (a^k + h^k)`), and the outcome is explained by non-negative coefficients on those transforms plus a free baseline, a linear trend, Fourier terms for the seasons that fit in the series and standardised controls (non-negative least squares, with free columns entered as plus and minus). Decay (0 to 0.8), half-saturation (a multiple of the average spend) and shape (1 or 2) are searched channel by channel, twice, minimising the error on the last 20 % of the periods. A t statistic from heteroskedasticity-robust errors flags channels indistinguishable from zero. The budget split maximises the sum of steady-state responses (spend divided by one minus the decay, then the Hill curve) with SLSQP from several starting points, keeping the total fixed and each channel within a range of today's spend. This is an observational model: channels that were switched on together, or in response to sales, cannot be separated, so use its answer to choose what to test.
+
+Elasticity is the coefficient of log price in a regression of log quantity, with HC1 errors. With an instrument it becomes two-stage least squares with the first-stage F statistic reported. With a unit cost and constant elasticity `e < -1`, the margin-maximising price is `cost * e / (1 + e)`.
+
 ## Clustering
 k-means on the standardized numeric columns, shown on the first two principal components. The inertia and silhouette chart helps pick `k`; the silhouette peak is a hint, not a rule.
 

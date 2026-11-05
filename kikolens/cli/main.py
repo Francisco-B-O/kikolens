@@ -1863,6 +1863,55 @@ def lp(problem: Path = typer.Argument(..., help="JSON with objective, constraint
     _print_frame(res["constraints"].round(4), "Constraints")
 
 
+@app.command()
+def mmm(
+    source: str, date: str, target: str,
+    channels: str = typer.Option(..., help="Comma-separated spend columns."),
+    controls: Optional[str] = typer.Option(None, help="Comma-separated columns that also move the target (price, weather...)."),
+    budget: Optional[float] = typer.Option(None, help="Also propose how to split this spend per period (default: today's total)."),
+    reallocate: bool = typer.Option(False, "--reallocate", help="Propose a split of today's total spend."),
+):
+    """Marketing mix model: what each channel contributes, with carry-over and saturation."""
+    from kikolens.analyze import marketing as mk
+
+    df = _load(source)
+    try:
+        res = mk.marketing_mix(df, date, target, _names(channels), _names(controls))
+        plan = mk.optimize_budget(res, budget) if (budget or reallocate) else None
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "By channel")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if plan:
+        console.print(plan["summary"])
+        _print_frame(plan["table"].round(3), "Proposed spend per period")
+
+
+@app.command()
+def elasticity(
+    source: str, quantity: str, price: str,
+    controls: Optional[str] = typer.Option(None, help="Comma-separated columns that also move demand."),
+    group: Optional[str] = typer.Option(None, help="Estimate one elasticity per value of this column."),
+    instrument: Optional[str] = typer.Option(None, help="Comma-separated columns that move the price but not demand (a cost, a tax)."),
+    unit_cost: Optional[float] = typer.Option(None, help="Unit cost, to find the price that maximises margin."),
+):
+    """Price elasticity of demand (log-log), with the revenue or margin curve."""
+    from kikolens.analyze.marketing import price_elasticity
+
+    df = _load(source)
+    try:
+        res = price_elasticity(df, quantity, price, _names(controls), group, _names(instrument) or None, unit_cost)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if res["groups"] is not None:
+        _print_frame(res["groups"].round(3), "By group")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

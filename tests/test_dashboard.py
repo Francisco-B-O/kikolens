@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix"]
 
 
 @pytest.fixture(scope="module")
@@ -579,3 +579,16 @@ def test_simulation_page_runs_all_three_tools(data):
     at.button(key="lp_go").click().run()
     assert_clean(at)
     assert "lp_res" not in at.session_state
+
+
+def test_marketing_mix_page_estimates_splits_the_budget_and_measures_elasticity():
+    from tests.test_marketing import demand, weekly
+    at = open_page(weekly(), "Marketing mix")
+    assert_clean(at)
+    at.button(key="mm_go").click().run()
+    assert_clean(at)
+    assert at.session_state["mm_res"][1]["r2"] > 0.9
+    at = open_page(demand(500), "Marketing mix")
+    at.button(key="pe_go").click().run()
+    assert_clean(at)
+    assert "pe_res" in at.session_state

@@ -374,6 +374,25 @@ def optimize(expression_or_objective, bounds=None, constraints=None, **kwargs) -
     return _wrap("optimization", res, table=res["solution"].rename("value").rename_axis("variable").reset_index())
 
 
+def marketing_mix(df: pd.DataFrame, date: str, target: str, channels: list, controls: list | None = None, **kwargs) -> Result:
+    """Cuánto aporta cada canal a las ventas (arrastre, saturación, tendencia y estacionalidad). Pásalo a `budget` para repartir el gasto."""
+    from kikolens.analyze.marketing import marketing_mix as run
+    return _wrap("marketing mix", run(df, date, target, channels, controls, **kwargs))
+
+
+def budget(model, total: float | None = None, low: float = 0.5, high: float = 2.0) -> Result:
+    """Reparto del presupuesto entre canales con las curvas de respuesta de `marketing_mix`."""
+    from kikolens.analyze.marketing import optimize_budget
+    return _wrap("budget", optimize_budget(dict(model), total, low, high))
+
+
+def elasticity(df: pd.DataFrame, quantity: str, price: str, controls: list | None = None, **kwargs) -> Result:
+    """Elasticidad-precio de la demanda (log-log), por grupo y con instrumento si el precio depende de la demanda."""
+    from kikolens.analyze.marketing import price_elasticity
+    res = price_elasticity(df, quantity, price, controls, **kwargs)
+    return _wrap("price elasticity", res, table=res["groups"] if res["groups"] is not None else res["curve"])
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity")

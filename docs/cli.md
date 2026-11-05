@@ -81,6 +81,8 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens simulate FORMULA [--data FILE] [--input price=normal(10,2)] [--corr a,b=0.6] [--n 10000] [--threshold V] [--output CSV]` | Monte Carlo: spread the uncertainty of the inputs through a formula. Columns of `--data` are resampled with their correlation; `--input` defines or overrides inputs. |
 | `kikolens optimize FORMULA --var x=0:10 [--constraint "x + y <= 20"] [--minimize]` | Values of the variables that make a formula as high (or low) as possible within limits. |
 | `kikolens lp PROBLEM.json` | Solve a linear or integer program: `objective`, `constraints` (`coefs`, `op`, `rhs`, `name`), `bounds`, `maximize`, `integer`. |
+| `kikolens mmm SOURCE DATE TARGET --channels a,b [--controls c] [--reallocate] [--budget N]` | Marketing mix model: contribution, return and saturation of each channel, optionally with a proposed split of the spend. |
+| `kikolens elasticity SOURCE QUANTITY PRICE [--controls a,b] [--group COL] [--instrument COL] [--unit-cost N]` | Price elasticity of demand with the revenue or margin curve and the margin-maximising price. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
 | `kikolens select-features SOURCE TARGET [--exclude a,b] [--output FILE]` | Which columns are worth keeping: consensus of four methods and a cross-validated curve. |
 | `kikolens runs [--target COL] [--best] [--compare id,id] [--delete id]` | The history of model lab runs. |
