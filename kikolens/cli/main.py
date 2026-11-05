@@ -2427,6 +2427,112 @@ def network_robustness(file: str, source: str, target: str, steps: int = typer.O
         console.print(f"[yellow]{note}[/yellow]")
 
 
+def _geo_frame(source: str, lat: Optional[str], lon: Optional[str]):
+    from kikolens.analyze import geo
+
+    df = _load(source)
+    if lat and lon:
+        return df, lat, lon
+    found = geo.detect_coordinates(df)
+    if not found:
+        _fail(ValueError("No latitude and longitude columns were found; give them with --lat and --lon."))
+    return df, found[0][0], found[0][1]
+
+
+@app.command("geo-check")
+def geo_check(file: str, lat: Optional[str] = typer.Option(None, help="Latitude column (default: detected)."), lon: Optional[str] = typer.Option(None, help="Longitude column.")):
+    """Which rows have usable coordinates, and what looks wrong (swapped, out of range, 0,0, repeated)."""
+    from kikolens.analyze import geo
+
+    df, la, lo = _geo_frame(file, lat, lon)
+    try:
+        res = geo.check_coordinates(df, la, lo)
+    except ValueError as e:
+        _fail(e)
+    console.print(f"Using '{la}' and '{lo}'. {res['summary']}")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("geo-distances")
+def geo_distances(
+    file: str, lat: Optional[str] = None, lon: Optional[str] = None,
+    point: Optional[str] = typer.Option(None, help="One place as lat,lon such as 40.4168,-3.7038."),
+    centers: Optional[str] = typer.Option(None, help="A file with the centres (shops, warehouses)."),
+    center_lat: str = typer.Option("lat", help="Latitude column in the centres file."), center_lon: str = typer.Option("lon", help="Longitude column in the centres file."),
+    center_name: Optional[str] = typer.Option(None, help="Name column in the centres file."), reach_km: Optional[float] = typer.Option(None, help="Report the share within this distance."),
+):
+    """Kilometres to a point or to the nearest of a list of centres, and how many points each centre serves."""
+    from kikolens.analyze import geo
+
+    df, la, lo = _geo_frame(file, lat, lon)
+    if not point and not centers:
+        _fail(ValueError("Give --point lat,lon or --centers FILE."))
+    try:
+        target = tuple(float(x) for x in point.split(",")) if point else _load(centers)
+        res = geo.distances(df, la, lo, target, center_lat, center_lon, center_name, reach_km)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(2), "By nearest centre")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("geo-hotspots")
+def geo_hotspots(file: str, lat: Optional[str] = None, lon: Optional[str] = None, value: Optional[str] = typer.Option(None, help="A numeric column to average in each zone."),
+                 eps_km: float = typer.Option(5.0, help="Largest gap between neighbouring points in a zone."), min_points: int = typer.Option(10, help="Fewest points in a zone.")):
+    """Zones with many points close together."""
+    from kikolens.analyze import geo
+
+    df, la, lo = _geo_frame(file, lat, lon)
+    try:
+        res = geo.hotspots(df, la, lo, value, eps_km, min_points)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if len(res["table"]):
+        _print_frame(res["table"].round(3), "Zones")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def spatial(file: str, value: str, lat: Optional[str] = None, lon: Optional[str] = None, k: int = typer.Option(8, help="Neighbours per point."),
+            permutations: int = typer.Option(999, help="Shuffles for the p-value.")):
+    """Do nearby points have similar values (Moran's I), and where are the hot and cold spots (Getis-Ord)?"""
+    from kikolens.analyze import geo
+
+    df, la, lo = _geo_frame(file, lat, lon)
+    try:
+        res = geo.autocorrelation(df, la, lo, value, k, permutations)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if len(res["table"]):
+        _print_frame(res["table"].head(15).round(3), "Strongest local spots")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("geo-grid")
+def geo_grid(file: str, lat: Optional[str] = None, lon: Optional[str] = None, value: Optional[str] = None, cell_km: float = typer.Option(10.0, help="Cell size in km."),
+             agg: str = typer.Option("mean", help="mean, sum, median, max or min."), output: Optional[Path] = typer.Option(None, help="Write the cells to this file.")):
+    """Summarise points in square cells of a few kilometres."""
+    from kikolens.analyze import geo
+
+    df, la, lo = _geo_frame(file, lat, lon)
+    try:
+        res = geo.grid_summary(df, la, lo, value, cell_km, agg)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].head(15).round(3), "Busiest cells")
+    if output:
+        _write_frame(res["table"], output)
+        console.print(f"Cells written to {output}")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

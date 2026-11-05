@@ -75,6 +75,11 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens keyphrases SOURCE COLUMN` / `readability SOURCE COLUMN` | Key phrases (RAKE); reading ease per text. |
 | `kikolens network FILE SOURCE TARGET [--weight COL] [--directed] [--output FILE]` | Important nodes, communities and connectivity of a network given as a list of links. |
 | `kikolens network-path FILE SOURCE TARGET START END` / `suggest-links FILE SOURCE TARGET` / `network-robustness FILE SOURCE TARGET` | The shortest path between two nodes; the links that are probably missing; how the network breaks when hubs are removed. |
+| `kikolens geo-check FILE [--lat COL --lon COL]` | Which rows have usable coordinates and what looks wrong (swapped, out of range, 0,0, repeated). |
+| `kikolens geo-distances FILE --point LAT,LON` or `--centers FILE [--center-name COL] [--reach-km N]` | Kilometres to a place or to the nearest centre, and how many points each centre serves. |
+| `kikolens geo-hotspots FILE [--value COL] [--eps-km 5] [--min-points 10]` | Dense zones of points. |
+| `kikolens spatial FILE VALUE [--k 8]` | Moran's I and Getis-Ord hot and cold spots for a numeric column. |
+| `kikolens geo-grid FILE [--value COL] [--cell-km 10] [--agg mean]` | Summary by square cells. |
 | `kikolens panel SOURCE [PANEL.json] [--format html\|pptx\|docx] [--where "region in North,West"] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables as a web page, a PowerPoint with native charts or a Word document (the last two need `kikolens[office]`); without a definition, one is suggested from the data. `--where` keeps only matching rows and can be repeated. |
 | `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE] [--pdf FILE]` | Build the HTML report, and a PDF with `--pdf`. |
 | `kikolens survival SOURCE DURATION EVENT [--group COL]` | Kaplan-Meier medians and a log-rank test between groups. |

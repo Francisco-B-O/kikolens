@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography"]
 
 
 @pytest.fixture(scope="module")
@@ -662,3 +662,17 @@ def test_network_page_runs_every_tab():
         at.button(key=key).click().run()
         assert_clean(at)
     assert all(k in at.session_state for k in ("nw_path", "nw_links", "nw_rob"))
+
+
+def test_geography_page_runs_every_tab():
+    from tests.test_geo import two_cities
+    d = two_cities(300)
+    at = open_page(d, "Geography")
+    assert_clean(at)
+    at.button(key="geo_dist_go").click().run()
+    at.button(key="geo_zones_go").click().run()
+    at.button(key="geo_spatial_go").click().run()
+    at.button(key="geo_grid_go").click().run()
+    assert_clean(at)
+    assert at.session_state["geo_zones"][1]["zones"] == 2 and at.session_state["geo_spatial"][1]["moran"] != 0
+    assert at.session_state["geo_dist"][1]["median_km"] >= 0 and at.session_state["geo_grid"][1]["cells"] > 1

@@ -554,6 +554,48 @@ def network_robustness(df: pd.DataFrame, source: str, target: str, weight: str |
     return _wrap("network robustness", nw.robustness(df, source, target, weight, steps))
 
 
+def _geo_pair(df: pd.DataFrame, lat: str | None, lon: str | None) -> tuple:
+    """Las columnas de latitud y longitud: las que se dan o las que se detectan por el nombre y el rango."""
+    if lat and lon:
+        return lat, lon
+    from kikolens.analyze import geo
+    found = geo.detect_coordinates(df)
+    if not found:
+        raise ValueError("No latitude and longitude columns were found; give them with lat= and lon=.")
+    return found[0]
+
+
+def geo_check(df: pd.DataFrame, lat: str | None = None, lon: str | None = None) -> Result:
+    """Qué filas tienen coordenadas utilizables (y qué huele mal: intercambiadas, fuera de rango, 0,0, repetidas). Detecta las columnas si no se dan."""
+    from kikolens.analyze import geo
+    pair = _geo_pair(df, lat, lon)
+    return _wrap("geo check", geo.check_coordinates(df, *pair), pair=pair)
+
+
+def geo_distances(df: pd.DataFrame, centers, lat: str | None = None, lon: str | None = None, **kwargs) -> Result:
+    """Kilómetros hasta un punto `(lat, lon)` o hasta el centro más cercano de una tabla (`center_lat=`, `center_lon=`, `center_name=`), con el reparto por centro."""
+    from kikolens.analyze import geo
+    return _wrap("geo distances", geo.distances(df, *_geo_pair(df, lat, lon), centers, **kwargs))
+
+
+def geo_hotspots(df: pd.DataFrame, value: str | None = None, lat: str | None = None, lon: str | None = None, **kwargs) -> Result:
+    """Zonas con muchos puntos próximos (DBSCAN sobre la esfera)."""
+    from kikolens.analyze import geo
+    return _wrap("geo hotspots", geo.hotspots(df, *_geo_pair(df, lat, lon), value, **kwargs))
+
+
+def spatial_autocorrelation(df: pd.DataFrame, value: str, lat: str | None = None, lon: str | None = None, **kwargs) -> Result:
+    """I de Moran y focos calientes y fríos (Getis-Ord Gi*) de una columna numérica."""
+    from kikolens.analyze import geo
+    return _wrap("spatial autocorrelation", geo.autocorrelation(df, *_geo_pair(df, lat, lon), value, **kwargs))
+
+
+def geo_grid(df: pd.DataFrame, value: str | None = None, lat: str | None = None, lon: str | None = None, **kwargs) -> Result:
+    """Resumen por celdas cuadradas de unos kilómetros."""
+    from kikolens.analyze import geo
+    return _wrap("geo grid", geo.grid_summary(df, *_geo_pair(df, lat, lon), value, **kwargs))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid")
