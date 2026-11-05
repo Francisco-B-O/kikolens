@@ -1,0 +1,1125 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Private, local-first data analysis with AutoML, forecasting, causal tools and local language models.">
+      
+      
+      
+        <link rel="canonical" href="https://francisco-b-o.github.io/kikolens/docs/python-api/">
+      
+      
+        <link rel="prev" href="../cli/">
+      
+      
+        <link rel="next" href="../workflows/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Python API and Jupyter - KikoLens</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#python-api-and-jupyter" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="KikoLens" class="md-header__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KikoLens
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Python API and Jupyter
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_1">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="KikoLens" class="md-nav__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KikoLens
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using KikoLens
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using KikoLens
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command line
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API and Jupyter
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API and Jupyter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#magics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Magics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce a session
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup and development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Setup and development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#magics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Magics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reproduce-a-session" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reproduce a session
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="python-api-and-jupyter">Python API and Jupyter<a class="headerlink" href="#python-api-and-jupyter" title="Permanent link">&para;</a></h1>
+<p>Everything the dashboard does is also available from Python, so you can use KikoLens inside a notebook (Jupyter, VS Code, Colab) or a script. Nothing leaves your machine.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">kikolens</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">kl</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s2">"sales.csv"</span><span class="p">)</span>        <span class="c1"># a file, a link, a Google Sheet, a database...</span>
+<span class="n">kl</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>                   <span class="c1"># quality score, problems and a profile of every column</span>
+<span class="n">pilot</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">autopilot</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>         <span class="c1"># a first full analysis</span>
+<span class="n">lab</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">lab</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">"revenue"</span><span class="p">)</span>      <span class="c1"># compare models; lab.leaderboard, lab.pipeline, lab.metrics</span>
+<span class="n">lab</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>                       <span class="c1"># the main chart of any result</span>
+</code></pre></div>
+<p>Run <code>kikolens jupyter</code> to get a quickstart notebook that builds its own sample data and walks through the calls below (it opens JupyterLab if it is installed: <code>pip install "kikolens[jupyter]"</code>).</p>
+<h2 id="results">Results<a class="headerlink" href="#results" title="Permanent link">&para;</a></h2>
+<p>Every analysis returns a <code>Result</code>: a dictionary with attribute access that shows itself nicely in a notebook (a summary, notes and the main table) and keeps everything the analysis computed.</p>
+<div class="highlight"><pre><span></span><code><span class="n">res</span> <span class="o">=</span> <span class="n">kl</span><span class="o">.</span><span class="n">forecast</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="s2">"date"</span><span class="p">,</span> <span class="s2">"revenue"</span><span class="p">,</span> <span class="n">horizon</span><span class="o">=</span><span class="mi">14</span><span class="p">)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">summary</span>      <span class="c1"># the sentence the dashboard shows</span>
+<span class="n">res</span><span class="o">.</span><span class="n">table</span>        <span class="c1"># the main table (here the forecast with its range)</span>
+<span class="n">res</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>       <span class="c1"># the main chart, a Plotly figure</span>
+<span class="n">res</span><span class="o">.</span><span class="n">best</span>         <span class="c1"># any other field: res.leaderboard, res.series ...</span>
+</code></pre></div>
+<p>An unknown field raises an error that lists what is available. Text from your data is escaped in the notebook display.</p>
+<h2 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Call</th>
+<th style="text-align: left;">What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><code>load(source, **kwargs)</code></td>
+<td style="text-align: left;">Read a dataset (the same sources as the dashboard).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>query(df, "select ... from df")</code></td>
+<td style="text-align: left;">Read-only SQL; the table is called <code>df</code>. Returns a DataFrame.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ask(df, "question")</code></td>
+<td style="text-align: left;">A local model (Ollama) writes the SQL and it is run.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>profile(df)</code></td>
+<td style="text-align: left;">Quality score, problems and column profile.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>dictionary(df, descriptions=None)</code></td>
+<td style="text-align: left;">A data dictionary: one row per column.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>scan_privacy(df)</code></td>
+<td style="text-align: left;">Columns that look like personal data.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>autopilot(df, target=None)</code></td>
+<td style="text-align: left;">Clean, find patterns, model a column and forecast dates.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>lab(df, target, **kwargs)</code></td>
+<td style="text-align: left;">The model lab; keyword arguments as in the lab (<code>models</code>, <code>folds</code>, <code>tune</code>, <code>drop</code>, ...).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>forecast(df, date, value, horizon=12, agg="mean")</code></td>
+<td style="text-align: left;">Five models tested on the past; the best one forecasts.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>anomalies(df, **kwargs)</code></td>
+<td style="text-align: left;">Unusual rows and why.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>spikes(df, date, value)</code></td>
+<td style="text-align: left;">Unusual periods once trend and season are removed.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>drift(reference, current)</code></td>
+<td style="text-align: left;">Which columns changed between two datasets.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>why(df, metric, date, **kwargs)</code></td>
+<td style="text-align: left;">Why a figure changed between two periods.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>regress(df, target, features=None)</code></td>
+<td style="text-align: left;">Linear (number) or logistic (two values) regression, explained.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>survival(df, duration, event, group=None)</code></td>
+<td style="text-align: left;">Kaplan-Meier curves and a log-rank test.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>cohorts(df, user, date)</code> / <code>rfm(df, customer, date, amount)</code></td>
+<td style="text-align: left;">Retention and customer segments.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>distribution(series)</code></td>
+<td style="text-align: left;">Which distribution fits a column best.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>chart(df, "request")</code></td>
+<td style="text-align: left;">A chart described in words (needs Ollama): <code>res.figure</code>, <code>res.table</code>, <code>res.spec</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>analyst(df)</code></td>
+<td style="text-align: left;">A conversation: <code>bot = kl.analyst(df); bot.ask("why did revenue fall?")</code> returns a turn with <code>.text</code>, <code>.figure</code>, <code>.table</code>, <code>.sql</code> and the steps taken in <code>.report</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>classify_text(texts, ["a", "b"])</code></td>
+<td style="text-align: left;">Zero-shot classification of texts with the local model.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>formula(df, "revenue per unit")</code></td>
+<td style="text-align: left;">A formula for a new column described in words, already checked with the safe interpreter (<code>name</code>, <code>expression</code>, <code>preview</code>).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>link(left, right, left_on, right_on)</code></td>
+<td style="text-align: left;">Fuzzy match by names; <code>res.merged</code> has the joined table.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>select_features(df, target)</code></td>
+<td style="text-align: left;">Which columns to keep: consensus of four methods and a cross-validated curve; <code>res.recommended</code>, <code>res.removable</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>segment(df, "gmm" \| "hierarchical" \| "dbscan")</code></td>
+<td style="text-align: left;">Segments with each group described in words; <code>res.labels</code> is the group of every row.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ab_sequential(df, group, outcome, control, order=None)</code></td>
+<td style="text-align: left;">A sequential A/B test that stays valid when checked after every observation.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>granger(df, date, cause, effect)</code> / <code>forecast_drivers(df, date, target, drivers, scenario=...)</code></td>
+<td style="text-align: left;">Granger test; forecast using other columns, with what-if scenarios.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>effect(df, treatment, outcome, covariates=None, method="aipw")</code></td>
+<td style="text-align: left;">Causal effect with five estimators side by side; <code>res.effect</code>, <code>res.interval</code>, <code>res.table</code>, <code>res.balance</code>, <code>res.e_value</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>uplift(df, treatment, outcome, covariates=None)</code></td>
+<td style="text-align: left;">Effect per row and who to target; <code>res.cate</code>, <code>res.deciles</code>, <code>res.qini</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>discontinuity(df, running, outcome, cutoff)</code></td>
+<td style="text-align: left;">Effect of crossing a threshold, with a bandwidth sweep.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>synthetic_control(df, unit, time, outcome, treated_unit, intervention)</code></td>
+<td style="text-align: left;">Effect on one unit against a synthetic control; <code>res.p_value</code> comes from placebos.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>instrumental(df, outcome, endogenous, instruments, covariates=None)</code></td>
+<td style="text-align: left;">Two-stage least squares; <code>res.first_stage_f</code> tells whether the instrument is strong.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>likert(df, items)</code> / <code>cronbach(df, items)</code> / <code>nps(df, score, group=None)</code> / <code>crosstab(df, row, column)</code></td>
+<td style="text-align: left;">Survey basics: scale summary, reliability, Net Promoter Score, cross-tab with residuals.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>key_drivers(df, outcome, items)</code> / <code>compare_items(df, items, group)</code> / <code>response_quality(df, items)</code></td>
+<td style="text-align: left;">What matters most for an overall rating (<code>res.table</code> with importance and <code>priority</code>); questions that differ between groups; answer-quality flags.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>concepts()</code> / <code>concept(name, seed=0, **params)</code></td>
+<td style="text-align: left;">The concept lab: a table of simulations, and one run with <code>res.summary</code>, <code>res.lesson</code>, <code>res.figure</code> and its numbers.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>glossary(term=None, lang="en")</code></td>
+<td style="text-align: left;">The glossary: a table of all terms, the definition of one (<code>"p_value"</code> or <code>"p-value"</code>), or the terms that match a word.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>panel(df, path=None, definition=None, where=None)</code></td>
+<td style="text-align: left;">A panel of metrics, charts and tables. With a <code>path</code> ending in <code>.html</code> it writes the file; without one it returns the <code>Panel</code> to add tiles to.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>stationarity(df, date, value)</code> / <code>autocorrelation(df, date, value)</code></td>
+<td style="text-align: left;">ADF and KPSS with suggested differences; autocorrelation with Ljung-Box.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>governance()</code> / <code>governance("promote", "model", to="production")</code></td>
+<td style="text-align: left;">The governance overview, or one action (<code>register</code>, <code>update</code>, <code>validate</code>, <code>approve</code>, <code>checks</code>, <code>promote</code>, <code>rollback</code>). <code>model_card("model")</code> returns the card as Markdown.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>topics(df, text, k=None, date=None)</code></td>
+<td style="text-align: left;">Topics (<code>res.table</code>, <code>res.assignments</code>, <code>res.coherence</code>; with <code>date</code>, <code>res.over_time</code>). <code>near_duplicates(df, text)</code>, <code>similar(df, text, "a phrase")</code>, <code>text_patterns(df, text)</code>, <code>keyphrases(df, text)</code> and <code>readability(df, text)</code> work on one text column.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>network(df, source, target, weight=None, directed=False)</code></td>
+<td style="text-align: left;">Network analysis from a list of links: <code>res.table</code> (PageRank, betweenness, clustering, community per node), <code>res.communities</code>, <code>res.modularity</code>. <code>network_path</code>, <code>suggest_links</code> and <code>network_robustness</code> take the same columns.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>geo_check(df)</code> / <code>geo_distances(df, centers)</code> / <code>geo_hotspots(df)</code> / <code>spatial_autocorrelation(df, value)</code> / <code>geo_grid(df)</code></td>
+<td style="text-align: left;">Geography on a table with latitude and longitude columns, found by name (or give <code>lat=</code> and <code>lon=</code>). <code>centers</code> is a <code>(lat, lon)</code> pair or a table with <code>center_lat=</code>, <code>center_lon=</code>, <code>center_name=</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>experiment(df, group, outcome, control, pre=None, date=None, segments=None)</code></td>
+<td style="text-align: left;">Full A/B analysis; <code>res.verdict</code>, <code>res.table</code>, <code>res.srm</code>, and with the options <code>res.cuped</code>, <code>res.over_time</code>, <code>res.segments</code>. <code>srm(df, group)</code> and <code>cuped(df, group, outcome, pre, control)</code> run one step.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>decompose_stl(df, date, value, period=None)</code></td>
+<td style="text-align: left;">Robust STL; <code>res.components</code>, <code>res.seasonal_strength</code>, <code>res.trend_strength</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>arima(df, date, value, order=None, seasonal=(0,0,0), period=None, horizon=12)</code></td>
+<td style="text-align: left;">Seasonal ARIMA; without <code>order</code> it searches (<code>res.candidates</code>). <code>res.forecast</code>, <code>res.backtest</code>, <code>res.ljung_box</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>recommender(df, user, item, rating=None)</code></td>
+<td style="text-align: left;">An item-based recommender: <code>.recommend(person)</code>, <code>.similar_items(item)</code>, <code>.popular()</code>.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>synthesize(df, n=None)</code></td>
+<td style="text-align: left;">Synthetic data; <code>res.data</code> is the table and <code>res.report</code> the fidelity and privacy figures.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>runs(target=None)</code></td>
+<td style="text-align: left;">The history of model lab runs (the dashboard and <code>kikolens lab</code> record them).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>save_model(lab_result, df, name)</code> / <code>score(df, "name")</code></td>
+<td style="text-align: left;">Keep a model and predict with it later. Only open model files you trust.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="magics">Magics<a class="headerlink" href="#magics" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><span class="o">%</span><span class="n">load_ext</span> <span class="n">kikolens</span>
+<span class="o">%</span><span class="n">kl_profile</span> <span class="n">df</span>            <span class="c1"># quality of a DataFrame</span>
+<span class="o">%</span><span class="n">kl_autopilot</span> <span class="n">df</span> <span class="n">revenue</span>  <span class="c1"># a first analysis, predicting 'revenue'</span>
+<span class="o">%</span><span class="n">kl_privacy</span> <span class="n">df</span>            <span class="c1"># columns that look like personal data</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">%%</span><span class="n">kl_sql</span> <span class="n">df</span>
+<span class="n">select</span> <span class="n">region</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">revenue</span><span class="p">)</span> <span class="k">as</span> <span class="n">revenue</span> <span class="kn">from</span><span class="w"> </span><span class="nn">df</span> <span class="n">group</span> <span class="n">by</span> <span class="n">region</span>
+</code></pre></div>
+<p>The cell magic takes the name of a DataFrame and runs the body as a read-only query.</p>
+<h2 id="reproduce-a-session">Reproduce a session<a class="headerlink" href="#reproduce-a-session" title="Permanent link">&para;</a></h2>
+<p>The dashboard's <em>Export</em> → <strong>Notebook</strong> tab and <code>kikolens notebook data.csv analysis.ipynb --recipe recipe.json --target revenue</code> write a notebook that reloads the data, repeats every recipe step and trains a model.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.suggest", "content.code.copy"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

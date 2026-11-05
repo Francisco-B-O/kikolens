@@ -1,0 +1,1327 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Private, local-first data analysis with AutoML, forecasting, causal tools and local language models.">
+      
+      
+      
+        <link rel="canonical" href="https://francisco-b-o.github.io/kikolens/docs/workflows/">
+      
+      
+        <link rel="prev" href="../python-api/">
+      
+      
+        <link rel="next" href="../api-server/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Workflows - KikoLens</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#workflows" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="KikoLens" class="md-header__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KikoLens
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Workflows
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_1">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="KikoLens" class="md-nav__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KikoLens
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using KikoLens
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using KikoLens
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command line
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API and Jupyter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-from-a-messy-file-to-a-model-you-can-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. From a messy file to a model you can reuse
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-score-a-new-quarter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Score a new quarter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-understand-what-drives-a-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Understand what drives a result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-enrich-test-and-ship" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Enrich, test and ship
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-watch-a-data-feed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Watch a data feed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-read-customer-comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Read customer comments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-start-from-a-file-you-have-never-seen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Start from a file you have never seen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-retention-and-a-campaign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Retention and a campaign
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-why-did-revenue-drop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Why did revenue drop?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-put-a-model-behind-a-small-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Put a model behind a small API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-share-data-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Share data safely
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-run-the-same-analysis-every-morning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Run the same analysis every morning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-stop-an-ab-test-as-soon-as-you-can" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Stop an A/B test as soon as you can
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-what-should-i-keep-for-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. What should I keep for the model?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-share-data-you-cannot-share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Share data you cannot share
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-talk-to-your-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Talk to your data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-from-a-script-or-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring from a script or CI
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup and development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Setup and development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-from-a-messy-file-to-a-model-you-can-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. From a messy file to a model you can reuse
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-score-a-new-quarter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Score a new quarter
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-understand-what-drives-a-result" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Understand what drives a result
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-enrich-test-and-ship" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Enrich, test and ship
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-watch-a-data-feed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Watch a data feed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-read-customer-comments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Read customer comments
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-start-from-a-file-you-have-never-seen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Start from a file you have never seen
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-retention-and-a-campaign" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Retention and a campaign
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-why-did-revenue-drop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Why did revenue drop?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-put-a-model-behind-a-small-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Put a model behind a small API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-share-data-safely" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Share data safely
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-run-the-same-analysis-every-morning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Run the same analysis every morning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-stop-an-ab-test-as-soon-as-you-can" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Stop an A/B test as soon as you can
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-what-should-i-keep-for-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. What should I keep for the model?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-share-data-you-cannot-share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Share data you cannot share
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-talk-to-your-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Talk to your data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-from-a-script-or-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring from a script or CI
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="workflows">Workflows<a class="headerlink" href="#workflows" title="Permanent link">&para;</a></h1>
+<p>Six end-to-end paths that use the sample files in <code>examples/</code>. Each can be done in the dashboard or from the terminal.</p>
+<h2 id="1-from-a-messy-file-to-a-model-you-can-reuse">1. From a messy file to a model you can reuse<a class="headerlink" href="#1-from-a-messy-file-to-a-model-you-can-reuse" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> clean <code>sales_demo.csv</code>, find a good model for <code>revenue</code>, and keep it.</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Dashboard</th>
+<th style="text-align: left;">Terminal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><em>Quality and cleaning</em>: press <strong>Auto-clean</strong> (trims text, drops the 7 duplicate rows, turns <code>date</code> into dates and <code>unit_price</code> from text into numbers).</td>
+<td style="text-align: left;"><code>kikolens clean examples/sales_demo.csv --output clean.csv --save-recipe recipe.json</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><em>Model lab</em>: choose <code>revenue</code>, leave out <code>units</code>, run it. Read the leaderboard, then the diagnostics.</td>
+<td style="text-align: left;"><code>kikolens lab clean.csv revenue --exclude units --register sales-model</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><em>Predict</em>: <strong>Save to my models</strong>.</td>
+<td style="text-align: left;">(already saved by <code>--register</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Why leave out <code>units</code>? In this synthetic data it is almost a copy of <code>revenue</code>, so a model that includes it just reads the answer off that column and looks excellent (R² around 0.9 from one column). Leaving it out forces the model to learn from the date, region, channel, price and discount, which is the question that matters if you want to predict revenue before the units are known. The lab's leakage check looks for columns that are <em>nearly perfect</em> copies of the target; a column like <code>units</code> that is highly informative but not identical is for you to judge.</p>
+<p>When a CSV is read, dates and numbers written as text (<code>2023-01-01</code>, <code>1,200</code>) are recognized and used as dates and numbers when modeling; the lab tells you which columns it read that way. The recipe and the model package keep the cleaning steps and the columns the model expects, so you do not need to remember either.</p>
+<h2 id="2-score-a-new-quarter">2. Score a new quarter<a class="headerlink" href="#2-score-a-new-quarter" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> apply the same cleaning to <code>sales_new_quarter.csv</code>, predict its revenue, and check whether the model can still be trusted.</p>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>apply<span class="w"> </span>examples/sales_new_quarter.csv<span class="w"> </span>recipe.json<span class="w"> </span>--output<span class="w"> </span>new_clean.csv
+kikolens<span class="w"> </span>score<span class="w"> </span>new_clean.csv<span class="w"> </span>sales-model<span class="w"> </span>--output<span class="w"> </span>predictions.csv
+kikolens<span class="w"> </span>drift<span class="w"> </span>clean.csv<span class="w"> </span>new_clean.csv<span class="w"> </span>--output<span class="w"> </span>drift.csv
+</code></pre></div>
+<p>In the dashboard: <em>Predict</em> with <strong>Predict a file</strong> and the <em>Another file</em> option (tick <em>Apply the cleaning steps used for training first</em> to skip the first command), then <em>Compare data</em> with <strong>Another file against the open one</strong>.</p>
+<p>What you will see:</p>
+<ul>
+<li><code>score</code> warns that the dates are later than anything in training and that many <code>unit_price</code> values are above the training range.</li>
+<li><code>drift</code> reports <code>channel</code>, <code>region</code> and <code>unit_price</code> as drifted (more online sales, a bigger West share, higher prices), and <code>revenue</code> as well because it trends upward. It exits with code <code>2</code>.</li>
+<li>The predictions still run, but they are less accurate: in our run the average error on the new quarter was about twice the error on the held-out test, and only a little over half of the actual values fell inside the predicted range that should hold about 90% of the time. That gap is exactly what the warnings and the drift report are telling you. Retrain with recent data before relying on them.</li>
+</ul>
+<h2 id="3-understand-what-drives-a-result">3. Understand what drives a result<a class="headerlink" href="#3-understand-what-drives-a-result" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> find out which factors are really associated with revenue, without fooling yourself.</p>
+<ol>
+<li><em>Experiments</em> → <strong>What relates to...</strong> → target <code>revenue</code> (terminal: <code>kikolens screen clean.csv revenue</code>). All columns are tested together and corrected for chance. In the sample data only <code>units</code> is related (rank correlation 0.95); <code>unit_price</code>, <code>region</code> and <code>discount</code> are not, even though each would have looked "interesting" in a chart.</li>
+<li><em>Experiments</em> → <strong>Compare groups</strong>: revenue by <code>region</code>. The ANOVA gives p ≈ 0.27 and an effect size of 0.01 ("negligible"): the regional averages differ only as much as chance would produce with this many rows, and the page says that this does not prove there is no difference.</li>
+<li><em>Dimensions</em> → <strong>Redundant columns</strong>: <code>revenue</code> and <code>units</code> both get a VIF around 10.8 ("severe"), meaning each is mostly explained by the other. Do not read one as an explanation of the other.</li>
+<li><em>Model lab</em> → <strong>Explain</strong>: permutation importance and the partial dependence of the top feature, for the model with <code>units</code> left out.</li>
+</ol>
+<h2 id="4-enrich-test-and-ship">4. Enrich, test and ship<a class="headerlink" href="#4-enrich-test-and-ship" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> join manager targets to the sales, compare channels with an A/B test, and share the result.</p>
+<ol>
+<li><em>Transform</em> → <strong>Combine</strong>: upload <code>regions.csv</code>, join on <code>region</code> (left). Each row now carries its <code>manager</code> and <code>target</code>.</li>
+<li><em>Transform</em> → <strong>Columns</strong> → <strong>Formula</strong>: <code>share_of_target</code> = <code>revenue / target</code>.</li>
+<li><em>Experiments</em> → <strong>A/B test</strong>: group <code>channel</code>, control <code>Store</code>, outcome <code>revenue</code> (terminal: <code>kikolens ab clean.csv channel revenue --control Store</code>). In the sample data Online averages 1,888 against 1,881 for Store (+0.4%, 95% interval −41 to +55, p ≈ 0.78): no reliable difference. The page also tells you that detecting a gap this small would take on the order of 24,000 rows per group, which is the honest answer to "should we invest in this channel because of this data?".</li>
+<li><em>Anomalies</em>: review the 2% most unusual days (<code>kikolens anomalies clean.csv --share 2</code>); each comes with the reason it was flagged. Remove them only if they are errors, not real events.</li>
+<li><em>Project</em> → <strong>Save</strong>: write your notes, tick <em>Include trained models</em> and download the <code>.kikolens</code> file. <em>Report</em> builds the HTML page for others.</li>
+</ol>
+<p>The steps in 1 and 2 are recorded in the recipe; the join needs <code>regions.csv</code> supplied again when you replay it (<code>kikolens apply data.csv recipe.json --output out.csv -d examples/regions.csv</code>).</p>
+<h2 id="5-watch-a-data-feed">5. Watch a data feed<a class="headerlink" href="#5-watch-a-data-feed" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> be told when a data source that keeps being updated stops looking like the data a model was trained on.</p>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>clean<span class="w"> </span>examples/sales_demo.csv<span class="w"> </span>--output<span class="w"> </span>clean.csv<span class="w"> </span>--save-recipe<span class="w"> </span>recipe.json
+kikolens<span class="w"> </span>lab<span class="w"> </span>clean.csv<span class="w"> </span>revenue<span class="w"> </span>--exclude<span class="w"> </span>units<span class="w"> </span>--register<span class="w"> </span>sales-model
+kikolens<span class="w"> </span>validate<span class="w"> </span>clean.csv<span class="w"> </span>--save<span class="w"> </span>rules.json<span class="w">                       </span><span class="c1"># rules suggested by the data</span>
+kikolens<span class="w"> </span>monitor<span class="w"> </span>create<span class="w"> </span>sales-feed<span class="w"> </span>clean.csv<span class="w"> </span>--model<span class="w"> </span>sales-model<span class="w"> </span>--recipe<span class="w"> </span>recipe.json<span class="w"> </span>--rules<span class="w"> </span>rules.json
+kikolens<span class="w"> </span>monitor<span class="w"> </span>run<span class="w"> </span>sales-feed<span class="w">                                     </span><span class="c1"># the baseline against itself: OK, exit code 0</span>
+kikolens<span class="w"> </span>monitor<span class="w"> </span>run<span class="w"> </span>sales-feed<span class="w"> </span>--source<span class="w"> </span>examples/sales_new_quarter.csv
+</code></pre></div>
+<p>The last command prints <code>ALERT</code> and exits with code <code>2</code>. Its alerts: drift (5 of 6 columns), the drop from 540 rows to 120, the dates and prices outside what the model saw, and the average prediction up by 22%. The rules still pass: nothing in the new quarter is invalid, it is just different. In the dashboard, <em>Models</em> → <em>Monitoring</em> shows the same history as a chart and a table; <em>Schedule it</em> prints the commands to run the check every day or every hour, and <code>kikolens monitor watch sales-feed</code> keeps running and checks whenever the file changes. Add <code>--webhook https://...</code> if you want a short message posted when a check ends in an alert.</p>
+<h2 id="6-read-customer-comments">6. Read customer comments<a class="headerlink" href="#6-read-customer-comments" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> find out what people complain about in <code>reviews.csv</code> and what goes with a low rating.</p>
+<ol>
+<li><em>Analysis</em> → <em>Text</em> → <strong>Terms</strong>: the commonest words (<code>kikolens text examples/reviews.csv review</code>). Search a word, such as <code>courier</code>, to read it in context.</li>
+<li><strong>By group</strong>, <em>Terms that go with a higher or lower number</em>, choosing <code>rating</code>: comments that mention <code>courier</code> or <code>tracking</code> average about 2 stars against about 3.6 for the rest, while <code>great</code> and <code>battery</code> average about 4.7. That is the shipping problem and the product strength, without anyone having tagged them.</li>
+<li><strong>Themes</strong> with 3 groups gives the topics the comments fall into, each with its key terms and an example.</li>
+<li><strong>Classify</strong>, predicting <code>rating</code>: it reaches about 44% against 30% for always guessing the commonest rating, which is a modest gain; the page tells you when a classifier is no better than guessing. Ratings are noisy (one star either way), so the text carries only part of the signal.</li>
+<li><strong>Summary</strong> (needs Ollama) asks the local model for the main themes and complaints of a sample.</li>
+</ol>
+<h2 id="7-start-from-a-file-you-have-never-seen">7. Start from a file you have never seen<a class="headerlink" href="#7-start-from-a-file-you-have-never-seen" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> know what is in a new file in two minutes.</p>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>autopilot<span class="w"> </span>examples/sales_demo.csv<span class="w"> </span>--clean<span class="w"> </span>clean.csv<span class="w"> </span>--recipe<span class="w"> </span>recipe.json<span class="w"> </span>--pdf<span class="w"> </span>summary.pdf
+</code></pre></div>
+<p>It cleans, guesses that <code>revenue</code> is the column to predict, compares four models against a baseline, forecasts the series and writes a PDF. In the dashboard, <em>Data</em> → <em>Autopilot</em> does the same and one button applies its cleaning to your data. From there, the <em>Model lab</em> is the careful version.</p>
+<h2 id="8-retention-and-a-campaign">8. Retention and a campaign<a class="headerlink" href="#8-retention-and-a-campaign" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> see whether customers come back, who is worth keeping, and whether a campaign worked.</p>
+<ol>
+<li><em>Analysis</em> → <em>Customers</em> → <strong>Retention</strong> with your customer and date columns: the share of each monthly cohort still active later.</li>
+<li><strong>Segments (RFM)</strong> shows the segments that hold most of the value and who is at risk of leaving.</li>
+<li><em>Analysis</em> → <em>Impact</em> → <strong>Before and after a date</strong>: pick the metric and the campaign date. Add control series, such as a region the campaign did not reach, to make the estimate much sturdier. The range comes from how wrong the method was on earlier periods.</li>
+</ol>
+<p>From the terminal: <code>kikolens cohorts orders.csv user date</code>, <code>kikolens rfm orders.csv user date amount --output segments.csv</code> and <code>kikolens impact daily.csv date sales --at 2024-06-01 --control visits</code>.</p>
+<h2 id="9-why-did-revenue-drop">9. Why did revenue drop?<a class="headerlink" href="#9-why-did-revenue-drop" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> find which part of the business moved a figure.</p>
+<ol>
+<li><em>Analysis</em> → <em>Why it changed</em>, measure a total of <code>revenue</code>, with the date column. The two periods start as the last third of the dates against the one before.</li>
+<li>The ranking tells you which column concentrates the change; the waterfall shows each value's contribution, and the combinations table names the regions and channels that moved most together.</li>
+</ol>
+<p>From the terminal: <code>kikolens why sales.csv date --metric revenue --before 2024-03-01,2024-05-01 --after 2024-05-01,2024-07-01</code>.</p>
+<h2 id="10-put-a-model-behind-a-small-api">10. Put a model behind a small API<a class="headerlink" href="#10-put-a-model-behind-a-small-api" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>lab<span class="w"> </span>clean.csv<span class="w"> </span>revenue<span class="w"> </span>--register<span class="w"> </span>sales-model
+kikolens<span class="w"> </span>serve<span class="w"> </span>sales-model<span class="w"> </span>--port<span class="w"> </span><span class="m">8000</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>localhost:8000/predict<span class="w"> </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">     </span>-d<span class="w"> </span><span class="s1">'{"rows": [{"date": "2023-06-01", "region": "North", "channel": "Online", "units": 120, "unit_price": 3200, "discount": 0.1}]}'</span>
+</code></pre></div>
+<p>The reply has the predictions (with a range for regression) and warnings about missing columns, unseen categories or out-of-range values. The server listens only on this computer; to open it to the network use <code>--host 0.0.0.0 --token SECRET</code> and send <code>Authorization: Bearer SECRET</code>. Only serve model files you trust, because opening one can run code.</p>
+<h2 id="11-share-data-safely">11. Share data safely<a class="headerlink" href="#11-share-data-safely" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> hand a dataset to someone else without exposing people.</p>
+<ol>
+<li><em>Data</em> → <em>Privacy</em> (or <code>kikolens privacy customers.csv --scan</code>) lists the columns that hold personal data and why they were flagged.</li>
+<li>Choose for each: hash the customer email (it stays usable to count and join), mask the card number, remove the full name. The steps join the recipe.</li>
+<li>The <strong>How identifiable</strong> tab (<code>--k 5 --quasi age,city</code>) shows whether age, postal code and city together still single someone out. If many rows are alone in their group, group the ages into bands (<em>Transform</em> → bins) or drop a column, and check again.</li>
+<li><em>Export</em> → <strong>Data dictionary</strong> documents what each column means for the person receiving it.</li>
+</ol>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>privacy<span class="w"> </span>customers.csv<span class="w"> </span>--hash<span class="w"> </span>email<span class="w"> </span>--mask<span class="w"> </span>card<span class="w"> </span>--drop<span class="w"> </span>full_name<span class="w"> </span>--salt<span class="w"> </span><span class="s2">"</span><span class="nv">$SALT</span><span class="s2">"</span><span class="w"> </span>--output<span class="w"> </span>shared.csv<span class="w"> </span>--recipe<span class="w"> </span>privacy.json
+kikolens<span class="w"> </span>privacy<span class="w"> </span>shared.csv<span class="w"> </span>--k<span class="w"> </span><span class="m">5</span><span class="w"> </span>--quasi<span class="w"> </span>age,city
+</code></pre></div>
+<p>Keep <code>privacy.json</code> private: it contains the salt.</p>
+<h2 id="12-run-the-same-analysis-every-morning">12. Run the same analysis every morning<a class="headerlink" href="#12-run-the-same-analysis-every-morning" title="Permanent link">&para;</a></h2>
+<p>Put the steps in a pipeline file and let a scheduler run it (see <em>Pipeline files</em> in the command reference):</p>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>run<span class="w"> </span>pipeline.json<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Something changed: look at out/log.json"</span>
+</code></pre></div>
+<h2 id="13-stop-an-ab-test-as-soon-as-you-can">13. Stop an A/B test as soon as you can<a class="headerlink" href="#13-stop-an-ab-test-as-soon-as-you-can" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> know whether a variant wins without waiting for a fixed number of visitors, and without fooling yourself by peeking.</p>
+<ol>
+<li><em>Analysis</em> → <em>Sequential tests</em> → <strong>Planner</strong>: with a 10% conversion rate and a change of 2 points, compare the fixed-size test with the sequential one and see that false alarms stay near 5% even when checked after every visitor.</li>
+<li>Export the visits in order (one row per visitor, the variant and a 0/1 for conversion) and open <strong>Live test</strong>: the evidence line shows when it crosses the threshold, and the always-valid p-value and range say how much to trust the difference.</li>
+<li>Not sure the variants are equal? The <strong>Bandit simulator</strong> shows how much traffic would have gone to the winner while learning.</li>
+</ol>
+<p>From the terminal: <code>kikolens ab-seq visits.csv variant converted control --order timestamp</code>.</p>
+<h2 id="14-what-should-i-keep-for-the-model">14. What should I keep for the model?<a class="headerlink" href="#14-what-should-i-keep-for-the-model" title="Permanent link">&para;</a></h2>
+<ol>
+<li><em>Models</em> → <em>Feature selection</em> on your target. Four methods vote; the curve shows that a handful of columns is as good as all of them.</li>
+<li><em>Remove the columns I can leave out</em> adds a recipe step, so the same cut is applied to new data.</li>
+<li>Train with the <em>Model lab</em> using Bayesian tuning, and look at <em>Run history</em> to see that the new run beats the previous ones.</li>
+</ol>
+<h2 id="15-share-data-you-cannot-share">15. Share data you cannot share<a class="headerlink" href="#15-share-data-you-cannot-share" title="Permanent link">&para;</a></h2>
+<p><em>Privacy</em> removes or fingerprints the identifying columns; <strong>Synthetic data</strong> then generates a table with the same distributions and correlations whose rows are not people. Its report shows the fidelity, the exact and near copies of real rows, and how well a model trained on it does on real rows. <code>kikolens synth customers.csv shareable.csv --report</code>.</p>
+<h2 id="16-talk-to-your-data">16. Talk to your data<a class="headerlink" href="#16-talk-to-your-data" title="Permanent link">&para;</a></h2>
+<p><strong>Goal:</strong> get answers without knowing which section to open. Needs <a href="https://ollama.com/">Ollama</a> and a model (<code>ollama pull llama3.2</code>).</p>
+<ol>
+<li><em>Data</em> → <em>Analyst</em>, with the sales example loaded: "show the total revenue by region" draws a bar chart, and the <em>How the chart was built</em> expander shows the specification the model wrote.</li>
+<li>"How many rows per channel?" runs a SQL query and shows it.</li>
+<li>"What drives revenue?" hands over to the agent; open <em>Steps taken</em> to see each tool it chose and why, and download the trail as Python to repeat it without the model.</li>
+</ol>
+<p>From the terminal: <code>kikolens analyst sales.csv "why did revenue change?" --trail steps.py</code>, <code>kikolens chart sales.csv "average revenue by month" --output chart.html</code>, <code>kikolens classify-text reviews.csv review --labels shipping,quality,price</code>.</p>
+<h2 id="monitoring-from-a-script-or-ci">Monitoring from a script or CI<a class="headerlink" href="#monitoring-from-a-script-or-ci" title="Permanent link">&para;</a></h2>
+<p><code>kikolens drift</code> returns exit code <code>2</code> when the data changed a lot, <code>0</code> otherwise. A nightly job can compare the latest export with the data the model was trained on:</p>
+<div class="highlight"><pre><span></span><code>kikolens<span class="w"> </span>drift<span class="w"> </span>training.csv<span class="w"> </span>latest.csv<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Data changed: review before trusting predictions"</span>
+kikolens<span class="w"> </span>validate<span class="w"> </span>latest.csv<span class="w"> </span>rules.json<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Rules broken"</span>
+kikolens<span class="w"> </span>monitor<span class="w"> </span>run<span class="w"> </span>sales-feed<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"See kikolens monitor history sales-feed"</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.suggest", "content.code.copy"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

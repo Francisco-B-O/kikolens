@@ -1,0 +1,2120 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Private, local-first data analysis with AutoML, forecasting, causal tools and local language models.">
+      
+      
+      
+        <link rel="canonical" href="https://francisco-b-o.github.io/kikolens/docs/models/">
+      
+      
+        <link rel="prev" href="../api-server/">
+      
+      
+        <link rel="next" href="../configuration/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>How it works - KikoLens</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#how-the-methods-work" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="KikoLens" class="md-header__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KikoLens
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              How it works
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_1">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="KikoLens" class="md-nav__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KikoLens
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using KikoLens
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using KikoLens
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../dashboard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command line
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API and Jupyter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#preparing-the-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparing the data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AutoML
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model lab
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uncertainty-conformal-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uncertainty (conformal prediction)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#counterfactuals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counterfactuals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fairness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fairness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature search
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#survival" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survival
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distribution-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution fit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-optimisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayesian optimisation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sequential-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forecast-with-drivers-and-granger-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forecast with drivers and Granger tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature selection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segmentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommender
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synthetic data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-analyst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The analyst
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privacy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matching-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regression
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model health
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unusual-periods-in-a-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unusual periods in a series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparing-saved-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing saved models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it changed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-ab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayesian A/B
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neural-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neural network
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forecasting-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forecasting models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#statistical-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistical tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#missing-data-spellings-and-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing data, spellings and rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anomalies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anomalies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dimensions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparing-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing datasets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explaining-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explaining a model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#causal-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Causal inference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classical-time-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classical time series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model governance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text-mining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text mining
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#geography" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geography
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experiment checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#survey-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survey analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concept-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept lab
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clustering
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saved-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saved models
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup and development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Setup and development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#preparing-the-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preparing the data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#automl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AutoML
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model lab
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#uncertainty-conformal-prediction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uncertainty (conformal prediction)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#counterfactuals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Counterfactuals
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fairness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fairness
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-search" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature search
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#survival" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survival
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#distribution-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution fit
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-optimisation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayesian optimisation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sequential-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forecast-with-drivers-and-granger-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forecast with drivers and Granger tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#feature-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature selection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segmentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segmentation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommender
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synthetic data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-analyst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The analyst
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privacy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#matching-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Matching records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regression
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model health
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#unusual-periods-in-a-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unusual periods in a series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparing-saved-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing saved models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-it-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it changed
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#customers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bayesian-ab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Bayesian A/B
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#neural-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neural network
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#time-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forecasting-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forecasting models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#statistical-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistical tests
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#missing-data-spellings-and-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Missing data, spellings and rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#anomalies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anomalies
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dimensions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comparing-datasets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comparing datasets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#explaining-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explaining a model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#causal-inference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Causal inference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#classical-time-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classical time series
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#model-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model governance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#text-mining" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text mining
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#geography" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geography
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#experiment-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experiment checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#survey-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survey analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concept-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept lab
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#clustering" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Clustering
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recipes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recipes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#saved-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saved models
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="how-the-methods-work">How the methods work<a class="headerlink" href="#how-the-methods-work" title="Permanent link">&para;</a></h1>
+<h2 id="preparing-the-data">Preparing the data<a class="headerlink" href="#preparing-the-data" title="Permanent link">&para;</a></h2>
+<p>The classical models, the neural network and the lab share the same ideas:</p>
+<ol>
+<li>Rows with a missing target are dropped.</li>
+<li>Date columns become three numbers: days since 1970, month and weekday.</li>
+<li>Text columns are one-hot encoded; in AutoML and the neural network those with 50 or more distinct values are dropped, in the lab up to 30 categories are kept per column (rarer ones are grouped), columns with a different value in every row are dropped as identifiers, and so are text columns with more distinct values than half the rows.</li>
+<li>Missing numbers are filled with the median, then everything is standardized.</li>
+</ol>
+<p>The target is a <strong>regression</strong> target when it is numeric with more than 20 distinct values, and a <strong>classification</strong> target otherwise. A date target, or a classification target with more than 50 classes, is rejected with an explanation.</p>
+<p>Twenty percent of the rows are held out; every reported metric is measured on them.</p>
+<h2 id="automl">AutoML<a class="headerlink" href="#automl" title="Permanent link">&para;</a></h2>
+<p>In automatic mode the choice depends on the data: ridge regression for small regression problems, lasso when there are many columns for the rows available, random forest otherwise; logistic regression for small classification problems and gradient boosting for larger ones. The page shows the rationale. You can override it with random forest, gradient boosting, decision tree, ridge/logistic or lasso/KNN.</p>
+<h2 id="model-lab">Model lab<a class="headerlink" href="#model-lab" title="Permanent link">&para;</a></h2>
+<p>The lab exists to answer "which model should I trust?" without fooling yourself.</p>
+<ol>
+<li><strong>Split first.</strong> A share of the rows (20% by default) is set aside and not touched until the very end.</li>
+<li><strong>Preprocessing lives inside each model.</strong> Imputers, scalers and encoders are fitted only on the training part of each cross-validation fold, so nothing from the validation rows leaks into training.</li>
+<li><strong>Compare.</strong> Every selected model is scored with k-fold cross-validation (stratified for classification). A baseline (predict the mean, or the most common class) is always in the table: a model that does not beat it has learned nothing.</li>
+<li><strong>Tune the best.</strong> A randomized search over sensible ranges. The tuned version replaces the default only if it scores better in cross-validation.</li>
+<li><strong>Test once.</strong> The chosen model is scored on the held-out rows. Those are the numbers to report.</li>
+<li><strong>Check for problems.</strong></li>
+<li><em>Leakage:</em> a numeric column whose rank correlation with the target is 0.98 or more is flagged, and so is any column that, on its own and with a shallow decision tree, predicts the target almost perfectly (cross-validated score of 0.98 or more, and clearly better than the baseline). Such columns are often a copy of the answer or something only known afterwards.</li>
+<li><em>Imbalance:</em> when the rarest class is under 10% of the rows accuracy becomes misleading, so the lab recommends balanced accuracy or F1 and offers class weighting.</li>
+<li><em>Learning curve:</em> shows whether more data would help.</li>
+</ol>
+<p>The default list is twelve models. Five more are available on request: an <strong>SVM</strong> (with the target scaled for regression), <strong>AdaBoost</strong>, <strong>Bagging</strong>, a <strong>voting</strong> ensemble (random forest, histogram gradient boosting and a linear model, averaging predictions or probabilities) and a <strong>stacking</strong> ensemble (the same three, combined by a linear model trained on their cross-validated predictions). If PyTorch is installed, a <strong>PyTorch MLP</strong> joins them: Adam, dropout, weight decay and early stopping on 15% of the training rows, with the same preprocessing as every other model.</p>
+<p>Primary metrics: R-squared for regression, weighted F1 for classification. Regression also reports RMSE and MAE; classification adds accuracy, balanced accuracy, ROC AUC and, for two classes, the Brier score.</p>
+<p>Importance is measured by permutation on the held-out rows. Partial dependence shows the average prediction as one feature changes. The per-row explanation replaces one feature at a time with a typical value and reports how much the prediction moves.</p>
+<h2 id="uncertainty-conformal-prediction">Uncertainty (conformal prediction)<a class="headerlink" href="#uncertainty-conformal-prediction" title="Permanent link">&para;</a></h2>
+<p>Split conformal prediction. Half of the held-out test rows calibrate: for regression the score of a row is the absolute error, for classification one minus the probability given to the true class. The threshold is the <code>ceil((n + 1) * coverage) / n</code> quantile of those scores, and it gives a range <code>prediction ± threshold</code> or the set of classes whose probability is at least <code>1 - threshold</code>. The guarantee, that new rows fall inside about <code>coverage</code> of the time, holds without assuming normal errors but only if new data resemble the calibration rows. The other half of the test rows measures the coverage actually obtained.</p>
+<h2 id="counterfactuals">Counterfactuals<a class="headerlink" href="#counterfactuals" title="Permanent link">&para;</a></h2>
+<p>For one row, the search tries every value of one variable (15 quantiles of a number, up to 30 categories), then pairs of the six most influential variables, and keeps the changes that give the wanted answer. They are ranked by how many variables change and then by the total standardised distance. Variables you mark as fixed never move. The result says what the model would do, not what would happen in the world.</p>
+<h2 id="fairness">Fairness<a class="headerlink" href="#fairness" title="Permanent link">&para;</a></h2>
+<p>For each group of a column: the share of rows that receive the favourable prediction (selection rate), the true positive rate, the false positive rate and the accuracy. The warnings use the four-fifths guideline (the lowest selection rate divided by the highest, below 0.8) and gaps of more than 10 points in the true or false positive rate. Groups under 10 rows are left out.</p>
+<h2 id="feature-search">Feature search<a class="headerlink" href="#feature-search" title="Permanent link">&para;</a></h2>
+<p>Candidates are built from up to eight numeric columns: a logarithm (<code>log1p</code>, for non-negative skewed columns), a square, and the product, the two ratios, the sum and the difference of every pair. The 24 most rank-correlated with the target are scored by cross-validated histogram gradient boosting, and added greedily while each improves the score by at least the chosen threshold. Because the evaluation is cross-validated and the formulas are applied with the safe expression interpreter, the gain is not an artefact of the training rows and the result replays on new data.</p>
+<h2 id="survival">Survival<a class="headerlink" href="#survival" title="Permanent link">&para;</a></h2>
+<p>The Kaplan-Meier estimate multiplies, at each event time, the share of those still at risk that did not have the event; the band is the log-log Greenwood interval. The log-rank test compares observed with expected events in each group at every event time, using the hypergeometric variance. It assumes that censoring is unrelated to the outcome.</p>
+<h2 id="distribution-fit">Distribution fit<a class="headerlink" href="#distribution-fit" title="Permanent link">&para;</a></h2>
+<p>Each candidate is fitted by maximum likelihood with SciPy (the location is fixed at zero for distributions defined on positive values) and scored with AIC, <code>2k - 2 log L</code>, where <code>k</code> counts the fitted parameters; the lowest is best and a difference under 2 is a tie. A distribution is tried only if the data can belong to it: positive values for lognormal, gamma and Weibull, non-negative for exponential, between 0 and 1 for beta. The Kolmogorov-Smirnov test uses parameters estimated from the same data, which makes its p-value too generous, so it is shown as a guide. Normality uses Shapiro-Wilk on up to 5,000 values.</p>
+<h2 id="bayesian-optimisation">Bayesian optimisation<a class="headerlink" href="#bayesian-optimisation" title="Permanent link">&para;</a></h2>
+<p>A Gaussian process (Matern 5/2 kernel plus noise) is fitted to the cross-validated scores seen so far, over the search space mapped to the unit cube (log scale for parameters such as a learning rate, integer and categorical parameters handled). The next combination is the one with the highest expected improvement among 2,000 random candidates. A quarter of the attempts (at least 3) are random exploration first. A combination that fails is recorded as such and the search goes on.</p>
+<h2 id="sequential-tests">Sequential tests<a class="headerlink" href="#sequential-tests" title="Permanent link">&para;</a></h2>
+<p>The mSPRT mixes the likelihood ratio over a normal prior for the effect, <code>N(0, tau^2)</code>: <code>Lambda_n = sqrt(s2 / (s2 + n tau^2)) * exp(n^2 tau^2 D^2 / (2 s2 (s2 + n tau^2)))</code>, where <code>D</code> is the running mean of the pairwise differences and <code>s2</code> their variance. It is a martingale under no effect, so by Ville's inequality <code>P(Lambda ever &gt;= 1/alpha) &lt;= alpha</code> however often it is checked; the test stops when it crosses <code>1/alpha</code>. The always-valid p-value is <code>min(1, 1 / max Lambda)</code>, and the interval is the set of effects the same test would not reject. <code>tau</code> defaults to 20% of the standard deviation of the differences; validity does not depend on it, only how fast it detects. Observations are paired in arrival order, the k-th of each group. An effect estimated at the moment of stopping tends to be exaggerated, as with any early stop. The bandit is Thompson sampling with Beta posteriors, allocating visitors in batches.</p>
+<h2 id="forecast-with-drivers-and-granger-tests">Forecast with drivers and Granger tests<a class="headerlink" href="#forecast-with-drivers-and-granger-tests" title="Permanent link">&para;</a></h2>
+<p>The Granger F-test compares a regression of the effect on its own past with one that adds the past of the cause, for every lag from 1 to the maximum, with a Bonferroni correction because several lags are tried; by default it works on first differences so that a trend shared by both columns is not mistaken for a relation. The forecast uses gradient boosting on lags of the target and of the drivers (plus day of week and month); it is tested with four rolling-origin folds of one-step-ahead predictions, with and without the drivers, and a Wilcoxon test on the paired absolute errors decides whether they help. Future values of the drivers are assumed equal to their last observed value, or to the scenario factors you give.</p>
+<h2 id="feature-selection">Feature selection<a class="headerlink" href="#feature-selection" title="Permanent link">&para;</a></h2>
+<p>Mutual information uses the original columns (categories as codes). The L1 model is a Lasso (or an L1 logistic regression) on the standardised preprocessed matrix, with each column's coefficients added across its indicator columns. Permutation importance comes from a histogram gradient boosting on a held-out 30%; the random forest uses its impurity importances. Ranks are averaged. The score of the best k columns is cross-validated with the same booster, and the recommended k is the smallest whose mean score is within one standard error of the best.</p>
+<h2 id="segmentation">Segmentation<a class="headerlink" href="#segmentation" title="Permanent link">&para;</a></h2>
+<p>The Gaussian mixture is fitted for 1 to <code>k_max</code> components (full covariances if there are at least 20 rows per column, otherwise diagonal) and the lowest BIC wins; a row's confidence is its highest membership probability. The hierarchical method uses SciPy linkage and cuts the tree into the requested number of groups (above 2,500 rows it groups a sample and assigns the rest to the nearest group centre). DBSCAN's radius is where the sorted distance to the 5th neighbour bends most (largest second difference of the smoothed curve). Each group is described by the two columns whose group mean is furthest from the overall mean in standard deviations (shown only if beyond 0.4).</p>
+<h2 id="recommender">Recommender<a class="headerlink" href="#recommender" title="Permanent link">&para;</a></h2>
+<p>Item-item cosine similarity on the person-by-item matrix, multiplied by <code>common / (common + shrinkage)</code> so that pairs sharing few people count less. A person's score for an item is the sum of its similarity to the items they have used; seen items are excluded and unknown people get the most popular items. Evaluation hides one interaction for each person with at least three, refits without it and counts how often the hidden item is in the top k, against the top k most popular items the person has not used.</p>
+<h2 id="synthetic-data">Synthetic data<a class="headerlink" href="#synthetic-data" title="Permanent link">&para;</a></h2>
+<p>A Gaussian copula. Each column becomes normal scores through its ranks (a category occupies a probability interval and a point inside it is drawn); the correlation matrix of the scores is repaired to be positive semi-definite and a multivariate normal is sampled; each coordinate goes back through the column's empirical quantiles (numbers and dates) or its category frequencies. Identifiers are regenerated, long free text is skipped, and each column's share of empty values is reproduced independently. The report gives, per column, the Kolmogorov-Smirnov distance (numbers) or total variation distance (categories); the mean gap between Spearman correlations; the share of synthetic rows that exactly equal a real row; the share closer to a real row than a fifth of the usual distance between two real rows; and the train-on-synthetic, test-on-real utility. Relations that are not captured by pairwise correlation (for example an interaction of three columns) are not reproduced.</p>
+<h2 id="the-analyst">The analyst<a class="headerlink" href="#the-analyst" title="Permanent link">&para;</a></h2>
+<p>The language model never writes or runs code. Three pieces keep that true.</p>
+<ul>
+<li><strong>A client</strong> (<code>kikolens/ai/client.py</code>) that talks to Ollama and asks for JSON. The answer is extracted from whatever text surrounds it and passed through a validator; if the validator raises, its message is appended to the prompt and the model tries again (twice by default). After that the error is shown to the user.</li>
+<li><strong>A chart specification</strong> (<code>kikolens/ai/chartspec.py</code>): kind (bar, line, area, scatter, histogram, box, pie, heatmap), columns, aggregation, time grain, filters and top N. Every column is checked against the data (case-insensitively), every filter value is coerced to the column's type, and an impossible chart (a sum of a text column, filters that leave no rows) is refused with the valid options listed. The chart is drawn by KikoLens' own functions.</li>
+<li><strong>A tool registry</strong> (<code>kikolens/ai/analyst.py</code>) with thirteen tools, each with typed arguments (a column, a list of columns, a number, one of a few words). A call is accepted only if the tool exists, the arguments are the ones it takes and every column is real. A tool that fails is recorded and the loop continues; repeating a call ends the loop; at most five steps run. The final answer is written from the short summaries of the steps, not from raw rows, and the steps can be exported as the equivalent calls of the Python API.</li>
+</ul>
+<p>Prompts contain the column names, types, ranges, and, unless switched off, up to eight values of each categorical column and nothing else; no row of data is sent (text classification is the exception, since reading the texts is the job). Everything stays on this computer because the model does.</p>
+<h2 id="privacy">Privacy<a class="headerlink" href="#privacy" title="Permanent link">&para;</a></h2>
+<p>Detection samples up to 2,000 values per column and flags it when at least 60% pass the check for a pattern. The checks are not just shapes: card numbers must pass the Luhn algorithm, IBANs the mod-97 check, and Spanish DNI/NIE numbers must carry the right letter, so ordinary long numbers are not reported. Columns named like personal data (<code>name</code>, <code>email</code>, <code>phone</code>, <code>birth</code>...) are flagged by name, with the reason shown. Masking keeps the last characters; fingerprints are <code>SHA-256(salt + value)</code> cut to 12 hex characters by default. A salted fingerprint cannot be reversed, but anyone who has the salt can test whether a known value is present, which is why the recipe that holds it should stay private. k-anonymity groups the rows by the combination of descriptive columns and reports the size of each group; rows in a group of one are unique and the easiest to re-identify.</p>
+<h2 id="matching-records">Matching records<a class="headerlink" href="#matching-records" title="Permanent link">&para;</a></h2>
+<p>Names are lowercased, stripped of accents and punctuation and their words sorted, so "García, Ana" and "ana garcia" are equal. Candidates for each row are the rows of the other table that share a rare word (a word in more than 20% of the rows is ignored); an exact match short-circuits the search. Each candidate gets the larger of the character similarity (Ratcliff-Obershelp) and a blend of it with the share of words in common. The best partner above the threshold is kept, and a match is marked ambiguous when the runner-up scores within 0.03 of it.</p>
+<h2 id="regression">Regression<a class="headerlink" href="#regression" title="Permanent link">&para;</a></h2>
+<p>Linear regression is solved by least squares; the standard errors are the classical ones, <code>sigma^2 (X'X)^-1</code>, with <code>t</code> intervals and p-values on the residual degrees of freedom. Categories become indicators with the commonest value as the reference; dates become days since the first. The page reports R-squared and adjusted R-squared, the F test of the whole model, the variance inflation factor of each term, the Durbin-Watson statistic (about 2 when neighbouring errors are unrelated), a Breusch-Pagan test (regressing the squared errors on the terms; a small p-value means their spread changes with the fit) and a Shapiro-Wilk test of the errors. Logistic regression is fitted by Newton-Raphson on standardized columns, so the Wald intervals and p-values come from the inverse information matrix; coefficients are also shown as odds ratios, with McFadden's pseudo R-squared, the likelihood-ratio test, AUC and the accuracy against always guessing the commonest. Rows with an empty value in any used column are left out and counted.</p>
+<h2 id="model-health">Model health<a class="headerlink" href="#model-health" title="Permanent link">&para;</a></h2>
+<p>The model scores the rows whose real result is known and the errors are grouped by period. For a number the reference is the mean absolute error measured on the held-out rows when the model was built, and a period is flagged when its error is at least 1.5 times that; for a category it is the accuracy, flagged when 10 points lower. Periods with fewer than 20 rows are reported but not judged. A trend warning appears when the rank correlation (Spearman) between time and the metric of the judged periods is significant (p below 0.05) in the direction of getting worse, with at least four periods.</p>
+<h2 id="unusual-periods-in-a-series">Unusual periods in a series<a class="headerlink" href="#unusual-periods-in-a-series" title="Permanent link">&para;</a></h2>
+<p>The expected value of each period is a centred rolling median (the trend) plus the median of what is left at each position of the cycle (the seasonal pattern, with the period guessed from the autocorrelation). The residual is scaled with the median absolute deviation, which a few spikes cannot inflate, and a period is flagged when the scaled value is beyond the sensitivity (3.5 by default). <code>min_gap</code> merges runs of neighbouring flags into one.</p>
+<h2 id="comparing-saved-models">Comparing saved models<a class="headerlink" href="#comparing-saved-models" title="Permanent link">&para;</a></h2>
+<p>Both models score the same rows. For a number, the absolute errors of the two are compared with a Wilcoxon signed-rank test; for a category, the rows where only one is right are compared with an exact binomial test (the McNemar idea). The first model by mean absolute error (or weighted F1) is the champion, and the page says whether its lead is reliable at the 5% level or could be chance.</p>
+<h2 id="why-it-changed">Why it changed<a class="headerlink" href="#why-it-changed" title="Permanent link">&para;</a></h2>
+<p>Two periods are compared. For a total or a count, each value of a column contributes the difference of its own total, so the contributions add up to the change exactly. For an average, the change is <code>sum over values of (w_after - w_before) * (m_before - M_before)</code> (mix: the value weighs more or less) plus <code>sum of w_after * (m_after - m_before)</code> (rate: its average moved), where <code>w</code> is the share of rows and <code>m</code> the average of the value; the two add up to the change exactly. A value that exists in only one period has all its effect in the mix. Columns are ranked by the share of the total absolute contribution held by their single biggest value.</p>
+<h2 id="customers">Customers<a class="headerlink" href="#customers" title="Permanent link">&para;</a></h2>
+<p><em>Retention</em>: a cohort is the period of a user's first activity, and the cell for age <code>a</code> is the share of that cohort active in period <code>cohort + a</code>; ages beyond the last observed period are blank. <em>RFM</em>: recency (days since the last activity), frequency and total spend are ranked into five equal groups; the segments are rules over the three scores. <em>Funnel</em>: a user is counted at a stage only if they appear at it and at every earlier one. <em>Association rules</em>: Apriori finds the sets of items present in at least <code>support</code> of the baskets; for each, <code>confidence</code> is <code>P(right | left)</code> and <code>lift</code> is <code>confidence / P(right)</code>.</p>
+<h2 id="impact">Impact<a class="headerlink" href="#impact" title="Permanent link">&para;</a></h2>
+<p><em>Before and after a date</em>: the expected series is a ridge regression of the measure on the control series fitted before the change, or, without controls, the best forecast model of the earlier trend. The uncertainty is taken from the error the same method made on earlier windows of the same length, where nothing happened, and widened with a t distribution because there are few such windows. <em>Difference in differences</em>: the coefficient of treated × after in a linear regression of the outcome, with its t interval; it assumes both groups would have moved alike without the treatment.</p>
+<h2 id="bayesian-ab">Bayesian A/B<a class="headerlink" href="#bayesian-ab" title="Permanent link">&para;</a></h2>
+<p>Rates use a Beta posterior (uniform prior unless set). Averages use the t distribution of the mean of each group. The probability that the variant is better is the share of 200,000 draws where it beats the control, and the expected loss is the average shortfall when the choice is wrong.</p>
+<h2 id="neural-network">Neural network<a class="headerlink" href="#neural-network" title="Permanent link">&para;</a></h2>
+<p>A multilayer perceptron from scikit-learn (<code>MLPRegressor</code> or <code>MLPClassifier</code>).</p>
+<ul>
+<li><strong>Regression targets are standardized inside the model</strong> and predictions come back in the original units. Without this a network cannot learn a target such as revenue in the thousands.</li>
+<li><strong>Early stopping</strong> holds out 10% of the training rows and stops when the validation score stops improving. It is unavailable with the <code>lbfgs</code> optimizer.</li>
+<li><strong>Importance</strong> is measured by permutation: shuffle one column on the test rows and see how much the score drops. This works for any model.</li>
+<li>The architecture chart draws at most 12 nodes per layer; the legend shows the real size.</li>
+</ul>
+<p>Rules of thumb: start with the <em>Medium</em> preset; if training and validation curves diverge, raise the L2 regularization or shrink the network; if both are poor, give it more epochs or a larger network. Networks need at least 20 rows and usually beat classical models only on larger, non-linear data.</p>
+<h2 id="time-series">Time series<a class="headerlink" href="#time-series" title="Permanent link">&para;</a></h2>
+<ol>
+<li>The date column is parsed, sorted and aggregated to a regular period (mean by default). Gaps are interpolated.</li>
+<li><strong>Decomposition</strong> splits the series into trend (centered moving average), a repeating seasonal pattern and a remainder. The seasonal period comes from the frequency (7 for daily, 12 for monthly, and so on) or, failing that, from the autocorrelation.</li>
+<li><strong>Forecast</strong> fits a linear trend plus Fourier terms for the seasonality. The range shown is 95% and widens with distance.</li>
+<li><strong>Backtest.</strong> The last stretch of the data is hidden, forecast, and compared with the truth and with a naive baseline that repeats the last value. If the model does not beat the baseline the dashboard warns you.</li>
+</ol>
+<p>This is a deliberately simple model. It handles trend and one seasonal cycle well; it does not know about holidays, promotions or sudden changes.</p>
+<h2 id="forecasting-models">Forecasting models<a class="headerlink" href="#forecasting-models" title="Permanent link">&para;</a></h2>
+<p>Five models share one interface, and each can be tested on its own:</p>
+<ul>
+<li><strong>Naive</strong> repeats the last value; <strong>seasonal naive</strong> repeats the last full cycle.</li>
+<li><strong>Trend + seasonality</strong> is the linear trend plus Fourier terms described above.</li>
+<li><strong>Holt-Winters</strong> is the additive version with a damped trend: a level, a trend and one seasonal profile, updated at each step; its smoothing parameters are found by minimizing the one-step squared error. With fewer than two cycles of data it drops the seasonality.</li>
+<li><strong>Lag boosting</strong> removes a linear trend, then fits a gradient-boosting model on the previous values (1, 2, 3, 7, 14 and one season back), a rolling mean and deviation, the weekday, month, day of year and a flag for the special dates you give. It forecasts recursively, feeding its own predictions back as lags.</li>
+</ul>
+<p><strong>Choosing.</strong> The series is cut at several points (up to three); at each, every model is trained on what came before and forecasts the next stretch (as long as the horizon, up to a quarter of the series). The model with the lowest mean absolute error wins, and the table also gives RMSE and MASE (error relative to repeating the previous value). The final model is refitted on all the data. <strong>Range.</strong> The interval is not a formula: it is the 5th to 95th percentile of the real errors the winning model made at each step ahead in those tests, and it cannot narrow as the horizon grows. With few test points it borrows from all steps. <strong>Changes.</strong> The series is split recursively where fitting two straight lines instead of one reduces the squared error by more than a penalty proportional to the noise (estimated from second differences) times the logarithm of the length, so noise alone produces no change points. A change is a <em>level shift</em> when the jump exceeds three times the noise and a <em>trend change</em> otherwise.</p>
+<h2 id="statistical-tests">Statistical tests<a class="headerlink" href="#statistical-tests" title="Permanent link">&para;</a></h2>
+<p>Every test returns the p-value, an effect size and a sentence. A small p-value says a difference is unlikely to be chance; the effect size says whether it is big enough to matter, and with lots of rows even trivial differences become "significant".</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Question</th>
+<th style="text-align: left;">Test chosen</th>
+<th style="text-align: left;">Effect size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">Do 2 groups differ in a number?</td>
+<td style="text-align: left;">Welch's t-test if the groups look normal (or have 30+ rows), otherwise Mann-Whitney U</td>
+<td style="text-align: left;">Cohen's d, or rank-biserial r</td>
+</tr>
+<tr>
+<td style="text-align: left;">Do 3+ groups differ?</td>
+<td style="text-align: left;">One-way ANOVA with Tukey comparisons if normal with similar spread, otherwise Kruskal-Wallis with Holm-adjusted pairwise Mann-Whitney</td>
+<td style="text-align: left;">eta squared, or epsilon squared</td>
+</tr>
+<tr>
+<td style="text-align: left;">Are two categories related?</td>
+<td style="text-align: left;">Chi-squared; Fisher's exact for 2x2 tables with small expected counts</td>
+<td style="text-align: left;">Cramér's V</td>
+</tr>
+<tr>
+<td style="text-align: left;">Are two numbers correlated?</td>
+<td style="text-align: left;">Pearson, with a Fisher-z confidence interval, next to Spearman</td>
+<td style="text-align: left;">r</td>
+</tr>
+<tr>
+<td style="text-align: left;">Did the treatment change a rate?</td>
+<td style="text-align: left;">Two-proportion z-test, 95% interval for the difference, and the probability that the treatment is better from Beta posteriors</td>
+<td style="text-align: left;">absolute and relative lift</td>
+</tr>
+<tr>
+<td style="text-align: left;">Did it change an average?</td>
+<td style="text-align: left;">Welch's t-test</td>
+<td style="text-align: left;">difference and lift</td>
+</tr>
+</tbody>
+</table>
+<p>Normality is checked with Shapiro-Wilk on small groups; equal spread with Levene. The thresholds for the effect labels follow common conventions (for example Cohen's d: 0.2 small, 0.5 medium, 0.8 large).</p>
+<p><strong>Sample size.</strong> For rates, the number of rows per group is <code>(z_a * sqrt(2 p̄ (1 - p̄)) + z_b * sqrt(p1 (1 - p1) + p2 (1 - p2)))^2 / (p2 - p1)^2</code> at 5% significance and the power you choose; for averages it is <code>2 ((z_a + z_b) * sd / delta)^2</code>.</p>
+<p><strong>Screening many columns.</strong> Testing 50 columns at the 5% level produces about two false hits by chance. The screen therefore reports Benjamini-Hochberg adjusted p-values and marks a column as related only if the adjusted value is below the threshold. Each column is compared with the target using the test that fits the two types (Spearman, Kruskal-Wallis or chi-squared), and numbers with 10 or fewer distinct values are treated as categories.</p>
+<h2 id="missing-data-spellings-and-rules">Missing data, spellings and rules<a class="headerlink" href="#missing-data-spellings-and-rules" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Are gaps random?</strong> For each column with gaps, KikoLens tests whether the other columns differ between the rows where it is empty and the rows where it is present (Mann-Whitney for numbers, chi-squared for categories). A gap is called dependent when the best p-value is below 0.001 and the effect is at least 0.2.</li>
+<li><strong>Smart fill.</strong> KNN uses the 5 nearest rows (distance-weighted) on standardized numeric columns. Iterative uses Bayesian ridge regression, cycling over the columns. Both work on numbers only and round columns that hold whole numbers. By group takes the median (or most common value) within each group, falling back to the overall value.</li>
+<li><strong>Similar spellings.</strong> Values are reduced to a key (lowercase, without accents or punctuation); keys are then merged when their similarity ratio is at least the threshold (0.85 by default), and every variant becomes the most frequent form. A change of two letters in a short word is below 0.85: lower the threshold to catch it.</li>
+<li><strong>Near-duplicates.</strong> Each row becomes text; rows are compared with character 2 to 4-grams (TF-IDF, cosine similarity), looking at each row's nearest neighbours. Identical rows are excluded (they are ordinary duplicates).</li>
+<li><strong>Rules</strong> are evaluated per row. Empty values break only the <em>not empty</em> rule. A pattern must match the whole value.</li>
+</ul>
+<h2 id="anomalies">Anomalies<a class="headerlink" href="#anomalies" title="Permanent link">&para;</a></h2>
+<p>Isolation Forest, Local Outlier Factor and Mahalanobis distance first scale the numeric columns with the median and interquartile range; empty values are filled with the median. The share you choose is the share of rows flagged (the most unusual ones).</p>
+<ul>
+<li><strong>Isolation Forest</strong> isolates rows with random splits; unusual rows need fewer splits.</li>
+<li><strong>Local Outlier Factor</strong> compares the density around a row with that of its neighbours.</li>
+<li><strong>Robust z-score</strong> takes the largest distance from the median, in units of the median absolute deviation, over the columns.</li>
+<li><strong>Mahalanobis distance</strong> measures distance from the centre while accounting for correlations between columns.</li>
+</ul>
+<p>For every flagged row, the explanation lists up to three columns whose robust z-score is at least 2.</p>
+<h2 id="text">Text<a class="headerlink" href="#text" title="Permanent link">&para;</a></h2>
+<p>Words are lowercase sequences of letters (at least two), with stop words removed (English and Spanish; the language is detected by counting stop words). <em>Terms</em> counts in how many texts each term appears, next to its mean TF-IDF weight. <em>By group</em> ranks terms by the smoothed log odds of being in the group versus elsewhere. <em>Themes</em> uses TF-IDF vectors (reduced with a truncated SVD only when there are more than 400 terms), normalizes them and runs k-means; each theme shows its centroid's top terms and the text closest to its centre. The <em>classifier</em> is TF-IDF on words and pairs of words with a class-balanced logistic regression, scored with cross-validated predictions against the baseline of always predicting the commonest class. <em>Tone</em> counts words from a small positive and negative list. The <em>summary</em> sends a random sample of at most 40 texts, each cut to 400 characters, to the model running in Ollama.</p>
+<h2 id="dimensions">Dimensions<a class="headerlink" href="#dimensions" title="Permanent link">&para;</a></h2>
+<p><strong>PCA</strong> runs on standardized columns; components for 90% is the smallest number whose cumulative explained variation reaches 90%. <strong>t-SNE</strong> keeps neighbours close but distorts global distances, so use it to spot groups, not to measure separation. The <strong>VIF</strong> of a column is <code>1 / (1 - R²)</code> of regressing it on the others, computed from the inverse of the correlation matrix.</p>
+<h2 id="comparing-datasets">Comparing datasets<a class="headerlink" href="#comparing-datasets" title="Permanent link">&para;</a></h2>
+<p>Numeric columns are cut at the deciles of the reference; categorical ones use their categories. The <strong>PSI</strong> is the sum over bins of <code>(current share - reference share) * ln(current share / reference share)</code>. Below 0.1 is stable, 0.1 to 0.25 moderate and above 0.25 a clear shift. Numbers with 12 or fewer distinct values are compared as categories. Text that holds numbers or dates is converted first, and dates and columns that are different in almost every row (identifiers) are listed as information rather than judged. A Kolmogorov-Smirnov test (numbers) or chi-squared test (categories) is shown beside the PSI, and a change of 10 points or more in the share of empty values downgrades a stable column to moderate. With large samples the tests flag tiny changes, which is why the verdict uses the PSI.</p>
+<h2 id="explaining-a-model">Explaining a model<a class="headerlink" href="#explaining-a-model" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Shapley values.</strong> For one row, KikoLens draws many random orders of the features. In each order it starts from a random training row and swaps in the features of the row being explained one at a time, recording how much the prediction moves at each step. The average move per feature is its Shapley value; together with the starting value they add up to the prediction exactly. For classifiers the value is in probability of the class you choose. The global version averages the absolute values over a sample of test rows. The cost grows with the number of features, so it is limited to 40.</li>
+<li><strong>Error analysis.</strong> The error is the absolute error (regression) or whether the prediction was wrong (classification). Each category, and each quartile of a number, is compared with the overall error; a segment is reported only if it has at least 8 rows, its error is more than 15% above average and the gap is at least two standard errors, so noise does not produce stories.</li>
+<li><strong>Threshold and costs.</strong> For a two-class model the probability threshold is swept from 0.05 to 0.95. The cost is <code>false alarms × cost of a false alarm + misses × cost of a miss</code>; the cheapest threshold is usually not 0.5 when one mistake costs more than the other.</li>
+<li><strong>Comparing two models.</strong> Both are trained on the same rows and tested on the same held-out rows. For regression the absolute errors are compared with a Wilcoxon signed-rank test; for classification, the rows only one of them gets right are compared with a binomial (McNemar-style) test.</li>
+</ul>
+<h2 id="causal-inference">Causal inference<a class="headerlink" href="#causal-inference" title="Permanent link">&para;</a></h2>
+<p>The effect page estimates the average effect with regression adjustment, inverse-propensity weighting, nearest-neighbour matching on the propensity (average effect on the treated) and an augmented inverse-propensity (doubly robust) estimator, which stays consistent if either the propensity model or the outcome models are right. Propensities and outcome models are cross-fitted (five folds) so overfitting does not leak into the estimate, and propensities are trimmed. Ranges come from a bootstrap, except for the doubly robust estimator, which uses its influence function. Covariate balance is the standardised mean difference before and after weighting, and the E-value follows VanderWeele and Ding. Uplift uses a T-learner with cross-fitting, evaluated with the Qini curve. Discontinuity fits a local polynomial on each side with a triangular kernel and a rule-of-thumb bandwidth, and tests the density around the cutoff with a binomial test. Synthetic control finds non-negative weights summing to one that match the pre-intervention path, and its p-value is the share of placebo units whose post/pre fit ratio is at least as large. Instrumental variables use two-stage least squares with heteroskedasticity-robust errors.</p>
+<h2 id="classical-time-series">Classical time series<a class="headerlink" href="#classical-time-series" title="Permanent link">&para;</a></h2>
+<p>ADF regresses the first difference on the lagged level, a constant (and trend) and lagged differences, with the number of lags chosen by AIC; its p-value uses MacKinnon's approximation, checked against the published 1 %, 5 % and 10 % critical values. KPSS uses the partial sums of the residuals over a Newey-West long-run variance and interpolates its p-value in the published table (so it is bounded between 0.01 and 0.10). Both are simulated in the test suite to hold their size and have power. STL follows Cleveland et al.: the seasonal subseries are smoothed by local linear regression, a low-pass filter removes what leaks into the season, the trend is smoothed, and optional bisquare robustness weights are recomputed over several outer rounds; strengths are <code>1 - var(remainder) / var(component + remainder)</code> on a remainder clipped at four robust standard deviations, so one outlier does not dilute them.</p>
+<p>ARIMA models <code>phi(B) Phi(B^m) (1 - B)^d (1 - B^m)^D y = theta(B) Theta(B^m) e</code> with the polynomials multiplied out and the residuals computed by a linear filter. Parameters are found by conditional least squares (the first residuals, which depend on values before the sample, are left out), with stationarity and invertibility guaranteed by a partial-autocorrelation parametrisation; this is close to but not the same as exact maximum likelihood, and very short series or roots near the unit circle show the difference. Forecast ranges use the psi weights of the model and assume normal errors. The automatic search takes the differences from KPSS (and the seasonal difference from the strength of the season), tries <code>p, q</code> up to 3 with <code>p + q &lt;= 4</code> and <code>P, Q</code> in {0, 1}, and compares AICc on one common sample, because candidates with more autoregressive terms would otherwise drop more initial residuals and look better for free.</p>
+<h2 id="model-governance">Model governance<a class="headerlink" href="#model-governance" title="Permanent link">&para;</a></h2>
+<p>Records live in <code>~/.kikolens/governance</code> (one JSON per model, plus <code>audit.jsonl</code>) and refer to the model by its file name in the registry. At registration the SHA-256 of the model file is stored; promotion and stage references (<code>sales@production</code>) refuse a file whose hash has changed, because it is no longer the model that was documented and validated. A validation scores the model on rows with known results with the same metrics as the model lab and compares one of them (MAE, RMSE, R2 or accuracy) with the training value; because both numbers are noisy, the validation fails only if even the optimistic end of a bootstrap 95 % range of the new metric is worse than the tolerated fraction (20 % by default). The comparison with the production model uses the champion and challenger test of <code>kikolens models compare</code> and blocks only a challenger that is reliably worse. Each audit entry stores the hash of the previous one together with its own content, so changing, removing or inserting a line breaks every hash after it; this reveals tampering to anyone who verifies, but cannot prevent someone with write access to the folder from rewriting the whole log.</p>
+<h2 id="text-mining">Text mining<a class="headerlink" href="#text-mining" title="Permanent link">&para;</a></h2>
+<p>Topics use TF-IDF with NMF (or counts with LDA) over words that appear in at least two texts and in at most 60 % of them. Coherence is the UMass measure: for each topic's ten leading words, the mean of <code>log((D(a, b) + 1) / D(b))</code> over pairs, where <code>D</code> counts the texts containing the word(s); it is a guide rather than a verdict, and the automatic choice often lands on a coarser split than a person would. Near duplicates compare TF-IDF vectors of 3 to 4 letter fragments by cosine similarity, in blocks so that 20,000 texts stay manageable, and join texts above the threshold transitively. RAKE splits texts at stop words and punctuation and scores each word by its degree over its frequency. Collocations are ranked by normalised pointwise mutual information. Readability counts syllables from vowel groups, so scores are approximate. Pattern extraction uses regular expressions for common formats.</p>
+<h2 id="network-analysis">Network analysis<a class="headerlink" href="#network-analysis" title="Permanent link">&para;</a></h2>
+<p>Links are summed into a sparse adjacency matrix (repeated links add their weights; self-loops and rows with a missing end are ignored and reported). PageRank is a power iteration with damping 0.85 that spreads dangling nodes evenly. Betweenness is Brandes' algorithm over hops, exact up to a work budget and otherwise estimated from a random sample of starting nodes and rescaled. Communities come from Louvain modularity optimisation, relabelled from largest to smallest; weak modularity (below 0.3) is flagged. Distances are measured inside the largest connected piece from up to 60 starting nodes, and the longest distance is a double-sweep lower bound. Suggested links use Adamic-Adar: shared neighbours weighted by one over the log of their degree. In the tests PageRank, betweenness, clustering, assortativity and modularity agree with networkx to 1e-8 when it is installed.</p>
+<h2 id="geography">Geography<a class="headerlink" href="#geography" title="Permanent link">&para;</a></h2>
+<p>Distances use the haversine formula on a sphere of radius 6371.0088 km (about 0.3 % off the true ellipsoid). Nearest-centre queries and neighbour searches use a ball tree on that metric. Zones come from DBSCAN with the haversine distance. Moran's I uses the k nearest neighbours of each point as binary links, row-standardised, and its p-value comes from shuffling the values (999 times by default); the expected value without a pattern is -1/(n-1). Getis-Ord Gi* sums each point and its neighbours, centres it on the global mean and divides by the standard deviation expected from the number of neighbours; the p-values of all points are corrected with Benjamini-Hochberg, so "hot spot" means significant after accounting for the number of places tested. Grid cells are <code>cell_km</code> tall and widened in longitude by the cosine of the mean latitude. A single projection of the sphere is used for all maps, so shapes far from the centre of a large area are distorted.</p>
+<h2 id="experiment-checks">Experiment checks<a class="headerlink" href="#experiment-checks" title="Permanent link">&para;</a></h2>
+<p>The sample ratio test is a chi-square goodness-of-fit between the rows per group and the planned split; it alarms at p &lt; 0.001 (the usual convention, because it is run on every test), and flags p between 0.001 and 0.05 as slightly off. Effects use Welch's t interval for numbers and a normal interval on the difference of proportions for 0/1 outcomes. CUPED replaces the outcome Y with <code>Y - theta (X - mean(X))</code>, where <code>theta = cov(Y, X) / var(X)</code> is estimated on all rows pooled so that it does not depend on the group; the variance falls by the squared correlation with X, which the page reports next to the observed narrowing of the interval, and a balance test on X flags assignment problems. Segments are compared with the rest of the rows through the difference of the two effects (a z test on the difference of differences), and the p-values of all segments are corrected with Benjamini-Hochberg. The smallest detectable effect is <code>(z(0.975) + z(0.8)) * sqrt(2 sd^2 / n)</code> for the smaller group, at 80 % power.</p>
+<h2 id="survey-analysis">Survey analysis<a class="headerlink" href="#survey-analysis" title="Permanent link">&para;</a></h2>
+<p>Text answers are numbered from 1 when every non-empty answer belongs to one of the known scales (agreement, satisfaction, frequency, quality, and their Spanish versions). The favourable share counts the top two points and the unfavourable the bottom two. Cronbach's alpha is <code>k/(k-1) (1 - sum of item variances / variance of the total)</code> over the people who answered everything, with Feldt's F-based interval, and each question's correlation is with the sum of the others; on simulated items of known correlation it matches the theoretical value <code>k r / (1 + (k - 1) r)</code>. The NPS interval uses the variance of promoters minus detractors, <code>(p + d - (p - d)^2) / n</code>. Groups are compared with the mix of detractors, passives and promoters through a chi-square test; the most extreme group is set aside and the rest tested again, so one outlier does not make every other group look different. Key drivers use Johnson's relative weights: with the correlation matrix of the questions <code>R = P D P'</code>, <code>L = P D^(1/2) P'</code>, <code>beta = L^-1 r</code>, and the weight of each question is <code>(L squared) (beta squared)</code>, which adds up to the R squared of the regression and equals the squared correlation when questions are unrelated. Groups of questions are compared with Mann-Whitney (two) or Kruskal-Wallis (more), with rank-biserial correlation or epsilon squared as effect sizes, and Benjamini-Hochberg across questions.</p>
+<h2 id="concept-lab">Concept lab<a class="headerlink" href="#concept-lab" title="Permanent link">&para;</a></h2>
+<p>Every concept is a seeded simulation (the same seed gives the same result) and is tested against its theory. The central limit theorem compares the spread of simulated averages with sigma over the square root of n; the p-value concept draws two groups from the same distribution, computes Student's t-test in vectorised form and, when looking several times, stops at the first significant look; the confidence-interval concept builds t intervals and measures coverage over 4,000 repetitions as well as over the 100 drawn; power uses the noncentral t distribution and checks one point by simulation; overfitting fits polynomials with a stable basis to repeated samples of sin(2 pi x) plus noise, and splits the error on fresh data into bias squared (distance of the average fit from the truth), variance (spread of the fits) and noise; Simpson's paradox generates groups whose x grows while their baseline y falls; regression to the mean makes each result skill plus luck with a chosen reliability, where the expected second result of the selected group is the reliability times the first; multiple testing runs the chosen number of tests per study and applies no correction, Bonferroni and Benjamini-Hochberg. Parameters are checked against their allowed ranges before anything runs, so an absurd value gives a message instead of a long wait.</p>
+<h2 id="clustering">Clustering<a class="headerlink" href="#clustering" title="Permanent link">&para;</a></h2>
+<p>k-means on the standardized numeric columns, shown on the first two principal components. The inertia and silhouette chart helps pick <code>k</code>; the silhouette peak is a hint, not a rule.</p>
+<h2 id="recipes">Recipes<a class="headerlink" href="#recipes" title="Permanent link">&para;</a></h2>
+<p>A recipe is a list of <code>{operation, parameters}</code> steps. The cleaning operations (fill missing, convert type, clip outliers, drop duplicates...) and the transformations share one registry, so any of them can be replayed. Applying a recipe to a new file runs the steps in order and stops at the first one that cannot apply, naming it. Operations that depend on the data itself (such as removing flagged anomalies) are not recorded. Joins refer to the extra dataset by name; supply it when replaying (<code>-d name=path</code> in the CLI).</p>
+<h2 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h2>
+<p>A monitor stores its baseline as Parquet (after the recipe, if any), its settings and one JSON file per check. A check applies the recipe, reads dates and numbers stored as text, then compares against the baseline with the same machinery as <em>Comparing datasets</em>, scores with the model if one is set, and evaluates the rules. Alerts are <em>high</em> (drift at the high level, columns missing, a type change, a broken rule, an unreadable source), <em>medium</em> (a quality drop, which becomes high when it is twice the threshold; moderate drift when you asked for it; a change in rows; model inputs out of range, except missing columns, which are high; a prediction shift) or <em>low</em> (new columns). The status of a check is <code>alert</code> if any alert is high, <code>warning</code> if there are only lower ones, <code>failed</code> if the data could not be read and <code>ok</code> otherwise.</p>
+<h2 id="saved-models">Saved models<a class="headerlink" href="#saved-models" title="Permanent link">&para;</a></h2>
+<p>A model package holds the trained model together with:</p>
+<ul>
+<li>the <strong>input schema</strong>: the original columns the model needs, their types, training ranges or categories, and share of empty values</li>
+<li>the <strong>classes</strong> and the <strong>test metrics</strong></li>
+<li>for lab regressions, the 5th and 95th percentile of the test errors, which become the likely range of each prediction</li>
+<li>optionally the <strong>recipe</strong>, so a raw file can be cleaned the same way before predicting</li>
+</ul>
+<p>When scoring, the data are coerced to the training types (text like <code>1,200</code> becomes a number), missing columns are filled with empty values and reported, and the model's own imputation handles gaps. Predictions are only as trustworthy as the resemblance between the new data and the training data, which is what the warnings and the drift comparison measure.</p>
+<p>Packages and <code>.pkl</code> files are Python pickles. Load only files you created yourself, because unpickling can run code.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.suggest", "content.code.copy"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,2436 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Private, local-first data analysis with AutoML, forecasting, causal tools and local language models.">
+      
+      
+      
+        <link rel="canonical" href="https://francisco-b-o.github.io/kikolens/docs/dashboard/">
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../cli/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Dashboard guide - KikoLens</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dashboard-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="KikoLens" class="md-header__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            KikoLens
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Dashboard guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_0">
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="deep-orange" data-md-color-accent="deep-orange"  aria-hidden="true"  type="radio" name="__palette" id="__palette_1">
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="KikoLens" class="md-nav__button md-logo" aria-label="KikoLens" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    KikoLens
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/Francisco-B-O/kikolens" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Francisco-B-O/kikolens
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Using KikoLens
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Using KikoLens
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard guide
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Dashboard guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loading-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#home-data-story-and-chart-gallery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Home, data story and chart gallery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autopilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autopilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-and-cleaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality and cleaning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privacy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#match-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Match records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ask
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analyst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyst
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experiments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequential-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anomalies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anomalies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dimensions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distribution-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compare-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compare data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-it-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causal-effect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Causal effect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#survival" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survival
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#models_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature ideas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neural-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neural network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time series
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classical-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classical series
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#forecast-with-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forecast with drivers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run history
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learn
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Learn">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#glossary-and-reading-guides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Glossary and reading guides
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Share
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Share">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-dictionary-and-notebook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data dictionary and notebook
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#survey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survey
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geography" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geography
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model governance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synthetic data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dark-theme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dark theme
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command line
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../python-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API and Jupyter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Setup and development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Setup and development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#loading-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#home-data-story-and-chart-gallery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Home, data story and chart gallery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#autopilot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Autopilot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#explore" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Explore
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quality-and-cleaning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quality and cleaning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#privacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Privacy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#match-records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Match records
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ask" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ask
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analyst" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyst
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analysis
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Analysis">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#experiments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Experiments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sequential-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sequential tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anomalies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anomalies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dimensions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dimensions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distribution-fit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Distribution fit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compare-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Compare data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-it-changed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why it changed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#causal-effect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Causal effect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#survival" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survival
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#models_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Models
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-ideas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature ideas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#feature-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Feature selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regression" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regression
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#neural-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Neural network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#time-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Time series
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#classical-series" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Classical series
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#forecast-with-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forecast with drivers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predict" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predict
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model health
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#run-history" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Run history
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#learn" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Learn
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Learn">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#concept-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concept lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#glossary-and-reading-guides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Glossary and reading guides
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Share
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Share">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#panel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Panel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#export" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Export
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-dictionary-and-notebook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data dictionary and notebook
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Report
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#project" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Project
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#text" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Text
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#customers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Customers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recommendations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommendations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#survey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Survey
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#network" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#geography" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Geography
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model governance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synthetic-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synthetic data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dark-theme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dark theme
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="dashboard-guide">Dashboard guide<a class="headerlink" href="#dashboard-guide" title="Permanent link">&para;</a></h1>
+<p>Start it with <code>kikolens start</code> and open <a href="http://localhost:8501">http://localhost:8501</a>. Pick a file, a link or a database in the sidebar; every section works on the same dataset, and the cleaning and transformation steps carry over to the rest.</p>
+<p>The sidebar has two levels: an <strong>area</strong> (Data, Analysis, Models, Learn, Share and Advanced) and, under it, the sections of that area. The interface follows the light or dark theme from Streamlit's settings menu (top right). The <strong>Go to</strong> box at the top of the sidebar jumps straight to any section by name (there are about fifty). The <strong>Language / Idioma</strong> menu at the bottom of the sidebar switches the fixed texts (sections, buttons, labels, help) to Spanish. Messages that report results, such as the sentences a test writes about your data, stay in English.</p>
+<h2 id="loading-data">Loading data<a class="headerlink" href="#loading-data" title="Permanent link">&para;</a></h2>
+<p>The sidebar's <strong>Source</strong> menu offers four ways in: <strong>File</strong> (CSV, TSV, Excel, JSON, Parquet; for an Excel book with several sheets you pick the sheet), <strong>URL</strong> (any link to those formats, a Google Sheet shared so that anyone with the link can view it, and <code>s3://</code> or <code>gs://</code> addresses when the <code>cloud</code> extra is installed), <strong>Paste</strong> (copy cells from a spreadsheet or a web page, header row included; the separator is detected) and <strong>Database</strong> (SQLite, PostgreSQL or MySQL: pick a table, or type a read-only query).</p>
+<h2 id="data">Data<a class="headerlink" href="#data" title="Permanent link">&para;</a></h2>
+<h3 id="home-data-story-and-chart-gallery">Home, data story and chart gallery<a class="headerlink" href="#home-data-story-and-chart-gallery" title="Permanent link">&para;</a></h3>
+<p><strong>Home</strong> is the first thing you see after loading data: a quality ring, how many columns of each kind there are, a strip showing where the empty values are, a small chart for every numeric column (and the trend over time if there is a date), the things worth a look, and one-click buttons to the autopilot, the cleaning page and the story. With no data loaded, the welcome screen offers four built-in examples (sales, reviews, orders and subscriptions) so you can try everything at once.</p>
+<p><strong>Data story</strong> reads the data like an analyst and tells it in short chapters, each with its sentence, key figures and a chart: what is there, quality, what stands out, what moves together, how the main numeric column evolves (with its unusual periods marked), which groups differ most, the unusual rows, and where to go next. Download it as Markdown.</p>
+<p><strong>Chart gallery</strong> has nine charts a bar chart cannot replace: a Sankey diagram of the flow between two columns, a treemap of nested groups, a radar chart of each group's profile, correlations reordered so similar columns sit together, a network of correlated columns, a calendar of activity, ridgelines of a distribution by group, parallel coordinates, and one panel per group.</p>
+<h3 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h3>
+<p>Rows, columns, quality score, missing cells and memory use, a table with the type and health of every column, and a preview of the data.</p>
+<p><img alt="Overview" src="../images/overview-light.png" /></p>
+<h3 id="autopilot">Autopilot<a class="headerlink" href="#autopilot" title="Permanent link">&para;</a></h3>
+<p>A first full analysis in one click, for when you open a file and do not know where to start. It cleans with the safe fixes (as recipe steps you can apply to your data), classifies the columns (dates, identifiers, free text, categories, numbers), looks for strong relationships and dominant categories, picks a column to predict from typical names such as <code>target</code>, <code>revenue</code> or <code>churn</code> (or the one you choose), compares a few models against a baseline, and, if there is a date column, forecasts the series. Each phase that cannot run says why and the others continue. It ends with a written summary and concrete next steps. <em>Thorough</em> compares every model and tunes the best, which takes longer.</p>
+<h3 id="explore">Explore<a class="headerlink" href="#explore" title="Permanent link">&para;</a></h3>
+<p>Pick a chart type and the columns to plot. Filters (numeric range, date range, category) narrow the rows first. Scatter and density charts sample 20,000 points so they stay responsive.</p>
+<p><img alt="Explore" src="../images/explore-light.png" /></p>
+<h3 id="quality-and-cleaning">Quality and cleaning<a class="headerlink" href="#quality-and-cleaning" title="Permanent link">&para;</a></h3>
+<p>Lists everything wrong with the data, ordered by how much it matters:</p>
+<ul>
+<li>missing values and columns that are mostly empty</li>
+<li>duplicated rows</li>
+<li>constant columns</li>
+<li>text columns that are really numbers, dates or booleans</li>
+<li>outliers (IQR rule)</li>
+</ul>
+<p><strong>Auto-clean</strong> applies only the safe fixes: trim whitespace, drop duplicates, convert mistyped columns, drop constant columns. Everything else is an explicit operation you choose. <strong>Undo</strong> reverts the last action (Auto-clean counts as one) and <strong>Reset</strong> returns to the file as loaded. The original file is never modified.</p>
+<p><img alt="Quality and cleaning" src="../images/quality-light.png" /></p>
+<p>The <strong>Missing data patterns</strong>, <strong>Near-duplicate rows</strong> and <strong>Validation rules</strong> tabs under the cleaning tools go further:</p>
+<ul>
+<li><strong>Missing data patterns</strong> tells you which columns are empty together and, more importantly, whether the gaps are random. When the chance of a gap depends on another column (for example, income is missing mostly for one region) filling it with a single typical value would bias the results, and the page says so.</li>
+<li><strong>Smart fill</strong> (in the operation list) fills gaps with <strong>KNN</strong> (from the most similar rows), <strong>iterative</strong> (predicting each gap from the other columns) or <strong>by group</strong> (the median or most common value of each group). It can add a column that marks the filled cells.</li>
+<li><strong>Merge similar spellings</strong> unifies <code>New York</code>, <code>new york</code>, <code>NewYork</code> and <code>New Yrok</code> into the most common form, after showing you what it would merge.</li>
+<li><strong>Near-duplicate rows</strong> finds pairs that are almost, but not exactly, the same (a typo in a name, a different case) and lets you remove the ones you confirm.</li>
+<li><strong>Validation rules</strong> are checks written by whoever knows the data: not empty, unique, a range, allowed values, a pattern, "end date is not before start date", "not in the future". KikoLens can suggest rules from the current data, shows which rows break each rule, and saves them as JSON for <code>kikolens validate</code> and for monitors.</li>
+</ul>
+<h3 id="privacy">Privacy<a class="headerlink" href="#privacy" title="Permanent link">&para;</a></h3>
+<p>Finds the columns that hold personal data and lets you decide what to do with each: keep it, mask it (everything but the last two characters), replace it with a salted SHA-256 fingerprint (equal values keep equal fingerprints, so counts and joins still work, but the original cannot be recovered) or remove the column. Detection looks at the content with validated patterns (email, phone, IP address, credit card with its check digit, IBAN with its check, Spanish DNI/NIE with its letter, US social security number) and at column names such as <code>name</code> or <code>birth</code>. The steps go into the recipe. The second tab, <strong>How identifiable</strong>, measures k-anonymity: for the columns that describe a person (age, postal code, sex, city...) it shows the size of the smallest group a person hides in, how many rows are in a group smaller than the k you want, and the groups that stand out.</p>
+<h3 id="match-records">Match records<a class="headerlink" href="#match-records" title="Permanent link">&para;</a></h3>
+<p>Joins two tables whose names are not spelled the same way (accents, word order, typos). Upload the second file, pick the name columns and a minimum similarity; every row of the open data gets its best partner if one is good enough. Matches that are not exact are listed for review, and those with a close runner-up are flagged. One click adds the partner's columns (ending in <code>_right</code>) and the score, and it can be undone.</p>
+<h3 id="transform">Transform<a class="headerlink" href="#transform" title="Permanent link">&para;</a></h3>
+<p>Six tabs of operations, each recorded as a step:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: left;">Tab</th>
+<th style="text-align: left;">Operations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;"><strong>Rows</strong></td>
+<td style="text-align: left;">Filter by a condition (<code>==</code>, <code>&gt;</code>, <code>in</code>, <code>contains</code>, <code>is empty</code>...), sort, sample a fraction or a number of rows.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Columns</strong></td>
+<td style="text-align: left;">Create a column from a formula, combine or split text, rename, replace values.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Features</strong></td>
+<td style="text-align: left;">Date parts (year, month, weekday, weekend, days since start), bins by quantile or equal width, scaling (standard, min-max, robust), log, rank, one-hot encoding.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Sequences</strong></td>
+<td style="text-align: left;">Lagged values and rolling statistics, ordered by a column and optionally within a group (for example per customer).</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Reshape</strong></td>
+<td style="text-align: left;">Group and summarize, pivot, stack columns.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><strong>Combine</strong></td>
+<td style="text-align: left;">Upload a second file and join it on a key (left, inner, outer, right) or append its rows.</td>
+</tr>
+</tbody>
+</table>
+<p>Formulas accept column names, numbers, <code>+ - * / // % **</code>, comparisons and the functions <code>log</code>, <code>log1p</code>, <code>log10</code>, <code>sqrt</code>, <code>abs</code>, <code>exp</code>, <code>round</code>, <code>floor</code>, <code>ceil</code>, <code>min</code>, <code>max</code>. Put a name with spaces between backticks: <code>log1p(`unit price`)</code>. Division by zero gives an empty value, not an error. Anything else is rejected, so a recipe from someone else cannot run code.</p>
+<p><img alt="Transform" src="../images/transform-light.png" /></p>
+<h3 id="patterns">Patterns<a class="headerlink" href="#patterns" title="Permanent link">&para;</a></h3>
+<p>Correlations above 0.85, columns with extreme values, categories that dominate, and probable identifier columns. A button asks the local language model for a written summary (needs Ollama).</p>
+<h3 id="statistics">Statistics<a class="headerlink" href="#statistics" title="Permanent link">&para;</a></h3>
+<p>A summary table, the distribution of any column, and the correlation matrix with the ten strongest relationships.</p>
+<h3 id="ask">Ask<a class="headerlink" href="#ask" title="Permanent link">&para;</a></h3>
+<p>Type a question and a local model writes the SQL; you can edit it before it runs. The <em>SQL</em> tab runs your own queries. The data is the table <code>df</code>. Only read-only queries are accepted.</p>
+<h3 id="analyst">Analyst<a class="headerlink" href="#analyst" title="Permanent link">&para;</a></h3>
+<p>A chat with your data, answered by a language model that runs on this computer (Ollama). Ask in your own words and the analyst decides what to do:</p>
+<ul>
+<li><strong>"Show the total revenue by region in 2024"</strong> draws a chart. The model does not write code: it describes the chart (kind, columns, aggregation, time grain, filters, top N) in a small specification that KikoLens checks against your columns and draws itself. If the specification is wrong ("column <code>turnover</code> does not exist, the columns are..."), that sentence goes back to the model so it can correct it.</li>
+<li><strong>"How many rows per region?"</strong> runs a read-only SQL query (validated like in <em>Ask</em>).</li>
+<li><strong>"Why did revenue fall in the last quarter?"</strong> hands over to an analysis agent that chains KikoLens tools (regression, forecast, why it changed, unusual periods, segments, survival, Granger, RFM...), one at a time. Each choice is validated (the tool and every column must exist), run, and summarised back to the model, up to five steps, and every step is shown with its reason. Download the trail as Markdown, or as Python code that repeats the same calls without the model.</li>
+</ul>
+<p>The model only ever chooses and explains; every number comes from the analyses. If Ollama is not running, the page says so and falls back to a basic analysis picked from keywords in your question. <em>Settings</em> lets you stop sending sample values of the data to the model (only column names, types and ranges); it all stays on this computer either way.</p>
+<h2 id="analysis">Analysis<a class="headerlink" href="#analysis" title="Permanent link">&para;</a></h2>
+<h3 id="experiments">Experiments<a class="headerlink" href="#experiments" title="Permanent link">&para;</a></h3>
+<p>Six tabs that answer "is this real or chance?" in plain language. Each result shows the test used, the p-value, the <strong>effect size</strong> with a label (negligible, small, medium, large) and a conclusion that also says what you cannot conclude.</p>
+<ul>
+<li><strong>Compare groups.</strong> Pick a number and a column that splits the rows. Two groups: Welch's t-test, or Mann-Whitney when the data are clearly not normal. Three or more: ANOVA with Tukey comparisons, or Kruskal-Wallis with Holm-adjusted comparisons. The page tells you which was chosen and why.</li>
+<li><strong>Two categories.</strong> Chi-squared test (Fisher's exact for small 2x2 tables) with Cramér's V and a map of where the table departs from chance.</li>
+<li><strong>Correlation.</strong> Pearson and Spearman with a confidence interval, and a warning when outliers or curvature distort the picture.</li>
+<li><strong>A/B test.</strong> Control against treatment on a rate (two-proportion z-test and the probability that the treatment is better) or an average (Welch). Includes a planner that tells you how many rows each group needs before you start.</li>
+<li><strong>A/B (Bayesian).</strong> The same comparison without a p-value: the probability that the variant is better, the likely difference and relative lift with their ranges, and the expected loss of choosing wrongly.</li>
+<li><strong>What relates to...</strong> Tests every column against a target and corrects for running many tests at once (Benjamini-Hochberg), so a handful of random "hits" are not reported as findings.</li>
+</ul>
+<p><img alt="Experiments" src="../images/experiments-light.png" /></p>
+<p><strong>Is the test sound?</strong> (the last tab) reads an A/B test the careful way. It first checks that each group got the share of users that was planned (a sample ratio mismatch, which usually means a bug and invalidates the test; if it fails, the page refuses to name a winner). It then gives the effect of every group against the control with its 95 % range (several variants are corrected with Holm), uses an earlier measure of the same outcome to remove noise (CUPED) and shows how much narrower the range becomes, plots the effect week by week and warns when it is fading or growing, and looks for segments whose effect differs from the rest of the rows, corrected for the number of segments examined. When nothing is significant it tells you the smallest effect the test could have found, so a small real effect is not mistaken for no effect.</p>
+<h3 id="sequential-tests">Sequential tests<a class="headerlink" href="#sequential-tests" title="Permanent link">&para;</a></h3>
+<p>A/B tests that stay valid however often you look. A classic test is only right if you check once, at the end; checking daily and stopping when it looks significant multiplies the false positives. The <strong>live test</strong> uses a mixture sequential probability ratio test (mSPRT): it shows the evidence building up as visitors arrive, tells you when it is enough to stop, and gives an always-valid p-value and range next to the (misleading if peeked at) classic p-value. The <strong>planner</strong> simulates how many visitors the sequential test needs against a fixed-size test, and how often it raises a false alarm when there is no effect. The <strong>bandit simulator</strong> shows how a Thompson-sampling bandit shifts traffic to the winning variant while it learns, and how many more conversions that gives than an even split.</p>
+<h3 id="anomalies">Anomalies<a class="headerlink" href="#anomalies" title="Permanent link">&para;</a></h3>
+<p>Choose columns, a method and the share of rows to flag. Methods: Isolation Forest (general purpose), Local Outlier Factor (odd rows inside dense groups), Robust z-score (one column at a time, easiest to explain) and Mahalanobis distance (accounts for correlated columns). Every flagged row comes with the reason, such as "income is 8.2 robust SDs above typical". You can download the rows or remove them (undoable; removal is not stored in the recipe, because the rows are specific to this data).</p>
+<p><img alt="Anomalies" src="../images/anomalies-light.png" /></p>
+<h3 id="dimensions">Dimensions<a class="headerlink" href="#dimensions" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>PCA.</strong> How many components capture 90% of the variation, what each is made of, and a scatter of the rows on any two components, colored by a column.</li>
+<li><strong>t-SNE.</strong> A 2D map where similar rows sit together (a sample of 3,000 rows is used on larger data).</li>
+<li><strong>Redundant columns.</strong> The variance inflation factor of each column: above 5 it is largely explained by the others, above 10 it is nearly a duplicate.</li>
+</ul>
+<p><img alt="Dimensions" src="../images/dimensions-light.png" /></p>
+<h3 id="distribution-fit">Distribution fit<a class="headerlink" href="#distribution-fit" title="Permanent link">&para;</a></h3>
+<p>Which distribution describes a numeric column best: normal, lognormal, exponential, gamma, Weibull, beta, uniform, Laplace or Student t, ranked by AIC with the Kolmogorov-Smirnov statistic, the histogram with the fitted curve, and a Q-Q plot against the best one. Distributions that cannot hold the data (a lognormal for negative values) are left out, and the page says whether the column looks normal.</p>
+<h3 id="compare-data">Compare data<a class="headerlink" href="#compare-data" title="Permanent link">&para;</a></h3>
+<p>See what changed between two datasets: the first part of the data against the rest, the original file against your working data, or another file against the open one. Each column gets a verdict (stable, moderate, drift) from the population stability index (PSI), a KS or chi-squared test, and notes such as new categories or a changed share of empty values. Dates and columns that are different in every row (identifiers) are shown as <em>info</em>, since they are expected to change. Text that holds numbers or dates (<code>1,200</code>, <code>2024-03-01</code>) is read as such. Columns that exist in only one dataset, or changed from numbers to text, are called out. Use it to check whether new data still looks like what a model was trained on.</p>
+<p><img alt="Compare data" src="../images/compare-light.png" /></p>
+<h3 id="segments">Segments<a class="headerlink" href="#segments" title="Permanent link">&para;</a></h3>
+<p>k-means clustering on the numeric columns, with an optional chart of inertia and silhouette scores to help choose the number of groups. Download the data with the segment label attached.</p>
+<h3 id="why-it-changed">Why it changed<a class="headerlink" href="#why-it-changed" title="Permanent link">&para;</a></h3>
+<p>A figure moved between two periods; which regions, channels or products explain it? Pick the date column, whether to measure a total, an average or the number of rows, and the two periods (by default the last third of the dates against the one before). The page ranks the columns by how much of the change sits in their single biggest value, draws a waterfall of what moved it for any column, and, for totals and counts, lists the combinations of two columns that moved most. For an average the change is split into a <strong>mix</strong> effect (the weight of a value changed) and a <strong>rate</strong> effect (the average inside the value changed).</p>
+<h3 id="causal-effect">Causal effect<a class="headerlink" href="#causal-effect" title="Permanent link">&para;</a></h3>
+<p>Did a treatment really change an outcome, or do the treated rows simply differ from the rest? Five tabs. <strong>Effect of a treatment</strong> compares the raw difference with regression, inverse-propensity weighting, matching and a doubly robust estimator (cross-fitted, with bootstrap ranges), and shows the overlap of propensities, the covariate balance before and after weighting and an <strong>E-value</strong>: how strong an unmeasured factor would have to be to explain the result away. <strong>Who responds most</strong> estimates the effect per row with two models (one per group), ranks rows by predicted uplift and draws a Qini curve against random targeting. <strong>Threshold</strong> estimates the jump where a rule kicks in (a score cut-off, an age limit) with local regression, several bandwidths and a test for rows piling up on one side. <strong>Synthetic control</strong> builds a weighted mix of other units that follows the treated one before the intervention and runs placebo tests on every control unit. <strong>Instrument</strong> runs two-stage least squares and warns when the instrument is weak (first-stage F below 10). Every method states its assumption; none of them can prove that no confounder is missing.</p>
+<h3 id="survival">Survival<a class="headerlink" href="#survival" title="Permanent link">&para;</a></h3>
+<p>How long until something happens (a customer leaves, a machine fails, a lead buys), counting the cases that have not happened yet. Pick the time column, the column that says whether the event happened (1 or yes, 0 or no) and, optionally, a column to compare groups. You get Kaplan-Meier curves with their confidence bands, the time by which half of each group had the event, and a log-rank test that says whether the groups really differ.</p>
+<h2 id="models">Models<a class="headerlink" href="#models" title="Permanent link">&para;</a></h2>
+<h3 id="models_1">Models<a class="headerlink" href="#models_1" title="Permanent link">&para;</a></h3>
+<p>AutoML picks an algorithm from the size and shape of the data and explains why. You can also choose the algorithm or import a model you trained earlier. Results include metrics, feature importance, a row explanation and a what-if simulator.</p>
+<h3 id="model-lab">Model lab<a class="headerlink" href="#model-lab" title="Permanent link">&para;</a></h3>
+<p>The careful way to choose a model. Pick the target, the columns to leave out and the models to compare; the lab keeps a share of rows aside, scores every model with cross-validation on the rest, tunes the best one with a randomized search, and only then measures it once on the held-out rows. Along the way it:</p>
+<ul>
+<li>warns about <strong>data leaks</strong>: columns that predict the target suspiciously well on their own</li>
+<li>warns about <strong>imbalanced classes</strong> and can weight rarer classes</li>
+<li>draws diagnostics: predicted against actual and residuals (regression), confusion matrix, ROC, precision-recall and calibration (classification), and a learning curve</li>
+<li>explains the model with permutation importance, partial dependence for any feature, and the effect of each feature on one chosen row</li>
+</ul>
+<p><img alt="Model lab" src="../images/lab-leaderboard-light.png" /></p>
+<p><img alt="Model lab diagnostics" src="../images/lab-diagnostics-light.png" /></p>
+<p>The <strong>Explain</strong> tab adds Shapley values for one row (the contribution of each feature, fairer than replacing one at a time when features are related) and a global importance computed from them. The <strong>Errors</strong> tab answers "where does the model fail?":</p>
+<ul>
+<li>segments (a value of a category, a band of a number) where the error is clearly higher than average, with how many times worse and how sure that is</li>
+<li>the rows it gets most wrong</li>
+<li>for two-class problems, what each decision threshold gives (precision, recall, F1) and the cheapest threshold for your cost of a false alarm and of a miss</li>
+<li>a row-by-row comparison of any two models, with a verdict on whether the difference is statistically reliable</li>
+</ul>
+<p><img alt="Where the model fails" src="../images/lab-errors-light.png" /></p>
+<p>Three more tabs look at the trained model from other angles:</p>
+<ul>
+<li><strong>Uncertainty.</strong> A range around each regression prediction, or a short list of plausible classes for each classification row, that holds the truth about as often as you ask (80 to 99%). It is calibrated on half of the test rows and checked on the other half, and it shows the coverage actually observed.</li>
+<li><strong>What would change it.</strong> Pick a test row and the answer you would like (another class, or a value above a number) and the lab searches for the smallest changes to one or two variables that get there, leaving fixed the ones that cannot change (age, country). Useful to explain a decision and to see which levers exist.</li>
+<li><strong>Fairness.</strong> For a classifier, how each group of another column is treated: the rate of the favourable result, the true and false positive rates and the accuracy, with a warning when a group gets the favourable result at less than 80% of another group's rate or when error rates differ by more than 10 points. It cannot say what is fair, only what you would need to justify.</li>
+</ul>
+<p>The model list also offers SVM, AdaBoost, Bagging, a voting ensemble and a stacking ensemble (slower, so unticked by default) and, if PyTorch is installed (<code>pip install "kikolens[torch]"</code>), a PyTorch multilayer network that takes part in the same comparison, tuning and model packages.</p>
+<h3 id="feature-ideas">Feature ideas<a class="headerlink" href="#feature-ideas" title="Permanent link">&para;</a></h3>
+<p>Tries new columns (products, ratios, sums, differences, logarithms of skewed columns, squares) and keeps, one at a time, the ones that improve a model in cross-validation by at least the amount you set. The result is a list of formulas; one click adds them to your data as <code>add_column</code> steps, so they are in the recipe and replay on new data.</p>
+<h3 id="feature-selection">Feature selection<a class="headerlink" href="#feature-selection" title="Permanent link">&para;</a></h3>
+<p>Which columns are worth keeping to predict a target. Four methods score every column (mutual information, an L1-penalised linear model, permutation importance and a random forest) and vote; a cross-validated curve shows the score using the best k columns and the page recommends the smallest k within one standard error of the best. One click adds a recipe step that drops the columns you can leave out.</p>
+<h3 id="regression">Regression<a class="headerlink" href="#regression" title="Permanent link">&para;</a></h3>
+<p>For understanding rather than predicting: what pushes a result up or down, other things equal. A column with numbers gets a linear regression; a column with two values gets a logistic regression. Pick the columns to explain it with and you get each effect with its standard error, its 95% range and its p-value, a coefficient chart, the effect of each term written as a sentence ("each extra unit of size goes with price rising by 3.01, other things equal"; "a support ticket multiplies the odds of leaving by 1.6") and the standardized effect so that terms in different units can be compared. Categories are compared with the commonest value. The page warns about columns that are largely explained by others (unstable coefficients), errors whose spread changes with the fit or that are related from row to row (p-values too optimistic), and, for logistic regression, a column that almost gives the answer away.</p>
+<h3 id="neural-network">Neural network<a class="headerlink" href="#neural-network" title="Permanent link">&para;</a></h3>
+<p>A multilayer perceptron you configure: hidden layers (presets or your own, e.g. <code>128, 64, 32</code>), activation, optimizer, learning rate, L2 regularization, maximum epochs, early stopping and the held-out share for testing. After training you get metrics, the network diagram, the training curve, permutation importance and, if a classical model was trained for the same target, a side-by-side comparison.</p>
+<p><img alt="Neural network" src="../images/neural-light.png" /></p>
+<h3 id="time-series">Time series<a class="headerlink" href="#time-series" title="Permanent link">&para;</a></h3>
+<p>Choose a date column and a numeric column. The page resamples to a regular period, estimates trend and seasonality, and forecasts ahead with a 95% range. The forecast is tested on the last part of the data and compared with repeating the last value; the page says plainly when it does not beat that baseline.</p>
+<p><img alt="Time series" src="../images/timeseries-light.png" /></p>
+<p>Below the forecast, <strong>Go further</strong> has three tabs. <strong>Compare models</strong> tests five models (naive, seasonal naive, trend + seasonality, Holt-Winters and boosting on lags) by training each on the past and forecasting the stretch that follows, several times; the most accurate wins, and the range comes from the real errors it made. You can list special dates (a campaign, a holiday) that the boosting model uses. <strong>Changes in the series</strong> finds level shifts and trend changes and stays quiet on a series without them. <strong>One forecast per group</strong> forecasts each region or product separately.</p>
+<h3 id="classical-series">Classical series<a class="headerlink" href="#classical-series" title="Permanent link">&para;</a></h3>
+<p>Four tabs on one series (rows of the same period are combined by mean or sum). <strong>Stationarity</strong> runs ADF (null: unit root) and KPSS (null: stationary) on the series and on its first and second differences and says what the two tests say together: when they agree the verdict is firm, when they disagree the page tells you it is inconclusive and why, and it suggests how many differences to take. <strong>Autocorrelation</strong> draws the autocorrelation and partial autocorrelation with the band that noise would give and the Ljung-Box test. <strong>STL decomposition</strong> separates trend, seasonal pattern and remainder, robustly if you ask (outliers then stay in the remainder instead of bending the trend), with the strength of trend and season from 0 to 1 and the unusual points. <strong>ARIMA</strong> fits a model with seasonal terms, either one you choose or the best of a small search by AICc (listed under "Models tried", with a warning when several are indistinguishable), draws the forecast with its range and checks it against repeating the last season on stretches it did not see; if the simple method wins, the page says so.</p>
+<h3 id="forecast-with-drivers">Forecast with drivers<a class="headerlink" href="#forecast-with-drivers" title="Permanent link">&para;</a></h3>
+<p>Forecasts a series using other columns too (price, promotions, weather...). It tests on the past whether the drivers really beat the series alone, with a significance test, and lets you try <strong>what-if scenarios</strong> ("price 10% higher"). The second tab runs a <strong>Granger test</strong>: does the past of one column help predict another? It is about prediction, not proof of cause.</p>
+<h3 id="predict">Predict<a class="headerlink" href="#predict" title="Permanent link">&para;</a></h3>
+<p>Use a model on data it has not seen. Choose a model trained in this session, one from your saved models, or open a model file, then:</p>
+<ul>
+<li><strong>Predict a file.</strong> Use the open dataset or upload another file. Before predicting, the page lists problems with the input: missing columns, values that could not be read, categories never seen in training, numbers far outside the training range. Regression gives a likely range for each row; classification gives a confidence, and rows under 60% are counted so you know where to look first. If the file is raw, tick the box to repeat the cleaning steps used for training.</li>
+<li><strong>Predict one row.</strong> A form built from what the model expects, with the training range of each input.</li>
+<li><strong>Save and share.</strong> Keep the model in your saved models (saving the same name again creates a new version), download the package, or download a Markdown model card with its metrics, most influential features and expected inputs.</li>
+</ul>
+<p><img alt="Predict" src="../images/predict-light.png" /></p>
+<h3 id="model-health">Model health<a class="headerlink" href="#model-health" title="Permanent link">&para;</a></h3>
+<p>Is a saved model still as good as when you tested it? Choose a model and upload newer data that includes the real results (the column the model predicts). The page scores every period (or five consecutive parts if there is no date), draws the error or accuracy against what the model had in testing, and warns when a period is clearly worse (an average error 1.5 times higher, or an accuracy 10 points lower) or when it keeps getting worse over time. Drift in the inputs is a clue; this is the proof. The <strong>Compare models</strong> tab scores several saved models on the same data and says which predicts better and whether the gap is reliable or could be chance.</p>
+<h3 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h3>
+<p>Watches a data source over time. Create a monitor from the data open now (it becomes the baseline), optionally with a saved model and validation rules; then check new data, either a file you upload or the file the monitor watches. Each check records the number of rows, the quality score, drift against the baseline, broken rules and the model's predictions, and raises alerts: drift at the level you chose, a drop in quality, a large change in rows, missing or new columns, columns that changed from numbers to text, model inputs outside what it saw in training, and a shift in the average prediction or in the model's confidence. The history is a chart and a table. KikoLens does not schedule anything itself: the <strong>Schedule it</strong> panel gives the cron and Windows commands.</p>
+<p><img alt="Monitoring" src="../images/monitoring-light.png" /></p>
+<h3 id="run-history">Run history<a class="headerlink" href="#run-history" title="Permanent link">&para;</a></h3>
+<p>Every training of the model lab (dashboard or <code>kikolens lab</code>) is recorded with its data, target, parameters and metrics. See them over time with the best so far, sort by any metric, and compare runs side by side (only what differs). The lab can also tune with <strong>Bayesian optimisation</strong>, which learns from each attempt to choose the next one and shows how the search went.</p>
+<h2 id="learn">Learn<a class="headerlink" href="#learn" title="Permanent link">&para;</a></h2>
+<h3 id="concept-lab">Concept lab<a class="headerlink" href="#concept-lab" title="Permanent link">&para;</a></h3>
+<p>An area of its own ("Learn") for understanding the ideas behind the other sections, with simulations instead of formulas. It needs no data and can be opened from the welcome screen. Pick a concept, move its controls and the simulation redraws; <strong>Draw new random data</strong> repeats it with another sample so you see what changes (the numbers) and what does not (the lesson). Each concept ends with what to take from it and something to try:</p>
+<ul>
+<li><strong>The central limit theorem:</strong> choose a skewed, two-humped or heavy-tailed population and see the averages of n values turn into a bell as n grows.</li>
+<li><strong>What a p-value is:</strong> with no real effect, about 5 experiments in 100 look significant, and checking the result ten times and stopping at the first success raises that to about 20.</li>
+<li><strong>What "confidence" means:</strong> draw 100 intervals and count the ones that miss the truth; with tiny, skewed samples the promise of 95 % is not kept.</li>
+<li><strong>How many people are enough:</strong> the power curve, the sample needed for the effect you choose (64 per group for half a standard deviation) and why half the effect needs four times the people.</li>
+<li><strong>Bias, variance and overfitting:</strong> polynomials of growing complexity fitted to noisy data, with the error on the data used and on new data split into bias, variance and noise.</li>
+<li><strong>Simpson's paradox:</strong> a trend that goes up in every group and down in the whole data.</li>
+<li><strong>Regression to the mean:</strong> why the best of one year fall back the next with no change in anyone.</li>
+<li><strong>Why testing many things finds something:</strong> twenty tests with nothing real still give a false alarm in two studies out of three, and what two corrections do about it.</li>
+</ul>
+<h3 id="glossary-and-reading-guides">Glossary and reading guides<a class="headerlink" href="#glossary-and-reading-guides" title="Permanent link">&para;</a></h3>
+<p><strong>Glossary</strong> (Learn area) lists 74 terms, from p-value to Cpk, each with a plain definition, a "watch out" line with the usual misreading, and related terms. Search matches names first and then definitions, and the language follows the one you chose for the dashboard. At the end of 27 sections (experiments, causal effect, regression, model lab, time series, text, network, survey and others) a closed box called <strong>How to read this page</strong> says what to look at first, what to be careful about and defines the words that help for that page. The same glossary is available as <code>kikolens glossary</code> and <code>kl.glossary</code>.</p>
+<h2 id="share">Share<a class="headerlink" href="#share" title="Permanent link">&para;</a></h2>
+<h3 id="panel">Panel<a class="headerlink" href="#panel" title="Permanent link">&para;</a></h3>
+<p>A page of your own. Add <strong>metrics</strong> (count, sum, mean, median, minimum, maximum, distinct values), <strong>charts</strong> (bar, line, area, scatter, histogram, box, pie) and <strong>tables</strong>, set filters that apply to the whole panel, and reorder or remove tiles. <strong>Suggest a panel</strong> builds a starting point from your columns. <strong>Click a bar or slice, or drag a box on a histogram, scatter or line, and the other tiles filter to what you selected</strong> (the chart you clicked keeps showing every option so you can change your mind); the active selections are listed above the tiles and <strong>Clear the selections</strong> removes them. Download it as one self-contained web page (charts included, the data is not) or as a JSON definition that you can reload and that is saved in your project.</p>
+<p><img alt="Panel" src="../images/panel-light.png" /></p>
+<h3 id="export">Export<a class="headerlink" href="#export" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Files:</strong> CSV, TSV, Excel, Parquet, JSON, JSON lines or Feather.</li>
+<li><strong>Excel workbook:</strong> one file with the data, the column profile, statistics, quality issues, the recipe, rule results, model metrics and the last predictions, each on its own sheet, with a highlighted header, frozen first row, filters and sensible widths. Text that starts with <code>=</code> is stored as text, never as a formula.</li>
+<li><strong>Database:</strong> writes the current data as a table. It stops if the table exists unless you choose to add rows or to replace it, and replacing needs a confirmation.</li>
+</ul>
+<p><img alt="Export" src="../images/export-light.png" /></p>
+<h3 id="data-dictionary-and-notebook">Data dictionary and notebook<a class="headerlink" href="#data-dictionary-and-notebook" title="Permanent link">&para;</a></h3>
+<p>Two more tabs in <em>Export</em>. The <strong>data dictionary</strong> has one entry per column (meaning, empty share, distinct values, typical values, range, warnings such as "mostly empty" or "may contain personal data") and you write the descriptions in the table itself; download it as Markdown or CSV to hand over with the data. The <strong>notebook</strong> is a Jupyter file that reloads the data, repeats every recipe step of the session and, if you choose a column, trains a model with the lab; it runs as is.</p>
+<h3 id="report">Report<a class="headerlink" href="#report" title="Permanent link">&para;</a></h3>
+<p>Builds one self-contained HTML page with quality, statistics, correlations, patterns, any models trained in this session and, optionally, commentary from the local model. It also builds a PDF (cover, quality, distributions, correlations and, when available, the model and the autopilot's forecast) that you can download directly.</p>
+<h3 id="project">Project<a class="headerlink" href="#project" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Save.</strong> Packs the original data, the recipe, extra datasets, your notes and, if you tick it, the trained models, into one <code>.kikolens</code> file.</li>
+<li><strong>Open.</strong> Restores all of that and replays the recipe, so you land exactly where you stopped. Data are stored as Parquet and never run code; models inside are loaded only when you confirm you trust the file.</li>
+<li><strong>Recipe.</strong> Every cleaning and transformation step, downloadable as JSON or as a Python script. Upload a recipe and a new file with the same columns to get it processed the same way.</li>
+</ul>
+<h2 id="advanced">Advanced<a class="headerlink" href="#advanced" title="Permanent link">&para;</a></h2>
+<h3 id="text">Text<a class="headerlink" href="#text" title="Permanent link">&para;</a></h3>
+<p>For columns with sentences, such as comments or reviews. Everything runs on this computer.</p>
+<ul>
+<li><strong>Terms:</strong> the words, pairs or triples that appear in the most texts, with a search box that shows each match in context.</li>
+<li><strong>By group:</strong> the terms that distinguish each group of another column (log odds), and the terms that go with a higher or lower number such as a rating.</li>
+<li><strong>Themes:</strong> groups similar texts and describes each by its key terms and an example.</li>
+<li><strong>Classify:</strong> learns to predict a column (a rating, a topic) from the text, tells you whether it beats always guessing the commonest class, shows the terms that point to each class and lets you try a sentence.</li>
+<li><strong>Tone:</strong> a rough positive / negative picture from a small word list (English and Spanish). It does not understand irony or negation.</li>
+<li><strong>Summary:</strong> asks the local model (Ollama) for the main themes of a sample of the texts.</li>
+</ul>
+<p><img alt="Text" src="../images/text-light.png" /></p>
+<p><strong>Topics</strong> finds the themes in the texts with NMF (fast and steady) or LDA, tries 2 to 8 topics and keeps the one whose main words co-occur most (coherence; the table shows the others), lists each topic's main words, its share of the texts and three example texts, and warns when two topics share most of their words or when most texts mix several topics. Pick a date column to see each topic's share by month. <strong>Duplicates and similar</strong> groups near-identical texts (typos and small edits included) and finds the texts most like a phrase you type. <strong>Patterns</strong> lists emails, links, phones, amounts, percentages, dates, hashtags and mentions; they are patterns, not understanding, and personal data found is flagged for the Privacy section. <strong>Phrases</strong> shows key phrases (RAKE) and word pairs that appear together more than chance. <strong>Readability</strong> gives a reading-ease score per text.</p>
+<h3 id="customers">Customers<a class="headerlink" href="#customers" title="Permanent link">&para;</a></h3>
+<p>Four tabs for behaviour data.</p>
+<ul>
+<li><strong>Retention.</strong> Cohorts by the period of each customer's first activity, and the share of each cohort still active one, two, three periods later. Periods that have not happened yet are left blank, not shown as zero.</li>
+<li><strong>Segments (RFM).</strong> Recency, frequency and spend scored from 1 to 5 and turned into segments (champions, loyal, big spenders, new or promising, at risk, lost), with the share of the value each one holds. Download every customer with their segment.</li>
+<li><strong>Funnel.</strong> Choose the stages in order; users count at a stage only if they also reached the earlier ones, and the biggest drop is named.</li>
+<li><strong>Bought together.</strong> Association rules (Apriori) from an order column and an item column, with support, confidence and lift.</li>
+</ul>
+<h3 id="impact">Impact<a class="headerlink" href="#impact" title="Permanent link">&para;</a></h3>
+<p>Did a change move the numbers? <strong>Before and after a date</strong> compares what happened after the change with what the earlier trend (or, much better, control series that the change did not touch) predicted. The range comes from how wrong the same method was at predicting earlier stretches where nothing happened, so it is not overconfident. <strong>Treated and control groups</strong> is a difference-in-differences estimate with a confidence interval. Neither proves causation: they only count as the effect of the change if nothing else changed at the same time.</p>
+<h3 id="recommendations">Recommendations<a class="headerlink" href="#recommendations" title="Permanent link">&para;</a></h3>
+<p>From a table of who used or rated what, an item-based recommender suggests items to a person, lists the items most like another, and is evaluated honestly: one interaction of each person is hidden and the recommender must bring it back among its first suggestions, against simply recommending the most popular items.</p>
+<h3 id="survey">Survey<a class="headerlink" href="#survey" title="Permanent link">&para;</a></h3>
+<p>Seven tabs for questionnaire data (one row per respondent). <strong>Questions</strong> summarises the scale questions (numbers such as 1 to 5, or texts such as "Agree" and "Strongly agree", in English or Spanish): average, share favourable, neutral and unfavourable, and the spread of answers; questions worded the other way round can be reversed. <strong>Reliability</strong> gives Cronbach's alpha for a group of questions that measure the same thing, its 95 % range, how well each question moves with the rest and what alpha would be without it, and points at questions that look reversed. <strong>NPS</strong> computes promoters minus detractors with its range and, by group, which groups stand out from the rest. <strong>Cross-tab</strong> crosses two questions with the chi-square test, Cramér's V and residuals that show which cells have more or fewer answers than chance. <strong>What matters most</strong> uses relative weights to share the explained part of an overall rating between the questions that may drive it, even when they overlap, and crosses importance with score: important and low-scoring means improve first. <strong>Between groups</strong> finds the questions that score differently, using tests for ordered answers and a correction for the number of questions. <strong>Answer quality</strong> counts people who gave the same answer to everything, left most blank or answered too fast.</p>
+<h3 id="network">Network<a class="headerlink" href="#network" title="Permanent link">&para;</a></h3>
+<p>Choose the two columns that name the ends of each link (customer and product, sender and receiver, author and paper), optionally a column with the strength of each link, and whether links have a direction. <strong>Overview</strong> lists the nodes by importance (PageRank, number of connections, betweenness: how many shortest paths pass through the node, and clustering: how many of its neighbours know each other), the communities found, how much of the network is in one connected piece, the typical and longest distance, and a drawing of the most important nodes coloured by community. Notes say when the network is split, depends on a few hubs or has bridges: nodes with few links that hold parts together. <strong>Paths</strong> finds the shortest chain between two nodes. <strong>Missing links</strong> suggests pairs that are not linked but share many neighbours. <strong>Robustness</strong> removes the best-connected nodes step by step and shows how fast the largest piece shrinks compared with removing random nodes.</p>
+<h3 id="geography">Geography<a class="headerlink" href="#geography" title="Permanent link">&para;</a></h3>
+<p>Pick the latitude and longitude columns (they are found by name and range). <strong>Check and map</strong> counts the usable rows and warns about swapped columns, values out of range, missing coordinates and the 0, 0 point that GPS devices report without a signal, and draws the points on a globe with no map tiles; coastlines and countries are optional because Plotly downloads those shapes. <strong>Distances</strong> gives the kilometres to a place or to the nearest centre in a CSV of shops or warehouses, and how many points each centre serves. <strong>Zones</strong> finds dense groups of points, optionally averaging a column in each. <strong>Spatial pattern</strong> asks whether nearby places have similar values (Moran's I, with a permutation p-value) and marks hot and cold spots (Getis-Ord Gi<em>), corrected for the many places tested at once. </em><em>Grid</em>* summarises points in square cells of the size you choose. Distances are along the surface of a sphere, which is accurate enough for business decisions but not for surveying.</p>
+<h3 id="model-governance">Model governance<a class="headerlink" href="#model-governance" title="Permanent link">&para;</a></h3>
+<p>Three tabs. <strong>Overview</strong> lists every registered model with its stage, owner, risk, latest validation and whether a review is due, and warns when a model file no longer matches what was registered. <strong>Model</strong> takes a saved model through its life: register it with an owner, a risk level and a card (purpose, intended use, limitations); validate it on the open data, which must contain the real results (the page says whether it holds up and gives the range the result could fall in); see, for the stage you choose, which checks pass and which do not, and move it; approve it (for high risk, by someone other than the owner); and roll production back. Overriding a failed check needs a reason and is logged as an override. <strong>Audit log</strong> verifies the chain of hashes and lists every action. The name you type as "who is doing this" is recorded as typed: the log is a record for the team, not access control.</p>
+<h3 id="synthetic-data">Synthetic data<a class="headerlink" href="#synthetic-data" title="Permanent link">&para;</a></h3>
+<p>Generates a table that looks like yours (each column with its distribution, and the columns with the same correlations) but whose rows are not real people, with a report on <strong>fidelity</strong> (how close the distributions and correlations are), <strong>privacy</strong> (exact and near copies of real rows) and <strong>utility</strong> (a model trained on the synthetic data against one trained on the real data, both tested on real rows).</p>
+<h2 id="dark-theme">Dark theme<a class="headerlink" href="#dark-theme" title="Permanent link">&para;</a></h2>
+<p><img alt="Dark theme" src="../images/neural-dark.png" /></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "search.suggest", "content.code.copy"], "search": "../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>
