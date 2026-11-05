@@ -26,6 +26,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens segment SOURCE [gmm\|hierarchical\|dbscan] [--columns a,b] [--groups 4] [--output FILE]` | Segment rows and describe each group in words; `--output` adds a group column. |
 | `kikolens recommend SOURCE USER ITEM [--rating COL] [--for PERSON] [--similar-to ITEM] [--evaluate]` | Item-based recommender from a table of who used what. |
 | `kikolens synth SOURCE OUTPUT [--rows N] [--seed N] [--report]` | Generate synthetic data with the same distributions and correlations; `--report` measures fidelity and privacy. |
+| `kikolens analyst SOURCE "QUESTION" [--model M] [--no-samples] [--html FILE] [--trail FILE.py]` | Ask a question in your own words: a local model decides whether to draw a chart, run SQL or chain analyses, and every step is shown. `--trail` writes the steps as Python code. Needs Ollama; without it a basic analysis is chosen from keywords. |
+| `kikolens chart SOURCE "REQUEST" [--output chart.html\|spec.json]` | Describe a chart in words; the model writes a specification that KikoLens validates and draws. |
+| `kikolens classify-text SOURCE COLUMN --labels a,b,c [--output FILE] [--limit 300]` | Classify a text column into labels you choose, without training anything. |
 | `kikolens project FILE.kikolens [--output FILE]` | Show what a project contains (notes, recipe) and optionally export its processed data. |
 
 ## Models

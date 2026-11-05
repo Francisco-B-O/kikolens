@@ -49,6 +49,10 @@ An unknown field raises an error that lists what is available. Text from your da
 | `survival(df, duration, event, group=None)` | Kaplan-Meier curves and a log-rank test. |
 | `cohorts(df, user, date)` / `rfm(df, customer, date, amount)` | Retention and customer segments. |
 | `distribution(series)` | Which distribution fits a column best. |
+| `chart(df, "request")` | A chart described in words (needs Ollama): `res.figure`, `res.table`, `res.spec`. |
+| `analyst(df)` | A conversation: `bot = kl.analyst(df); bot.ask("why did revenue fall?")` returns a turn with `.text`, `.figure`, `.table`, `.sql` and the steps taken in `.report`. |
+| `classify_text(texts, ["a", "b"])` | Zero-shot classification of texts with the local model. |
+| `formula(df, "revenue per unit")` | A formula for a new column described in words, already checked with the safe interpreter (`name`, `expression`, `preview`). |
 | `link(left, right, left_on, right_on)` | Fuzzy match by names; `res.merged` has the joined table. |
 | `select_features(df, target)` | Which columns to keep: consensus of four methods and a cross-validated curve; `res.recommended`, `res.removable`. |
 | `segment(df, "gmm" \| "hierarchical" \| "dbscan")` | Segments with each group described in words; `res.labels` is the group of every row. |

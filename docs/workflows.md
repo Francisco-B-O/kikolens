@@ -164,6 +164,16 @@ From the terminal: `kikolens ab-seq visits.csv variant converted control --order
 
 *Privacy* removes or fingerprints the identifying columns; **Synthetic data** then generates a table with the same distributions and correlations whose rows are not people. Its report shows the fidelity, the exact and near copies of real rows, and how well a model trained on it does on real rows. `kikolens synth customers.csv shareable.csv --report`.
 
+## 16. Talk to your data
+
+**Goal:** get answers without knowing which section to open. Needs [Ollama](https://ollama.com/) and a model (`ollama pull llama3.2`).
+
+1. *Data* → *Analyst*, with the sales example loaded: "show the total revenue by region" draws a bar chart, and the *How the chart was built* expander shows the specification the model wrote.
+2. "How many rows per channel?" runs a SQL query and shows it.
+3. "What drives revenue?" hands over to the agent; open *Steps taken* to see each tool it chose and why, and download the trail as Python to repeat it without the model.
+
+From the terminal: `kikolens analyst sales.csv "why did revenue change?" --trail steps.py`, `kikolens chart sales.csv "average revenue by month" --output chart.html`, `kikolens classify-text reviews.csv review --labels shipping,quality,price`.
+
 ## Monitoring from a script or CI
 
 `kikolens drift` returns exit code `2` when the data changed a lot, `0` otherwise. A nightly job can compare the latest export with the data the model was trained on:

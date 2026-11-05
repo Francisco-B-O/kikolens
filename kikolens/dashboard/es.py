@@ -549,4 +549,15 @@ ES = {
     "Bayesian search learns from each attempt to pick the next one, so it often needs fewer attempts.":
         "La búsqueda bayesiana aprende de cada intento para elegir el siguiente, así que suele necesitar menos intentos.",
     "How the Bayesian search went": "Cómo fue la búsqueda bayesiana",
+    "Analyst": "Analista",
+    "Ask in your own words: it draws charts, runs queries and chains analyses, showing every step. The model runs on this computer.":
+        "Pregunta con tus palabras: dibuja gráficos, ejecuta consultas y encadena análisis, mostrando cada paso. El modelo corre en este ordenador.",
+    "The local language model is not running, so the analyst can only choose a basic analysis from your words. Start Ollama and pull a model (ollama pull llama3.2) for the full conversation.":
+        "El modelo de lenguaje local no está en marcha, así que el analista solo puede elegir un análisis básico a partir de tus palabras. Arranca Ollama y descarga un modelo (ollama pull llama3.2) para la conversación completa.",
+    "Settings": "Ajustes", "Send sample values of the data to the model": "Enviar al modelo valores de muestra de los datos",
+    "The model runs on this computer, so nothing leaves it either way. Turn this off to send only column names, types and ranges.":
+        "El modelo corre en este ordenador, así que nada sale de él en ningún caso. Desactívalo para enviar solo nombres de columna, tipos y rangos.",
+    "Clear the conversation": "Borrar la conversación", "Try one of these:": "Prueba una de estas:", "Ask about your data": "Pregunta sobre tus datos",
+    "Thinking...": "Pensando...", "How the chart was built": "Cómo se construyó el gráfico", "Steps taken": "Pasos dados",
+    "Download the trail (Markdown)": "Descargar el rastro (Markdown)", "Download as Python": "Descargar como Python",
 }

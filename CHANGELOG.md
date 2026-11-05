@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* **Analyst:** a chat with your data (dashboard section, `kikolens analyst`, `kl.analyst`) answered by a local model that only *chooses*: it draws charts from a specification that is validated against your columns, runs read-only SQL, or chains KikoLens analyses (thirteen tools) step by step, with every step shown and exportable as Python code. Offline fallback when Ollama is not running.
+* **Charts from words** (`kikolens chart`, `kl.chart`), **zero-shot text classification** (`kikolens classify-text`) and **formulas from words** (`kl.formula`, checked with the safe interpreter).
+
 * **Engineering:** lint (ruff) and a compatibility matrix (pandas 2 and 3, Linux and Windows, plus macOS and Python 3.13 as warnings) in CI; CodeQL, Dependabot, a release workflow that builds the package and creates the GitHub release from the changelog; pre-commit; contributing guide, code of conduct, security policy and issue and pull request templates; documentation site with MkDocs (built in strict mode in CI).
 * **`kikolens doctor`** checks versions, optional extras, the user folder, Ollama and the configuration (exit code 1 when something required is missing; `--json` for scripts).
 * **`kikolens.toml`** configuration (Ollama host, model and timeout, dashboard port and language), with environment variables taking precedence and bad files never stopping startup.

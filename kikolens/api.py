@@ -292,6 +292,35 @@ def runs(target: str | None = None) -> pd.DataFrame:
     return list_runs(target)
 
 
+def chart(df: pd.DataFrame, request: str, model: str | None = None) -> Result:
+    """Un gráfico descrito con palabras. Un modelo local (Ollama) escribe una especificación que se valida y se dibuja: `res.figure`, `res.table`, `res.spec`."""
+    from kikolens.ai.analyst import ask_chart
+    from kikolens.ai.client import LLM, ollama_transport
+    fig, table, spec = ask_chart(df, request, LLM(ollama_transport(model=model)) if model else LLM())
+    return _wrap("chart", {"figure": fig, "table": table, "spec": spec}, f"{spec['kind']} chart: {len(table):,} rows drawn")
+
+
+def analyst(df: pd.DataFrame, model: str | None = None, samples: bool = True):
+    """Una conversación con los datos: `bot = kl.analyst(df)`, `bot.ask("por qué bajaron las ventas")` (ver `kikolens.ai.analyst.Analyst`)."""
+    from kikolens.ai.analyst import Analyst
+    from kikolens.ai.client import LLM, ollama_transport
+    return Analyst(df, LLM(ollama_transport(model=model)) if model else LLM(), samples)
+
+
+def classify_text(texts: pd.Series, labels: list, model: str | None = None, limit: int = 300) -> pd.DataFrame:
+    """Clasifica textos en etiquetas que eliges, sin entrenar nada (un modelo local lee cada texto)."""
+    from kikolens.ai.analyst import classify_texts
+    from kikolens.ai.client import LLM, ollama_transport
+    return classify_texts(texts, labels, LLM(ollama_transport(model=model)) if model else LLM(), limit=limit)
+
+
+def formula(df: pd.DataFrame, instruction: str, model: str | None = None) -> dict:
+    """Una columna nueva descrita con palabras: devuelve `name`, `expression` y una vista previa, ya comprobada con el intérprete seguro."""
+    from kikolens.ai.analyst import suggest_formula
+    from kikolens.ai.client import LLM, ollama_transport
+    return suggest_formula(df, instruction, LLM(ollama_transport(model=model)) if model else LLM())
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula")
