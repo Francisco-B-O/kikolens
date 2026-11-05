@@ -238,3 +238,12 @@ def test_models_use_dates_and_numbers_stored_as_text(data):
     assert bundle["schema"]["date"]["kind"] == "datetime" and bundle["schema"]["price"]["kind"] == "numeric"
     out, report = pr.predict_frame(bundle, frame.head(5).drop(columns="y"))   # el mismo texto de entrada
     assert out["predicted_y"].notna().all() and report["coerced"] == {}
+
+
+def test_registry_names_cannot_leave_the_registry_folder(tmp_path):
+    import pytest
+    folder = tmp_path / "models"
+    folder.mkdir()
+    assert pr._inside(folder, "ok.klmodel").parent == folder.resolve() or pr._inside(folder, "ok.klmodel").name == "ok.klmodel"
+    with pytest.raises(ValueError, match="outside"):
+        pr._inside(folder, "../escape.klmodel")

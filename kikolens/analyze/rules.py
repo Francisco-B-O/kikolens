@@ -15,6 +15,33 @@ MAX_PATTERN = 200
 MAX_RULES = 100
 
 
+def _repeats_a_repeated_group(pattern: str) -> bool:
+    """True si un grupo que ya contiene una repetición vuelve a repetirse, como (a+)+ o (a*)*: tiempo exponencial con ciertas entradas.
+    Un solo recorrido, sin expresiones regulares."""
+    stack, escaped, in_class = [], False, False
+    for i, ch in enumerate(pattern):
+        if escaped:
+            escaped = False
+        elif ch == "\\":
+            escaped = True
+        elif in_class:
+            in_class = ch != "]"
+        elif ch == "[":
+            in_class = True
+        elif ch == "(":
+            stack.append(False)
+        elif ch == ")":
+            inner = stack.pop() if stack else False
+            nxt = pattern[i + 1] if i + 1 < len(pattern) else ""
+            if inner and nxt in ("+", "*", "{"):
+                return True
+            if stack and (inner or nxt in ("+", "*", "{")):
+                stack[-1] = True
+        elif ch in "+*{" and stack:
+            stack[-1] = True
+    return False
+
+
 def _need(df: pd.DataFrame, *columns) -> None:
     for c in columns:
         if c not in df.columns:
@@ -54,6 +81,8 @@ def violations(df: pd.DataFrame, rule: dict) -> pd.Series:
         pattern = str(rule.get("pattern", ""))
         if not pattern or len(pattern) > MAX_PATTERN:
             raise ValueError(f"The pattern must be 1 to {MAX_PATTERN} characters.")
+        if _repeats_a_repeated_group(pattern):
+            raise ValueError("The pattern repeats a repeated group, which can take very long to evaluate. Simplify it.")
         try:
             compiled = re.compile(pattern)
         except re.error as e:

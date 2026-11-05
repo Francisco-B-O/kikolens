@@ -249,3 +249,13 @@ def test_cli_validate(tmp_path, orders):
     assert runner.invoke(app, ["validate", str(source), str(tmp_path / "mine.json")]).exit_code == 2
     (tmp_path / "bad.json").write_text("{")
     assert runner.invoke(app, ["validate", str(source), str(tmp_path / "bad.json")]).exit_code == 1
+
+
+def test_regex_rules_reject_patterns_that_can_take_exponential_time():
+    import pandas as pd
+    import pytest
+    from kikolens.analyze import rules
+    df = pd.DataFrame({"code": ["aaaa", "bbbb"]})
+    with pytest.raises(ValueError, match="repeats a repeated group"):
+        rules.violations(df, {"check": "regex", "column": "code", "pattern": "(a+)+$"})
+    assert rules.violations(df, {"check": "regex", "column": "code", "pattern": "(ab)+|a+"}).tolist() == [False, True]
