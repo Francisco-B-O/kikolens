@@ -732,6 +732,20 @@ def concept(name: str, seed: int = 0, **params) -> Result:
     return _wrap("concept", res, table=res["table"] if res.get("table") is not None else None)
 
 
+def glossary(term: str | None = None, lang: str = "en"):
+    """El glosario: sin argumentos, todos los términos; con una palabra, los que la contienen; con una clave exacta (`"p_value"`), su definición y el «ojo con»."""
+    from kikolens.learn import glossary as gl
+    if term is None:
+        return gl.glossary(lang)
+    try:
+        return gl.get(term, lang)
+    except ValueError:
+        found = gl.search(term, lang)
+        if len(found):
+            return found
+        raise
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality", "concepts", "concept")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality", "concepts", "concept", "glossary")

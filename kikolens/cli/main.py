@@ -2930,6 +2930,33 @@ def learn(
         console.print(f"Chart written to {figure}")
 
 
+@app.command("glossary")
+def glossary_command(term: Optional[str] = typer.Argument(None, help="A term to define; leave it out to list them, or give a word to search."),
+                     lang: str = typer.Option("en", help="en or es.")):
+    """What the technical words mean, with what to watch out for."""
+    from kikolens.learn import glossary as gl
+
+    try:
+        if term is None:
+            _print_frame(gl.glossary(lang)[["term", "definition"]], "Glossary", max_rows=200)
+            return
+        try:
+            entry = gl.get(term, lang)
+        except ValueError:
+            found = gl.search(term, lang)
+            if not len(found):
+                raise
+            _print_frame(found[["term", "definition"]], f"Terms matching '{term}'", max_rows=50)
+            return
+    except ValueError as e:
+        _fail(e)
+    console.print(f"[bold]{entry['term']}[/bold]")
+    console.print(entry["definition"])
+    console.print(f"[bold]Watch out:[/bold] {entry['watch_out']}")
+    if entry["see_also"]:
+        console.print("See also: " + ", ".join(x["term"] for x in entry["see_also"]))
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

@@ -61,3 +61,23 @@ def heat_table(df, columns=None, cmap: str = "Oranges", **kwargs) -> None:
 
 def download_csv(df, filename: str, label_text: str = "Download CSV") -> None:
     st.download_button(label_text, df.to_csv(index=False).encode("utf-8"), filename, "text/csv")
+
+
+def how_to_read(page: str) -> None:
+    """Al final de una sección: qué mirar, de qué desconfiar y los términos que ayudan. Solo las secciones que tienen guía."""
+    from kikolens.dashboard import i18n
+    from kikolens.learn import glossary
+
+    lang = i18n.current()
+    found = glossary.guide(page, lang)
+    if found is None:
+        return
+    with st.expander(t("How to read this page")):
+        st.markdown("**" + t("What to look at") + "**")
+        st.write(found["reads"])
+        st.markdown("**" + t("Watch out") + "**")
+        st.write(found["watch_out"])
+        if found["terms"]:
+            st.markdown("**" + t("Words that help") + "**")
+            for entry in found["terms"]:
+                st.markdown(f"* **{entry['term']}**: {entry['definition']}")

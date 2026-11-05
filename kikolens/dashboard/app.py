@@ -8,7 +8,7 @@ from kikolens.dashboard import components as ui
 from kikolens import config, demo, plugins
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, classic_series, clusters, concept_lab, compare, customers, dimensions, distribution, drivers, experiments, explore, export, geography,
-                                      features, gallery, governance_view, health, history, home, impact, inventory, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
+                                      features, gallery, glossary_view, governance_view, health, history, home, impact, inventory, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
                                       neural, network_view, overview, patterns, plugins_view, predict, privacy, process_control, project, quality, panel, regression, report, simulation, statistics,
                                       story, survey, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
@@ -27,7 +27,7 @@ GROUPS = {
                  "Why it changed": drivers},
     "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries, "Classical series": classic_series, "Model governance": governance_view,
                "Predict": predict, "Model health": health, "Monitoring": monitoring},
-    "Learn": {"Concept lab": concept_lab},
+    "Learn": {"Concept lab": concept_lab, "Glossary": glossary_view},
     "Share": {"Panel": panel, "Report": report, "Export": export, "Synthetic data": synthetic, "Project": project},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
@@ -216,6 +216,7 @@ def main() -> None:
     view = PAGES[page]
     ui.header(view.TITLE, view.SUBTITLE)
     view.render(df)
+    ui.how_to_read(page)
 
 
 main()
