@@ -147,6 +147,8 @@ def _plugin_loader(name: str, source):
         return None
     if isinstance(source, str):
         return plugins.read_with_loader(source)
+    if not isinstance(source, io.IOBase):                                  # solo un archivo subido de verdad (nunca texto, que podría ser una cadena de conexión)
+        return None
     import tempfile
 
     with tempfile.TemporaryDirectory() as folder:
