@@ -354,6 +354,26 @@ def instrumental(df: pd.DataFrame, outcome: str, endogenous: str, instruments: l
     return _wrap("instrumental variables", iv_2sls(df, outcome, endogenous, instruments, covariates))
 
 
+def simulate(inputs, expression: str, n: int = 10000, correlations=None, **kwargs) -> Result:
+    """Monte Carlo: `inputs` es un diccionario de distribuciones o un DataFrame (se remuestrea y se conserva la correlación)."""
+    from kikolens.analyze import simulation as sim
+    if isinstance(inputs, pd.DataFrame):
+        inputs, found = sim.inputs_from_data(inputs)
+        correlations = found if correlations is None else correlations
+    res = sim.monte_carlo(inputs, expression, n, correlations, **kwargs)
+    return _wrap("simulation", res, table=res["sensitivity"])
+
+
+def optimize(expression_or_objective, bounds=None, constraints=None, **kwargs) -> Result:
+    """Optimiza una fórmula (texto) con límites `{"x": (0, 10)}` y restricciones `["x + y <= 20"]`, o un programa lineal si le das un diccionario de coeficientes."""
+    from kikolens.analyze import simulation as sim
+    if isinstance(expression_or_objective, dict):
+        res = sim.linear_program(expression_or_objective, constraints or [], bounds, **kwargs)
+        return _wrap("linear program", res, table=res["constraints"])
+    res = sim.optimize_expression(expression_or_objective, bounds or {}, constraints, **kwargs)
+    return _wrap("optimization", res, table=res["solution"].rename("value").rename_axis("variable").reset_index())
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize")

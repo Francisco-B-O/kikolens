@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation"]
 
 
 @pytest.fixture(scope="module")
@@ -561,3 +561,21 @@ def test_causal_effect_page_estimates_and_remembers(data):
     at.button(key="cz_res_go").click().run()
     assert_clean(at)
     assert "cz_res" in at.session_state and "Treatment 'treated'" in at.session_state["cz_res"][1]["summary"]
+
+
+def test_simulation_page_runs_all_three_tools(data):
+    at = open_page(data, "Simulation")
+    assert_clean(at)
+    at.button(key="mc_go").click().run()
+    assert_clean(at)
+    assert "averages" in at.session_state["mc_res"]["summary"]
+    at.button(key="lp_go").click().run()
+    assert_clean(at)
+    assert at.session_state["lp_res"]["objective"] == pytest.approx(36)
+    at.button(key="of_go").click().run()
+    assert_clean(at)
+    assert at.session_state["of_res"]["objective"] > 99
+    at.text_input(key="lp_obj").set_value("3*x*y").run()
+    at.button(key="lp_go").click().run()
+    assert_clean(at)
+    assert "lp_res" not in at.session_state

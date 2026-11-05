@@ -1787,6 +1787,82 @@ def iv(
         console.print(f"[yellow]{note}[/yellow]")
 
 
+@app.command()
+def simulate(
+    formula: str,
+    data: Optional[str] = typer.Option(None, help="File whose numeric columns are resampled as inputs (their correlation is kept)."),
+    input: list[str] = typer.Option([], "--input", help="An input as name=distribution(args), such as price=normal(10,2). Repeat it; it overrides a column of --data."),
+    corr: list[str] = typer.Option([], "--corr", help="Correlation between two inputs as a,b=0.6. Repeat it."),
+    n: int = typer.Option(10000, help="Number of simulations."),
+    threshold: Optional[float] = typer.Option(None, help="Report the chance that the result goes above this value."),
+    output: Optional[Path] = typer.Option(None, help="Write every simulation to this CSV."),
+    seed: int = typer.Option(0, help="Seed, for repeatable runs."),
+):
+    """Monte Carlo: spread the uncertainty of several inputs through a formula (price * volume - cost)."""
+    from kikolens.analyze import simulation as sim
+
+    try:
+        inputs, correlations = {}, {}
+        if data:
+            inputs, found = sim.inputs_from_data(_load(data))
+            if found is not None:
+                correlations = {(a, b): found.loc[a, b] for a in found.index for b in found.columns if a < b}
+        for text in input:
+            name, spec = sim.parse_input(text)
+            inputs[name] = spec
+            correlations = {k: v for k, v in correlations.items() if name not in k}
+        for text in corr:
+            pair, _, rho = text.partition("=")
+            a, _, b = pair.partition(",")
+            correlations[(a.strip(), b.strip())] = float(rho)
+        res = sim.monte_carlo(inputs, formula, n, correlations or None, threshold, seed=seed)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["sensitivity"].round(4), "What moves the result")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        res["samples"].to_csv(output, index=False)
+        console.print(f"Simulations written to {output}")
+
+
+@app.command()
+def optimize(
+    formula: str,
+    var: list[str] = typer.Option(..., "--var", help="A variable with its bounds as name=min:max. Repeat it."),
+    constraint: list[str] = typer.Option([], "--constraint", help="A restriction such as 'a + b <= 100'. Repeat it."),
+    minimize: bool = typer.Option(False, "--minimize", help="Look for the lowest value instead of the highest."),
+):
+    """Find the values of some variables that make a formula as high (or low) as possible, within limits."""
+    from kikolens.analyze import simulation as sim
+
+    try:
+        res = sim.optimize_expression(formula, dict(sim.parse_variable(v) for v in var), constraint, maximize=not minimize)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def lp(problem: Path = typer.Argument(..., help="JSON with objective, constraints, bounds, maximize and integer (see docs/models.md).")):
+    """Solve a linear or integer program from a JSON file: allocations, mixes, schedules."""
+    import json
+
+    from kikolens.analyze import simulation as sim
+
+    try:
+        spec = json.loads(problem.read_text(encoding="utf-8"))
+        bounds = {k: tuple(v) for k, v in spec.get("bounds", {}).items()}
+        res = sim.linear_program(spec["objective"], spec.get("constraints", []), bounds, spec.get("maximize", True), spec.get("integer"))
+    except (OSError, ValueError, KeyError) as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["constraints"].round(4), "Constraints")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

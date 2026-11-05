@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* **Simulation and optimisation** (dashboard section "Simulation", `kikolens simulate`, `optimize` and `lp`, `kl.simulate` and `kl.optimize`): Monte Carlo with seven distributions plus resampling of real columns, correlations through a Gaussian copula, percentiles, chance of passing a threshold, value at risk, a tornado of what moves the result and a convergence chart; linear and integer programming with the worth of relaxing each limit; optimisation of any formula with bounds and restrictions, checked with the safe interpreter.
+
 * **Causal inference** (dashboard section "Causal effect", `kikolens effect`, `uplift`, `discontinuity`, `synth-control` and `iv`, and `kl.effect`, `kl.uplift`, `kl.discontinuity`, `kl.synthetic_control`, `kl.instrumental`): treatment effects with propensity weighting, matching, regression and a doubly robust estimator side by side with the raw difference, covariate balance, overlap checks and an E-value for hidden confounders; uplift per row with a Qini curve; regression discontinuity with a bandwidth sweep and a manipulation test; synthetic control with placebo tests; instrumental variables with a weak-instrument warning.
 
 * **Analyst:** a chat with your data (dashboard section, `kikolens analyst`, `kl.analyst`) answered by a local model that only *chooses*: it draws charts from a specification that is validated against your columns, runs read-only SQL, or chains KikoLens analyses (thirteen tools) step by step, with every step shown and exportable as Python code. Offline fallback when Ollama is not running.

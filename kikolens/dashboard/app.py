@@ -9,7 +9,7 @@ from kikolens import config, demo
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export,
                                       features, gallery, health, history, home, impact, lab, linkage, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
-                                      neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
+                                      neural, overview, patterns, predict, privacy, project, quality, panel, regression, report, simulation, statistics,
                                       story, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
@@ -22,7 +22,7 @@ GROUPS = {
              "Patterns": patterns, "Statistics": statistics, "Ask": ask, "Analyst": analyst},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
                  "Compare data": compare, "Segments": clusters,
-                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Causal effect": causal_effect, "Sequential tests": sequential, "Segment explorer": segment_explorer,
+                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Causal effect": causal_effect, "Simulation": simulation, "Sequential tests": sequential, "Segment explorer": segment_explorer,
                  "Recommendations": recommender,
                  "Why it changed": drivers},
     "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries,

@@ -63,6 +63,8 @@ An unknown field raises an error that lists what is available. Text from your da
 | `discontinuity(df, running, outcome, cutoff)` | Effect of crossing a threshold, with a bandwidth sweep. |
 | `synthetic_control(df, unit, time, outcome, treated_unit, intervention)` | Effect on one unit against a synthetic control; `res.p_value` comes from placebos. |
 | `instrumental(df, outcome, endogenous, instruments, covariates=None)` | Two-stage least squares; `res.first_stage_f` tells whether the instrument is strong. |
+| `simulate(inputs, formula, n=10000, correlations=None, threshold=None)` | Monte Carlo; `inputs` is a dictionary of distributions or a DataFrame whose columns are resampled. `res.mean`, `res.percentiles`, `res.p_above`, `res.sensitivity`, `res.samples`. |
+| `optimize(formula_or_objective, bounds, constraints)` | A formula as text (bounds `{"x": (0, 10)}`, restrictions `["x + y <= 20"]`) or a linear program if you pass a dictionary of coefficients; `res.solution`, `res.objective`. |
 | `recommender(df, user, item, rating=None)` | An item-based recommender: `.recommend(person)`, `.similar_items(item)`, `.popular()`. |
 | `synthesize(df, n=None)` | Synthetic data; `res.data` is the table and `res.report` the fidelity and privacy figures. |
 | `runs(target=None)` | The history of model lab runs (the dashboard and `kikolens lab` record them). |
