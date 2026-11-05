@@ -321,6 +321,39 @@ def formula(df: pd.DataFrame, instruction: str, model: str | None = None) -> dic
     return suggest_formula(df, instruction, LLM(ollama_transport(model=model)) if model else LLM())
 
 
+def effect(df: pd.DataFrame, treatment: str, outcome: str, covariates: list | None = None, method: str = "aipw", **kwargs) -> Result:
+    """Efecto causal de un tratamiento sobre un resultado ajustando por covariables (regresión, ponderación, emparejamiento y doblemente robusto)."""
+    from kikolens.analyze.causality import estimate_effect
+    res = estimate_effect(df, treatment, outcome, covariates, method=method, **kwargs)
+    return _wrap("causal effect", res)
+
+
+def uplift(df: pd.DataFrame, treatment: str, outcome: str, covariates: list | None = None, **kwargs) -> Result:
+    """Efecto del tratamiento por fila: a quién conviene tratar, con curva de Qini."""
+    from kikolens.analyze.causality import uplift as run
+    res = run(df, treatment, outcome, covariates, **kwargs)
+    return _wrap("uplift", res, table=res["deciles"])
+
+
+def discontinuity(df: pd.DataFrame, running: str, outcome: str, cutoff: float, **kwargs) -> Result:
+    """Efecto de pasar un umbral (discontinuidad en la regresión)."""
+    from kikolens.analyze.causality import regression_discontinuity
+    return _wrap("regression discontinuity", regression_discontinuity(df, running, outcome, cutoff, **kwargs))
+
+
+def synthetic_control(df: pd.DataFrame, unit: str, time: str, outcome: str, treated_unit, intervention, **kwargs) -> Result:
+    """Efecto sobre una unidad frente a una mezcla de unidades de control, con pruebas de placebo."""
+    from kikolens.analyze.causality import synthetic_control as run
+    res = run(df, unit, time, outcome, treated_unit, intervention, **kwargs)
+    return _wrap("synthetic control", res, table=res["weights"].rename("weight").rename_axis("unit").reset_index())
+
+
+def instrumental(df: pd.DataFrame, outcome: str, endogenous: str, instruments: list, covariates: list | None = None) -> Result:
+    """Variables instrumentales (mínimos cuadrados en dos etapas)."""
+    from kikolens.analyze.causality import iv_2sls
+    return _wrap("instrumental variables", iv_2sls(df, outcome, endogenous, instruments, covariates))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental")

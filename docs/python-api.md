@@ -58,6 +58,11 @@ An unknown field raises an error that lists what is available. Text from your da
 | `segment(df, "gmm" \| "hierarchical" \| "dbscan")` | Segments with each group described in words; `res.labels` is the group of every row. |
 | `ab_sequential(df, group, outcome, control, order=None)` | A sequential A/B test that stays valid when checked after every observation. |
 | `granger(df, date, cause, effect)` / `forecast_drivers(df, date, target, drivers, scenario=...)` | Granger test; forecast using other columns, with what-if scenarios. |
+| `effect(df, treatment, outcome, covariates=None, method="aipw")` | Causal effect with five estimators side by side; `res.effect`, `res.interval`, `res.table`, `res.balance`, `res.e_value`. |
+| `uplift(df, treatment, outcome, covariates=None)` | Effect per row and who to target; `res.cate`, `res.deciles`, `res.qini`. |
+| `discontinuity(df, running, outcome, cutoff)` | Effect of crossing a threshold, with a bandwidth sweep. |
+| `synthetic_control(df, unit, time, outcome, treated_unit, intervention)` | Effect on one unit against a synthetic control; `res.p_value` comes from placebos. |
+| `instrumental(df, outcome, endogenous, instruments, covariates=None)` | Two-stage least squares; `res.first_stage_f` tells whether the instrument is strong. |
 | `recommender(df, user, item, rating=None)` | An item-based recommender: `.recommend(person)`, `.similar_items(item)`, `.popular()`. |
 | `synthesize(df, n=None)` | Synthetic data; `res.data` is the table and `res.report` the fidelity and privacy figures. |
 | `runs(target=None)` | The history of model lab runs (the dashboard and `kikolens lab` record them). |

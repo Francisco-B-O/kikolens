@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect"]
 
 
 @pytest.fixture(scope="module")
@@ -548,3 +548,16 @@ def test_sequential_recommendations_synthetic_and_history_pages():
 
     at = open_page(people, "Run history")
     assert_clean(at)
+
+
+def test_causal_effect_page_estimates_and_remembers(data):
+    rng = np.random.default_rng(3)
+    n = 500
+    age = rng.normal(size=n)
+    treated = (rng.random(n) < 1 / (1 + np.exp(-age))).astype(int)
+    df = pd.DataFrame({"treated": treated, "outcome": 2 * treated + 3 * age + rng.normal(size=n), "age": age})
+    at = open_page(df, "Causal effect")
+    assert_clean(at)
+    at.button(key="cz_res_go").click().run()
+    assert_clean(at)
+    assert "cz_res" in at.session_state and "Treatment 'treated'" in at.session_state["cz_res"][1]["summary"]

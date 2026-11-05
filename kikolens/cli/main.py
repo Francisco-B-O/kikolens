@@ -1692,5 +1692,115 @@ def cli():
     app()
 
 
+@app.command()
+def effect(
+    source: str, treatment: str, outcome: str,
+    covariates: Optional[str] = typer.Option(None, help="Comma-separated columns to adjust for (default: all the others)."),
+    method: str = typer.Option("aipw", help="aipw, regression, ipw or matching."),
+    treated_value: Optional[str] = typer.Option(None, help="Value of the treatment column that counts as treated."),
+):
+    """Causal effect of a treatment on an outcome, adjusting for confounders (propensity, matching, doubly robust)."""
+    from kikolens.analyze.causality import estimate_effect
+
+    df = _load(source)
+    try:
+        res = estimate_effect(df, treatment, outcome, _names(covariates) or None, treated_value=_typed(df, treatment, treated_value), method=method)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "Estimates")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def uplift(
+    source: str, treatment: str, outcome: str,
+    covariates: Optional[str] = typer.Option(None, help="Comma-separated columns that may change the effect."),
+    treated_value: Optional[str] = typer.Option(None, help="Value of the treatment column that counts as treated."),
+):
+    """Who responds most to a treatment: effect per row, Qini curve and deciles."""
+    from kikolens.analyze.causality import uplift as run
+
+    df = _load(source)
+    try:
+        res = run(df, treatment, outcome, _names(covariates) or None, treated_value=_typed(df, treatment, treated_value))
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["deciles"].round(4), "By decile of predicted uplift")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def discontinuity(
+    source: str, running: str, outcome: str, cutoff: float,
+    bandwidth: Optional[float] = typer.Option(None, help="Distance from the cutoff to use (default: automatic)."),
+):
+    """Effect of crossing a threshold (regression discontinuity)."""
+    from kikolens.analyze.causality import regression_discontinuity
+
+    df = _load(source)
+    try:
+        res = regression_discontinuity(df, running, outcome, cutoff, bandwidth)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "By bandwidth")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("synth-control")
+def synth_control(source: str, unit: str, time: str, outcome: str, treated_unit: str, intervention: str):
+    """Effect on one unit against a weighted mix of control units (synthetic control, with placebo tests)."""
+    from kikolens.analyze.causality import synthetic_control
+
+    df = _load(source)
+    try:
+        res = synthetic_control(df, unit, time, outcome, _typed(df, unit, treated_unit), intervention)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["weights"].rename("weight").reset_index().rename(columns={"index": unit}).round(4), "Control weights")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def iv(
+    source: str, outcome: str, endogenous: str,
+    instruments: str = typer.Option(..., help="Comma-separated instrument columns."),
+    covariates: Optional[str] = typer.Option(None, help="Comma-separated controls."),
+):
+    """Instrumental variables (two-stage least squares) when the treatment is confounded."""
+    from kikolens.analyze.causality import iv_2sls
+
+    df = _load(source)
+    try:
+        res = iv_2sls(df, outcome, endogenous, _names(instruments), _names(covariates))
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
+    """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
+    if value is None or column not in df.columns:
+        return value
+    kind = df[column].dtype
+    if pd.api.types.is_bool_dtype(kind):
+        return value.lower() in ("1", "true", "yes", "si", "sí")
+    if pd.api.types.is_numeric_dtype(kind):
+        try:
+            return float(value)
+        except ValueError:
+            return value
+    return value
+
+
 if __name__ == "__main__":
     cli()

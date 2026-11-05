@@ -198,3 +198,34 @@ def test_weak_instruments_are_flagged_and_validation():
             cz.iv_2sls(iv_data(), **base)
     with pytest.raises(ValueError, match="50 complete"):
         cz.iv_2sls(iv_data().head(20), "wage", "educ", ["z"])
+
+
+# ── Python API y terminal ────────────────────────────────────────────────────
+def test_the_python_api_wraps_every_method():
+    import kikolens as kl
+    df = confounded(600)
+    res = kl.effect(df, "treated", "outcome", ["age", "income"], bootstrap=30)
+    assert res["kind"] == "causal effect" and "effect" in res and isinstance(res["table"], pd.DataFrame)
+    assert kl.uplift(df, "treated", "outcome", ["age", "income"])["kind"] == "uplift"
+    rng = np.random.default_rng(1)
+    running = rng.uniform(-1, 1, 800)
+    rd = pd.DataFrame({"score": running, "y": 0.5 * running + 2 * (running >= 0) + rng.normal(0, 0.3, 800)})
+    assert abs(kl.discontinuity(rd, "score", "y", 0.0)["effect"] - 2) < 0.5
+    iv = pd.DataFrame({"z": rng.normal(size=600)})
+    iv["d"] = iv["z"] + rng.normal(size=600)
+    iv["y"] = 3 * iv["d"] + rng.normal(size=600)
+    assert abs(kl.instrumental(iv, "y", "d", ["z"])["effect"] - 3) < 0.6
+
+
+def test_the_terminal_commands_print_the_summary(tmp_path):
+    from typer.testing import CliRunner
+    from kikolens.cli.main import app
+    csv = tmp_path / "d.csv"
+    confounded(500).to_csv(csv, index=False)
+    runner = CliRunner()
+    out = runner.invoke(app, ["effect", str(csv), "treated", "outcome", "--covariates", "age,income"])
+    assert out.exit_code == 0 and "Treatment 'treated'" in out.output
+    out = runner.invoke(app, ["uplift", str(csv), "treated", "outcome", "--covariates", "age,income"])
+    assert out.exit_code == 0 and "Qini" in out.output
+    out = runner.invoke(app, ["effect", str(csv), "treated", "nope"])
+    assert out.exit_code == 1

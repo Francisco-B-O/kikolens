@@ -73,6 +73,11 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens ab-seq SOURCE GROUP OUTCOME CONTROL [--order COL] [--alpha 0.05]` | Sequential A/B test (mSPRT): valid even if you look after every observation. |
 | `kikolens bandit RATES [--visitors N]` | Simulate a Thompson-sampling bandit against an even split. |
 | `kikolens granger SOURCE DATE CAUSE EFFECT [--max-lag 7]` | Does the past of one column help predict another? Predictive, not proof of cause. |
+| `kikolens effect SOURCE TREATMENT OUTCOME [--covariates a,b] [--method aipw\|regression\|ipw\|matching] [--treated-value V]` | Causal effect of a treatment, adjusting for confounders, with the raw difference, balance and overlap warnings and an E-value. |
+| `kikolens uplift SOURCE TREATMENT OUTCOME [--covariates a,b]` | Who responds most to a treatment: effect by decile and a Qini curve. |
+| `kikolens discontinuity SOURCE RUNNING OUTCOME CUTOFF [--bandwidth H]` | Effect of crossing a threshold, with a bandwidth sweep and a manipulation test. |
+| `kikolens synth-control SOURCE UNIT TIME OUTCOME TREATED_UNIT INTERVENTION` | Effect on one unit against a weighted mix of control units, with placebo tests. |
+| `kikolens iv SOURCE OUTCOME ENDOGENOUS --instruments z1,z2 [--covariates a,b]` | Instrumental variables (two-stage least squares) with a first-stage strength check. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
 | `kikolens select-features SOURCE TARGET [--exclude a,b] [--output FILE]` | Which columns are worth keeping: consensus of four methods and a cross-validated curve. |
 | `kikolens runs [--target COL] [--best] [--compare id,id] [--delete id]` | The history of model lab runs. |

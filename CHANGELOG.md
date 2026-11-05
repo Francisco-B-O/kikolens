@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* **Causal inference** (dashboard section "Causal effect", `kikolens effect`, `uplift`, `discontinuity`, `synth-control` and `iv`, and `kl.effect`, `kl.uplift`, `kl.discontinuity`, `kl.synthetic_control`, `kl.instrumental`): treatment effects with propensity weighting, matching, regression and a doubly robust estimator side by side with the raw difference, covariate balance, overlap checks and an E-value for hidden confounders; uplift per row with a Qini curve; regression discontinuity with a bandwidth sweep and a manipulation test; synthetic control with placebo tests; instrumental variables with a weak-instrument warning.
+
 * **Analyst:** a chat with your data (dashboard section, `kikolens analyst`, `kl.analyst`) answered by a local model that only *chooses*: it draws charts from a specification that is validated against your columns, runs read-only SQL, or chains KikoLens analyses (thirteen tools) step by step, with every step shown and exportable as Python code. Offline fallback when Ollama is not running.
 * **Charts from words** (`kikolens chart`, `kl.chart`), **zero-shot text classification** (`kikolens classify-text`) and **formulas from words** (`kl.formula`, checked with the safe interpreter).
 
