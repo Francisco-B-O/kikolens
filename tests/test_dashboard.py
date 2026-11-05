@@ -510,14 +510,6 @@ def test_distribution_page_fits_a_column(data):
 
 
 def test_new_analysis_pages_work_on_suitable_data(data):
-    # segmentos: dos columnas numéricas son suficientes
-    at = open_page(data, "Segment explorer")
-    assert_clean(at)
-    at.radio(key="sx_m").set_value("hierarchical").run()
-    assert_clean(at)
-    at.button(key="sx_apply").click().run()
-    assert_clean(at)
-    assert "group" in at.session_state["df"].columns
     # selección de variables
     at = open_page(data, "Feature selection")
     at.selectbox(key="fs_t").set_value("y")
@@ -563,38 +555,7 @@ def test_causal_effect_page_estimates_and_remembers(data):
     assert "cz_res" in at.session_state and "Treatment 'treated'" in at.session_state["cz_res"][1]["summary"]
 
 
-def test_simulation_page_runs_all_three_tools(data):
-    at = open_page(data, "Simulation")
-    assert_clean(at)
-    at.button(key="mc_go").click().run()
-    assert_clean(at)
-    assert "averages" in at.session_state["mc_res"]["summary"]
-    at.button(key="lp_go").click().run()
-    assert_clean(at)
-    assert at.session_state["lp_res"]["objective"] == pytest.approx(36)
-    at.button(key="of_go").click().run()
-    assert_clean(at)
-    assert at.session_state["of_res"]["objective"] > 99
-    at.text_input(key="lp_obj").set_value("3*x*y").run()
-    at.button(key="lp_go").click().run()
-    assert_clean(at)
-    assert "lp_res" not in at.session_state
-
-
-def test_marketing_mix_page_estimates_splits_the_budget_and_measures_elasticity():
-    from test_marketing import demand, weekly
-    at = open_page(weekly(), "Marketing mix")
-    assert_clean(at)
-    at.button(key="mm_go").click().run()
-    assert_clean(at)
-    assert at.session_state["mm_res"][1]["r2"] > 0.9
-    at = open_page(demand(500), "Marketing mix")
-    at.button(key="pe_go").click().run()
-    assert_clean(at)
-    assert "pe_res" in at.session_state
-
-
-def test_panel_cross_filter_and_office_downloads(data):
+def test_panel_cross_filter(data):
     at = open_page(data, "Panel")
     at.button(key="pn_suggest").click().run()
     assert_clean(at)
@@ -606,12 +567,6 @@ def test_panel_cross_filter_and_office_downloads(data):
     assert_clean(at)
     shown = int((data[column].astype(str) == value).sum())
     assert any(f"Showing {shown:,} of {len(data):,} rows" in str(c.value) for c in at.caption)
-    at.button(key="pn_pptx_make").click().run()
-    assert_clean(at)
-    assert at.session_state["pn_pptx_ready"][1][:2] == b"PK"
-    at.button(key="pn_docx_make").click().run()
-    assert_clean(at)
-    assert at.session_state["pn_docx_ready"][1][:2] == b"PK"
     at.button(key="pn_clear_cross").click().run()
     assert_clean(at)
     assert at.session_state["pn_cross"] == {}
@@ -692,59 +647,6 @@ def test_experiments_page_checks_that_the_test_is_sound():
     assert_clean(at)
     res = at.session_state["xq_res"][1]
     assert res["verdict"].startswith("new beats control") and "cuped" in res
-
-
-def test_process_control_page_runs_every_tab():
-    rng = np.random.default_rng(3)
-    d = pd.DataFrame({"v": np.r_[rng.normal(10, 1, 80), rng.normal(12.5, 1, 40)], "bad": rng.binomial(100, 0.05, 120), "n": 100})
-    at = open_page(d, "Process control")
-    assert_clean(at)
-    at.selectbox(key="pc_value").set_value("v").run()
-    at.checkbox(key="pc_usebase").set_value(True).run()
-    at.number_input(key="pc_base").set_value(80).run()
-    at.button(key="pc_res_go").click().run()
-    assert_clean(at)
-    assert not at.session_state["pc_res"][1]["in_control"]
-    at.text_input(key="pcap_lsl").set_value("5").run()
-    at.text_input(key="pcap_usl").set_value("15").run()
-    at.button(key="pcap_res_go").click().run()
-    at.button(key="pcs_res_go").click().run()
-    assert_clean(at)
-    assert at.session_state["pcap_res"][1]["cpk"] > 0 and at.session_state["pcs_res"][1][0]["signal_at"] is not None
-
-
-def test_inventory_page_runs_every_tab():
-    from test_inventory import sales
-    d = sales()
-    at = open_page(d, "Inventory")
-    assert_clean(at)
-    at.selectbox(key="iv_date").set_value("week").run()
-    at.button(key="iv_abc_go").click().run()
-    assert_clean(at)
-    assert at.session_state["iv_abc"][1]["matrix"] is not None
-    at.button(key="nv_res_go").click().run()
-    at.button(key="rp_res_go").click().run()
-    assert_clean(at)
-    assert at.session_state["nv_res"][1]["quantity"] > 100 and at.session_state["rp_res"][1][0]["safety_stock"] > 0
-    daily = pd.DataFrame({"sku": np.repeat(["a", "b"], 60), "day": list(pd.date_range("2024-01-01", periods=60)) * 2, "units": np.random.default_rng(3).poisson(8, 120)})
-    at = open_page(daily, "Inventory")
-    at.button(key="ip_res_go").click().run()
-    assert_clean(at)
-    assert len(at.session_state["ip_res"][1]["table"]) == 2
-
-
-def test_marketing_page_attribution_tab():
-    from test_attribution import worked_example
-    at = open_page(worked_example(), "Marketing mix")
-    assert_clean(at)
-    assert [t.label for t in at.tabs][-1] == "Attribution"
-    at.selectbox(key="at_user").set_value("user").run()
-    at.selectbox(key="at_time").set_value("time").run()
-    at.selectbox(key="at_channel").set_value("channel").run()
-    at.selectbox(key="at_conv").set_value("converted").run()
-    at.button(key="at_res_go").click().run()
-    assert_clean(at)
-    assert at.session_state["at_res"][1]["credit"].loc["A", "markov"] > 30
 
 
 def test_survey_page_runs_every_tab():

@@ -78,11 +78,6 @@ def _tools() -> dict:
         Tool("rfm", "Customer segments by recency, frequency and spend.", {"customer": "column", "date": "column", "amount": "column"},
              lambda df, customer, date, amount: a.rfm(df, customer, date, amount)),
     ]}
-    from kikolens import plugins
-    for found in plugins.analyses().values():                       # los análisis de plugins que se pueden describir sin texto libre
-        params = found.tool_params()
-        if params is not None:
-            tools[found.name] = Tool(found.name, found.description, params, lambda df, _name=found.name, **kw: plugins.run(_name, df, **kw))
     return tools
 
 
@@ -175,10 +170,7 @@ class Report:
             if s.error:
                 continue
             args = ", ".join(f"{k}={v!r}" for k, v in s.args.items())
-            if hasattr(_api(), s.tool):
-                lines.append(f"kl.{s.tool}(df{', ' + args if args else ''})")
-            else:
-                lines.append(f"kl.run({s.tool!r}, df{', ' + args if args else ''})")          # análisis de un plugin
+            lines.append(f"kl.{s.tool}(df{', ' + args if args else ''})")
         return "\n".join(lines) + "\n"
 
 

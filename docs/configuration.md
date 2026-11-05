@@ -20,8 +20,6 @@ timeout = 120                     # seconds to wait for an answer
 port = 8501                       # `kikolens start` uses this unless you pass --port
 language = "es"                   # "en" or "es": the language the dashboard opens in
 
-[plugins]
-paths = ["~/work/kikolens-plugins"]   # extra files or folders with plugins (see Plugins); only list code you trust
 ```
 
 ## Environment variables
@@ -29,7 +27,6 @@ paths = ["~/work/kikolens-plugins"]   # extra files or folders with plugins (see
 | Variable | Meaning |
 | :--- | :--- |
 | `OLLAMA_HOST`, `OLLAMA_MODEL`, `OLLAMA_TIMEOUT` | The same as the `[ollama]` keys. |
-| `KIKOLENS_PLUGINS` | `0` turns every plugin off. |
 | `KIKOLENS_HOME` | Where saved models, monitors, run history and `config.toml` live. Default `~/.kikolens`. |
 
 ## Check everything

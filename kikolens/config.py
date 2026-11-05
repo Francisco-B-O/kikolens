@@ -6,7 +6,7 @@ from pathlib import Path
 DEFAULT_MODEL = "llama3.2"
 DEFAULT_HOST = "http://localhost:11434"
 CONFIG_NAME = "kikolens.toml"
-KNOWN = {"ollama": {"host", "model", "timeout"}, "dashboard": {"port", "language"}, "plugins": {"paths"}}
+KNOWN = {"ollama": {"host", "model", "timeout"}, "dashboard": {"port", "language"}}
 
 
 def config_files() -> list:

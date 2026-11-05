@@ -172,32 +172,7 @@ def render(df: pd.DataFrame) -> None:
                 _render_tile(tile, value, error, panel)
 
     st.divider()
-    a, b, c, d = st.columns(4)
+    a, b = st.columns(2)
     a.download_button("Web page", pn.panel_html(df, panel).encode("utf-8"), "kikolens_panel.html", "text/html",
                       key="pn_html", help="One self-contained page with the charts. The data is not included.")
     b.download_button("Panel definition (JSON)", panel.to_json().encode("utf-8"), "panel.json", "application/json", key="pn_json")
-    _office(df, panel, cross, c, d)
-
-
-def _office(df: pd.DataFrame, panel: pn.Panel, cross: dict, pptx_slot, docx_slot) -> None:
-    """PowerPoint y Word se preparan al pedirlos (llevan un rato) y se recuerdan mientras no cambie el panel, los datos ni la selección."""
-    try:
-        from kikolens.report import office
-    except ImportError:
-        st.caption("PowerPoint and Word export needs  pip install kikolens[office]")
-        return
-    signature = (panel.to_json(), repr(sorted(cross.items())), df.shape, st.session_state.get("filename"))
-    for slot, key, make, name, mime in (
-            (pptx_slot, "pptx", office.panel_pptx, "kikolens_panel.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
-            (docx_slot, "docx", office.panel_docx, "kikolens_panel.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")):
-        ready = st.session_state.get(f"pn_{key}_ready")
-        if ready and ready[0] == signature:
-            slot.download_button("Download PowerPoint" if key == "pptx" else "Download Word", ready[1], name, mime, key=f"pn_{key}",
-                                 help="Native, editable charts. Includes the current selection." if key == "pptx" else "Charts as images. Includes the current selection.")
-        elif slot.button("Prepare PowerPoint" if key == "pptx" else "Prepare Word", key=f"pn_{key}_make"):
-            try:
-                st.session_state[f"pn_{key}_ready"] = (signature, make(df, panel, cross))
-            except (ImportError, ValueError) as e:
-                ui.note(str(e), "high")
-            else:
-                st.rerun()

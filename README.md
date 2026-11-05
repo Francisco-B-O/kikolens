@@ -27,65 +27,18 @@ Private, local-first data analysis. Load a dataset, let the autopilot take a fir
 
 ## What it does
 
-The dashboard groups its sections into four areas.
+Fifty-two sections in six areas. The first five are the main path; **Advanced** holds the specialised ones.
 
-| Area | Section | What it does |
+| Area | Sections | What you get |
 | :--- | :--- | :--- |
-| **Data** | Home, data story and chart gallery | A home page with a quality ring and sparklines, the data told as chapters with charts, and nine advanced charts (Sankey, treemap, radar, correlation network, calendar, ridgelines...). Built-in examples on the welcome screen. |
-| | Load | CSV, TSV, Excel (pick the sheet), JSON / NDJSON, Parquet, a pasted table, `http(s)` links, shared Google Sheets, `s3://` and `gs://` (with the `cloud` extra), and SQLite / PostgreSQL / MySQL (pick a table or run a read-only query). |
-| | Quality and cleaning | Quality score and detection of missing values, duplicates, constant columns, text that is really numbers or dates, and outliers. Missing-data patterns (are the gaps random?), smart fill (KNN, iterative, by group), merging of similar spellings, near-duplicate rows, and your own validation rules. Every fix is undoable; the original file is never touched. |
-| | Privacy | Finds personal data (validated patterns and column names), masks, hashes or removes it as recipe steps, and measures how identifiable people are with k-anonymity. |
-| | Match records | Joins two tables whose names are spelled differently (accents, order, typos), with ambiguity warnings. |
-| | Transform | Filter, sort and sample rows; formulas for new columns; date parts, bins, scaling, one-hot encoding; lags and rolling statistics; group, pivot and stack; join or append a second file. |
-| | Autopilot | A first full analysis in one click: safe cleaning as a recipe, column roles, findings, a model against a baseline and a forecast when there are dates, with a written summary and next steps. |
-| | Explore, Patterns, Statistics | Charts with filters, automatic findings (strong correlations, dominant categories, identifiers), summary tables and the correlation matrix. |
-| | Analyst | A chat with your data: it draws charts from a validated specification, runs read-only SQL or chains analyses step by step, showing every step. The local model only chooses; the numbers come from the analyses. |
-| | Ask | Question the data in plain language (a local model writes the SQL) or run your own read-only SQL. |
-| **Analysis** | Experiments | Compare groups (the right test is chosen for you, with effect size and post-hoc comparisons), association between categories, correlation with confidence intervals, A/B tests (classical and Bayesian) with sample-size planning, and a screen of every column against a target corrected for testing many at once. |
-| | Survey | Scale questions, Cronbach's alpha, NPS with groups, cross-tabs with residuals, key drivers of the overall rating (relative weights), group comparisons and answer-quality checks. |
-| | Is the test sound? | Part of Experiments: the split of users checked against the plan, CUPED noise reduction, the effect over time and by segment, and a verdict that refuses to name a winner when the test is broken. |
-| | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged; and periods of a series that are unusual once trend and season are taken out. |
-| | Dimensions | PCA with loadings, t-SNE maps, and a redundancy check (VIF). |
-| | Compare data | What changed between two datasets, two periods, or the raw and the cleaned data: PSI, KS and chi-squared per column. |
-| | Text | For comments and reviews: key terms, what distinguishes each group, themes, a classifier, rough tone, search, and an optional summary from the local model. |
-| | Segments | k-means clustering with a silhouette hint for the number of groups. |
-| | Sequential tests | A/B tests that stay valid when checked after every visitor (mSPRT), a planner, and a bandit simulator. |
-| | Segment explorer | Gaussian mixture (finds the number of groups), hierarchical clustering with a dendrogram and DBSCAN, each group described in words. |
-| | Recommendations | An item-based recommender with an honest evaluation against recommending the most popular items. |
-| | Survival | Kaplan-Meier curves with confidence bands and a log-rank test between groups, counting cases where the event has not happened yet. |
-| | Customers | Retention by cohort, RFM segments, conversion funnels and what is bought together. |
-| | Why it changed | A figure moved between two periods: which regions, channels or products explain it, with a waterfall and mix and rate effects for averages. |
-| | Impact | Did a change move the numbers? Compared with what a control or the earlier trend predicted, with a range that reflects how wrong that method was before; also difference-in-differences. |
-| | Causal effect | Did a treatment really work? Propensity weighting, matching and a doubly robust estimate next to the raw difference, balance and overlap checks, uplift per row, thresholds, synthetic control and instrumental variables. |
-| | Simulation | Monte Carlo over uncertain inputs (distributions, correlations, risk, what moves the result), linear and integer programs with the worth of each limit, and optimisation of any formula within bounds. |
-| | Marketing mix | What each channel adds to sales (carry-over, saturation, trend and season), a budget split from the response curves, and price elasticity with an instrument for prices that follow demand. |
-| | Attribution | Part of Marketing mix: the credit for conversions shared between channels by seven models (first and last touch, linear, time decay, position, Markov chain and Shapley), to see where they disagree. |
-| | Inventory | ABC and XYZ classes with demand patterns, the newsvendor quantity, economic order quantity, safety stock and reorder point for a service level, and a simulation that checks the policy. |
-| | Plugins | Your own analyses and file formats from a Python file, with a form generated in the dashboard; they also reach the terminal, the Python API, the Analyst and the API server. |
-| | Network | From a list of links: who matters (PageRank, betweenness), communities, distances, shortest paths, links that are probably missing and how the network breaks when hubs go. |
-| | Geography | Coordinate checks, distances to the nearest store or warehouse, dense zones, Moran's I and hot and cold spots, and grid summaries, with no map tiles downloaded. |
-| **Models** | Models | AutoML for regression and classification with a written rationale, feature importance, row explanations and a what-if simulator. |
-| | Model lab | Up to 12 models (a baseline included) compared with cross-validation, the best one tuned, data-leak detection, diagnostics, partial dependence, Shapley values, **where the model fails**, decision thresholds with costs, a row-by-row comparison of two models, ranges that hold the truth as often as you ask (conformal), the smallest changes that would flip a prediction, and a fairness check across groups. SVM, AdaBoost, Bagging, voting and stacking ensembles, and an optional PyTorch network, are available too. |
-| | Regression | What pushes a result up or down, other things equal: linear or logistic regression with ranges, p-values, odds ratios, each effect in a sentence and warnings when the model cannot be trusted. |
-| | Feature selection | Four methods vote on which columns to keep, and a cross-validated curve decides how many. |
-| | Forecast with drivers | Forecast a series with other columns too, test whether they help, try what-if scenarios and run Granger tests. |
-| | Run history | Every lab training is recorded and comparable; Bayesian tuning is available in the lab. |
-| | Feature ideas | Tries ratios, products and other new columns and keeps the ones that make a model better, as recipe steps. |
-| | Neural network | Configurable multilayer perceptron with the architecture drawn, the training curve, permutation importance and a comparison with the classical model. |
-| | Time series | Trend and seasonality, then five models (naive, seasonal naive, trend + seasonality, Holt-Winters, boosting on lags) tested on the past, the best one forecast with an honest range, changes of level or trend, special dates, and one forecast per group. |
-| | Classical series | Stationarity tests (ADF and KPSS together), autocorrelation, robust STL decomposition and seasonal ARIMA with automatic order selection, forecast ranges and a check against repeating the last season. |
-| | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
-| | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
-| | Process control | Control charts (individuals, subgroups, p, u, c) with signal rules, capability indices against a specification, and CUSUM and EWMA for small drifts. |
-| | Model governance | Owners, risk and model cards for saved models; draft, staging, production and archived stages with checks before each move, approvals, rollback, and an audit log that detects edits. |
-| | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
-| **Learn** | Glossary | 74 terms in English and Spanish with a definition, what to watch out for and related terms; every main section also ends with a "How to read this page" box. |
-| **Learn** | Concept lab | Simulations that teach why statistics works: the central limit theorem, p-values and peeking, what confidence means, power, overfitting, Simpson's paradox, regression to the mean and multiple testing. No data needed. |
-| **Share** | Panel | Pin metrics, charts and tables with global filters, click a chart to filter the others, and export to a web page, PowerPoint (native charts) or Word. |
-| | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
-| | Synthetic data | A table with the same distributions and correlations as yours but not real people, with fidelity, privacy and utility reports. |
-| | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; a database table; a data dictionary; or a Jupyter notebook that reproduces the session. |
-| | Project | Save everything to a single `.kikolens` file, reopen it later, and repeat the recipe on new data or export it as a Python script. |
+| **Data** | Home, Data story, Autopilot, Explore, Chart gallery, Quality and cleaning, Privacy, Match records, Transform, Patterns, Statistics, Ask, Analyst | Load CSV, Excel, JSON, Parquet, links, Google Sheets, `s3://` / `gs://` and SQL databases. A quality score with undoable fixes, detection of personal data with k-anonymity, fuzzy joins, and a recipe that records every step so it can be replayed on a new file. The **Autopilot** takes a first full pass in one click, and the **Analyst** chats with the data using a local model that only chooses the analysis: the numbers always come from the analysis itself. |
+| **Analysis** | Experiments, Sequential tests, Anomalies, Dimensions, Distribution fit, Compare data, Segments, Why it changed, Causal effect, Survival | The right statistical test chosen for you, with effect sizes and corrections for looking at many things; A/B tests that stay valid when checked every day (mSPRT), Bayesian and CUPED; anomalies with the reason for each row; PCA and t-SNE; drift between two datasets; clustering; "why did this figure move?"; propensity, matching, doubly robust, synthetic control, instrumental variables and uplift; Kaplan-Meier curves. |
+| **Models** | Models, Model lab, Feature ideas, Feature selection, Regression, Neural network, Time series, Classical series, Forecast with drivers, Predict, Model health, Monitoring, Run history | Up to 12 models compared with cross-validation against a baseline, tuning (grid and Bayesian), data-leak detection, Shapley values, where the model fails, decision thresholds with costs and conformal ranges; regression with p-values; a configurable neural network (scikit-learn or PyTorch); forecasts tested on the past; ADF / KPSS / STL / ARIMA; saved models that warn when new data no longer looks like the training data; monitoring with alerts. |
+| **Learn** | Concept lab, Glossary | Eight simulations that show why statistics works (central limit theorem, p-values and peeking, confidence, power, overfitting, Simpson's paradox, regression to the mean, multiple testing), a bilingual glossary of 74 terms, and a "How to read this page" box in the main sections. No data needed. |
+| **Share** | Panel, Report, Export, Project | A panel where a click on a chart filters the others, an HTML or PDF report, a formatted Excel workbook, a Jupyter notebook that reproduces the session, and a single `.kikolens` project file. |
+| **Advanced** | Text, Customers, Impact, Recommendations, Survey, Network, Geography, Model governance, Synthetic data | Text mining and zero-shot classification, cohorts and RFM, impact of a change, a recommender evaluated honestly, survey analysis, network and geographic analysis, model stages with an audit log, and synthetic data with fidelity and privacy reports. |
+
+The dashboard is in English and Spanish. The same analyses are available from a [command line](docs/cli.md), from [Python and notebooks](docs/python-api.md) and, for saved models, as a small [JSON API](docs/api-server.md).
 
 ## Try it
 
@@ -142,7 +95,7 @@ kikolens doctor        # checks versions, optional extras, Ollama and your confi
 Settings (the Ollama model, the port, the language the dashboard opens in) go in a `kikolens.toml`: see [Configuration](docs/configuration.md).
 To contribute, read [CONTRIBUTING.md](CONTRIBUTING.md); the documentation is built with `mkdocs` (`docs/`).
 
-Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[office]"` for PowerPoint and Word export, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
+Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
 
 For the language-model features, install Ollama and pull a model:
 
@@ -192,7 +145,7 @@ kikolens text reviews.csv review --group product --themes 4
 kikolens drift reference.csv current.csv          # exit code 2 when the data changed a lot
 kikolens monitor create NAME SOURCE / run / list / history / watch / schedule / delete
 kikolens panel data.csv --output panel.html
-kikolens panel data.csv --format pptx --where "region in North,West"
+kikolens panel data.csv --where "region in North,West"
 kikolens export data.csv out.xlsx --workbook      # formatted workbook with the analysis
 kikolens to-db data.csv sqlite:///results.db results
 kikolens report data.csv --target revenue --nn --output report.html
@@ -218,7 +171,7 @@ The first start downloads the model (about 2 GB) into the `ollama_data` volume. 
 * **Pickles run code.** Model files (`.klmodel`, `.pkl`) are Python pickles. Open only files you created or trust. Project files store data as Parquet and are safe to open; the models inside are loaded only if you tick the box.
 * **Writing to a database never overwrites by default.** Replacing a table needs an explicit choice (and a confirmation in the dashboard).
 * Dates and numbers stored as text are read as dates and numbers when modeling, and the lab says which columns it converted.
-* The tone in the Text section comes from a small word list: it is a rough picture, not a verdict. Interface language is English.
+* The tone in the Text section comes from a small word list: it is a rough picture, not a verdict. The dashboard is available in English and Spanish.
 
 ## Documentation
 

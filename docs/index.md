@@ -27,9 +27,11 @@ kikolens start        # open the dashboard, then pick "Or try an example" or loa
 
 ## What is in the box
 
-* **Data:** home page, data story, chart gallery, quality and cleaning (undoable, as replayable recipes), privacy tools, record matching, synthetic data.
-* **Analysis:** statistical tests with effect sizes, sequential A/B tests, anomalies, regression, survival, customers, impact of a change, segmentation, recommendations, text.
-* **Models:** autopilot, model lab (twelve models plus ensembles, Bayesian tuning, explanations, ranges, counterfactuals, fairness), forecasting with drivers, neural networks, monitoring and run history.
-* **Share:** panels, HTML and PDF reports, Excel, notebooks, a local model API, in English and Spanish.
+* **Data:** home page, data story, chart gallery, quality and cleaning (undoable, as replayable recipes), privacy tools, record matching, transformations, an autopilot and an analyst that chats with your data.
+* **Analysis:** statistical tests with effect sizes, sequential and Bayesian A/B tests, anomalies, drift, segmentation, "why did it change", causal effect and survival.
+* **Models:** a model lab (cross-validation, tuning, explanations, error analysis, conformal ranges), regression, neural networks, time series, saved models, model health and monitoring.
+* **Learn:** a concept lab of simulations and a bilingual glossary with reading guides.
+* **Share:** panels, HTML and PDF reports, Excel, notebooks and single-file projects.
+* **Advanced:** text, customers, impact, recommendations, surveys, networks, geography, model governance and synthetic data.
 
 ![Model lab](images/lab-leaderboard-light.png)

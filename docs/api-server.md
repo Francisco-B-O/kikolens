@@ -13,7 +13,7 @@ Open `/openapi.json` for the machine-readable description and `/functions` for t
 ## Security
 
 * It listens only on this computer unless you pass another `--host`, and then `--token` is required (`Authorization: Bearer TOKEN`; `/health` is open).
-* Clients can only run a fixed list of analyses plus your plugin analyses. They cannot run code, read arbitrary paths or run arbitrary SQL (queries are read-only and cannot open files).
+* Clients can only run a fixed list of analyses. They cannot run code, read arbitrary paths or run arbitrary SQL (queries are read-only and cannot open files).
 * Files can be loaded only by name from the folder given with `--data-dir`; without it, clients send rows or csv text. Names that escape the folder are refused.
 * At most 20 datasets of a million rows are held at once, request bodies are limited to 25 MB, and unexpected errors are reported by type only, never with paths or stack traces.
 * `--model` opens a saved model file, which is code: serve only models you trust. Only the models you name are served.
@@ -23,7 +23,7 @@ Open `/openapi.json` for the machine-readable description and `/functions` for t
 | Call | What it does |
 | :--- | :--- |
 | `GET /health` | `{"status": "ok"}`. |
-| `GET /functions` | The analyses: name, description, parameters and source (built-in or plugin). |
+| `GET /functions` | The analyses: name, description, parameters. |
 | `POST /datasets` | Create a dataset from `{"rows": [{...}]}`, `{"csv": "a,b\n1,2"}` or `{"file": "sales.csv"}`; optional `"name"`. Returns its `id`. |
 | `GET /datasets`, `GET /datasets/{id}` | List them, or see columns, types, missing values and the first rows. |
 | `DELETE /datasets/{id}` | Forget a dataset. |

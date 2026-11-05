@@ -5,11 +5,11 @@ from urllib.parse import quote
 import streamlit as st
 
 from kikolens.dashboard import components as ui
-from kikolens import config, demo, plugins
+from kikolens import config, demo
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, classic_series, clusters, concept_lab, compare, customers, dimensions, distribution, drivers, experiments, explore, export, geography,
-                                      features, gallery, glossary_view, governance_view, health, history, home, impact, inventory, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
-                                      neural, network_view, overview, patterns, plugins_view, predict, privacy, process_control, project, quality, panel, regression, report, simulation, statistics,
+                                      features, gallery, glossary_view, governance_view, health, history, home, impact, lab, linkage, models, monitoring, survival, multivariate, recommender, selection, sequential, synthetic,
+                                      neural, network_view, overview, patterns, predict, privacy, project, quality, panel, regression, report, statistics,
                                       story, survey, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
 
@@ -17,18 +17,22 @@ st.set_page_config(page_title="KikoLens", page_icon=None, layout="wide", initial
 
 # Las secciones se agrupan por áreas para que la barra lateral no sea una lista interminable.
 GROUPS = {
-    "Data": {"Home": home, "Overview": overview, "Data story": story, "Autopilot": autopilot, "Explore": explore, "Chart gallery": gallery, "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform,
-             "Match records": linkage,
+    "Data": {"Home": home, "Overview": overview, "Data story": story, "Autopilot": autopilot, "Explore": explore, "Chart gallery": gallery,
+             "Quality and cleaning": quality, "Privacy": privacy, "Transform": transform, "Match records": linkage,
              "Patterns": patterns, "Statistics": statistics, "Ask": ask, "Analyst": analyst},
-    "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
-                 "Compare data": compare, "Segments": clusters,
-                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Causal effect": causal_effect, "Simulation": simulation, "Marketing mix": marketing, "Plugins": plugins_view, "Network": network_view, "Geography": geography, "Process control": process_control, "Inventory": inventory, "Survey": survey, "Sequential tests": sequential, "Segment explorer": segment_explorer,
-                 "Recommendations": recommender,
-                 "Why it changed": drivers},
-    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries, "Classical series": classic_series, "Model governance": governance_view,
-               "Predict": predict, "Model health": health, "Monitoring": monitoring},
+    "Analysis": {"Experiments": experiments, "Sequential tests": sequential, "Anomalies": anomalies, "Dimensions": dimensions,
+                 "Distribution fit": distribution, "Compare data": compare, "Segments": clusters, "Why it changed": drivers,
+                 "Causal effect": causal_effect, "Survival": survival},
+    "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Regression": regression,
+               "Neural network": neural, "Time series": timeseries, "Classical series": classic_series,
+               "Forecast with drivers": multivariate, "Predict": predict, "Model health": health, "Monitoring": monitoring,
+               "Run history": history},
     "Learn": {"Concept lab": concept_lab, "Glossary": glossary_view},
-    "Share": {"Panel": panel, "Report": report, "Export": export, "Synthetic data": synthetic, "Project": project},
+    "Share": {"Panel": panel, "Report": report, "Export": export, "Project": project},
+    # Secciones de nicho o de apoyo: siguen disponibles, pero fuera del recorrido principal.
+    "Advanced": {"Text": text, "Customers": customers, "Impact": impact, "Recommendations": recommender,
+                 "Survey": survey, "Network": network_view, "Geography": geography,
+                 "Model governance": governance_view, "Synthetic data": synthetic},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
 GROUP_OF = {name: group for group, pages in GROUPS.items() for name in pages}
@@ -57,7 +61,7 @@ def _source_picker():
     mode = st.sidebar.selectbox("Source", ["File", "URL", "Paste", "Database"], key="source_mode", label_visibility="collapsed",
                                 format_func=i18n.t)
     if mode == "File":
-        upload = st.sidebar.file_uploader("File", type=FILE_TYPES + [e.lstrip(".") for e in plugins.loaders()], key="upload", label_visibility="collapsed")
+        upload = st.sidebar.file_uploader("File", type=FILE_TYPES, key="upload", label_visibility="collapsed")
         options, name = {}, getattr(upload, "name", None)
         if upload is not None and name.lower().endswith((".xlsx", ".xls")):
             try:

@@ -284,13 +284,22 @@ def capture(browser, mode: str) -> None:
     page.mouse.move(5, 5)
     page.screenshot(path=IMAGES / f"gallery-network-{mode}.png")
 
-    go("Segment explorer", "Analysis")
-    page.get_by_text("Hierarchical (dendrogram)").click()
-    time.sleep(5)
+    go("Segments", "Analysis")
+    time.sleep(4)
     page.mouse.move(5, 5)
     page.screenshot(path=IMAGES / f"segments-{mode}.png")
 
-    go("Impact", "Analysis")
+    go("Concept lab", "Learn")
+    time.sleep(3)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"concept-lab-{mode}.png")
+
+    go("Glossary", "Learn")
+    time.sleep(2)
+    page.mouse.move(5, 5)
+    page.screenshot(path=IMAGES / f"glossary-{mode}.png")
+
+    go("Impact", "Advanced")
     pick(page, "Measure", "revenue")
     page.get_by_role("button", name="Estimate the effect").click()
     time.sleep(8)
@@ -306,7 +315,7 @@ def capture(browser, mode: str) -> None:
     scroll_main(page, 120)
     page.screenshot(path=IMAGES / f"why-{mode}.png")
 
-    go("Synthetic data", "Share")
+    go("Synthetic data", "Advanced")
     page.get_by_role("button", name="Generate", exact=True).click()
     page.get_by_text("Column by column").wait_for(timeout=120000)
     time.sleep(2)
@@ -396,14 +405,14 @@ def capture(browser, mode: str) -> None:
 
     page.set_input_files('input[type="file"]', str(REVIEWS_CSV))   # otro dataset, para la sección de texto
     time.sleep(5)
-    go("Text", "Analysis")
+    go("Text", "Advanced")
     time.sleep(3)
     scroll_main(page, 120)
     page.screenshot(path=IMAGES / f"text-{mode}.png")
 
     page.set_input_files('input[type="file"]', str(ORDERS_CSV))   # clientes: retención y segmentos
     time.sleep(5)
-    go("Customers", "Analysis")
+    go("Customers", "Advanced")
     panel = page.locator('[role="tabpanel"]:visible')
     panel.get_by_role("button", name="Run").click()
     time.sleep(5)

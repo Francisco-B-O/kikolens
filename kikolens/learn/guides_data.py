@@ -45,18 +45,6 @@ GUIDES = {
         "Adjusting only removes the confounders you measured. A hidden one can still explain the result; the E-value tells you how strong it would have to be.",
         "Ajustar solo quita los factores de confusión que mediste. Uno oculto puede seguir explicando el resultado; el valor E dice cuán fuerte tendría que ser.",
         ["propensity", "confounder", "causation"]),
-    "Simulation": (
-        "Look at the whole range of results, not only the average: the percentiles show best and worst plausible cases, and the tornado shows which input matters most.",
-        "Mira todo el abanico de resultados, no solo el promedio: los percentiles muestran los mejores y peores casos plausibles, y el tornado qué entrada importa más.",
-        "The output is only as good as the assumptions about the inputs; change them and see whether the conclusion survives.",
-        "El resultado es tan bueno como los supuestos sobre las entradas; cámbialos y mira si la conclusión sobrevive.",
-        ["monte_carlo", "correlation"]),
-    "Marketing mix": (
-        "Compare each channel's contribution and its return, and look at which channels the page says cannot be told apart from zero. The saturation curves show where extra spend stops paying.",
-        "Compara la contribución de cada canal y su retorno, y mira qué canales dice la página que no se distinguen de cero. Las curvas de saturación muestran dónde el gasto extra deja de rendir.",
-        "Channels switched on together cannot be separated, and none of this proves cause. Use it to choose what to test.",
-        "Los canales activados a la vez no se pueden separar, y nada de esto prueba la causa. Úsalo para decidir qué probar.",
-        ["regression_coef", "multicollinearity", "causation"]),
     "Time series": (
         "Check the trend and the repeating pattern first, then whether the forecast beats the simple baselines on data it did not see.",
         "Mira primero la tendencia y el patrón que se repite, y luego si la previsión supera a las líneas base simples con datos que no vio.",
@@ -123,18 +111,6 @@ GUIDES = {
         "Neighbouring places are not independent, which breaks ordinary tests. Hot spots found by looking at a map are leads, not proofs.",
         "Los lugares vecinos no son independientes, lo que rompe los contrastes normales. Los focos que se ven en un mapa son pistas, no pruebas.",
         ["moran", "multiple_testing"]),
-    "Process control": (
-        "A point outside the limits or a run on one side signals that something changed. Limits describe what the process does, not what it should do.",
-        "Un punto fuera de los límites o una racha a un lado indica que algo cambió. Los límites describen lo que hace el proceso, no lo que debería hacer.",
-        "Every extra rule finds changes sooner and gives more false alarms. Capability only makes sense for a process in control.",
-        "Cada regla extra encuentra cambios antes y da más falsas alarmas. La capacidad solo tiene sentido en un proceso bajo control.",
-        ["control_chart", "cpk"]),
-    "Inventory": (
-        "The reorder point is the expected use during the delivery plus a safety stock for the service level you choose. The simulation shows the service it really gives.",
-        "El punto de pedido es el consumo esperado durante la entrega más un stock de seguridad para el nivel de servicio elegido. La simulación muestra el servicio que da de verdad.",
-        "Formulas assume independent, roughly normal demand; for items that sell rarely, trust the simulation.",
-        "Las fórmulas suponen demanda independiente y más o menos normal; en artículos que se venden poco, fíate de la simulación.",
-        ["standard_deviation", "monte_carlo"]),
     "Survey": (
         "For scale questions read the share favourable as well as the average. Alpha says whether questions measure the same thing; key drivers say what matters most for the overall rating.",
         "En las preguntas de escala lee el porcentaje favorable además de la media. El alfa dice si las preguntas miden lo mismo; los factores clave, qué pesa más en la valoración global.",
