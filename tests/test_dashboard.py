@@ -582,7 +582,7 @@ def test_simulation_page_runs_all_three_tools(data):
 
 
 def test_marketing_mix_page_estimates_splits_the_budget_and_measures_elasticity():
-    from tests.test_marketing import demand, weekly
+    from test_marketing import demand, weekly
     at = open_page(weekly(), "Marketing mix")
     assert_clean(at)
     at.button(key="mm_go").click().run()
@@ -618,7 +618,7 @@ def test_panel_cross_filter_and_office_downloads(data):
 
 
 def test_classical_series_page_runs_every_tab():
-    from tests.test_classic import monthly
+    from test_classic import monthly
     y, _ = monthly()
     df = pd.DataFrame({"month": y.index, "sales": y.values})
     at = open_page(df, "Classical series")
@@ -631,7 +631,7 @@ def test_classical_series_page_runs_every_tab():
 
 
 def test_text_page_new_tabs_run():
-    from tests.test_textmining import corpus
+    from test_textmining import corpus
     texts, _ = corpus(150)
     df = pd.DataFrame({"review": texts, "when": pd.date_range("2024-01-01", periods=150, freq="D")})
     at = open_page(df, "Text")
@@ -651,7 +651,7 @@ def test_text_page_new_tabs_run():
 
 
 def test_network_page_runs_every_tab():
-    from tests.test_network import planted
+    from test_network import planted
     edges, _ = planted(20, 3)
     at = open_page(edges, "Network")
     assert_clean(at)
@@ -665,7 +665,7 @@ def test_network_page_runs_every_tab():
 
 
 def test_geography_page_runs_every_tab():
-    from tests.test_geo import two_cities
+    from test_geo import two_cities
     d = two_cities(300)
     at = open_page(d, "Geography")
     assert_clean(at)
@@ -679,7 +679,7 @@ def test_geography_page_runs_every_tab():
 
 
 def test_experiments_page_checks_that_the_test_is_sound():
-    from tests.test_experiment import trial
+    from test_experiment import trial
     d = trial(2500)
     at = open_page(d, "Experiments")
     assert_clean(at)
@@ -714,7 +714,7 @@ def test_process_control_page_runs_every_tab():
 
 
 def test_inventory_page_runs_every_tab():
-    from tests.test_inventory import sales
+    from test_inventory import sales
     d = sales()
     at = open_page(d, "Inventory")
     assert_clean(at)
@@ -734,7 +734,7 @@ def test_inventory_page_runs_every_tab():
 
 
 def test_marketing_page_attribution_tab():
-    from tests.test_attribution import worked_example
+    from test_attribution import worked_example
     at = open_page(worked_example(), "Marketing mix")
     assert_clean(at)
     assert [t.label for t in at.tabs][-1] == "Attribution"
@@ -748,7 +748,7 @@ def test_marketing_page_attribution_tab():
 
 
 def test_survey_page_runs_every_tab():
-    from tests.test_survey import likert_items
+    from test_survey import likert_items
     d = likert_items(400)
     d["overall"] = np.clip(np.round(d.mean(axis=1) + np.random.default_rng(1).normal(0, 0.4, 400)), 1, 5)
     d["recommend"] = np.random.default_rng(2).integers(0, 11, 400)

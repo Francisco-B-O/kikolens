@@ -169,3 +169,18 @@ def test_the_python_api_and_the_terminal_run_simulations_and_optimisations(tmp_p
     problem.write_text('{"objective": {"x": 3, "y": 5}, "constraints": [{"coefs": {"x": 1}, "op": "<=", "rhs": 4}, {"coefs": {"y": 2}, "op": "<=", "rhs": 12}, {"coefs": {"x": 3, "y": 2}, "op": "<=", "rhs": 18}]}')
     out = runner.invoke(app, ["lp", str(problem)])
     assert out.exit_code == 0 and "36" in out.output
+
+
+def test_long_or_pathological_text_is_refused_quickly():
+    import time
+    start = time.time()
+    for fn in (sim.parse_input, sim.parse_variable, sim.parse_linear, sim.parse_linear_constraint):
+        with pytest.raises(ValueError, match="longer than"):
+            fn("x" * 100_000)
+    nasty = "1" * 400 + "x"
+    for fn in (sim.parse_linear, sim.parse_variable, sim.parse_input, sim.parse_linear_constraint):
+        try:
+            fn(nasty)
+        except ValueError:
+            pass
+    assert time.time() - start < 1.0

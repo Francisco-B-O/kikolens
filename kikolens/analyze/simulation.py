@@ -301,7 +301,29 @@ def _solution_figure(solution: pd.Series) -> go.Figure:
 
 
 # ── Optimización de una fórmula cualquiera ───────────────────────────────────
-_CONSTRAINT = re.compile(r"^(.*?)(<=|>=|==|<|>|=)(.*)$")
+MAX_TEXT = 500
+_OPERATORS = ("<=", ">=", "==", "<", ">", "=")
+_IDENT = re.compile(r"[A-Za-z_]\w*")
+_TOKEN = re.compile(r"\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|\.\d+|[A-Za-z_]\w*|[-+*]")        # alternativas que empiezan por caracteres distintos: sin retroceso
+
+
+def _limit(text) -> str:
+    text = text if isinstance(text, str) else ""
+    if len(text) > MAX_TEXT:
+        raise ValueError(f"The text is longer than {MAX_TEXT} characters.")
+    return text
+
+
+def _split_operator(text: str):
+    """Parte `a + b <= 100` en (izquierda, operador, derecha) buscando el primer operador de comparación, sin expresiones regulares."""
+    for i, ch in enumerate(text):
+        if ch in "<>=":
+            two = text[i:i + 2]
+            op = two if two in ("<=", ">=", "==") else ch
+            return text[:i], op, text[i + len(op):]
+    return None
+
+
 
 
 def _value(expression: str, point: dict) -> float:
@@ -322,10 +344,10 @@ def optimize_expression(expression: str, bounds: dict, constraints: list | None 
         raise ValueError("A variable has its minimum above its maximum.")
     parsed = []
     for text in constraints or []:
-        m = _CONSTRAINT.match(text.replace(" ", "")) if text.strip() else None
-        if not m:
+        found = _split_operator(_limit(text).replace(" ", "")) if text.strip() else None
+        if not found or not found[0] or not found[2]:
             raise ValueError(f"Cannot read the constraint '{text}'. Write it like 'a + b <= 100'.")
-        left, op, right = m.groups()
+        left, op, right = found
         parsed.append((left, "==" if op == "=" else {"<": "<=", ">": ">="}.get(op, op), right))
     point = lambda x: dict(zip(names, x))                      # noqa: E731
     _value(expression, point(lo))                              # falla ya con un mensaje claro si la fórmula no es válida
@@ -375,10 +397,14 @@ _PARAMETERS = {"normal": ("mean", "sd"), "uniform": ("low", "high"), "triangular
 
 def parse_input(text: str) -> tuple:
     """`precio=normal(10, 2)` -> ("precio", {"dist": "normal", "mean": 10.0, "sd": 2.0})."""
-    m = re.fullmatch(r"\s*([A-Za-z_]\w*)\s*=\s*([a-z]+)\s*\(([^)]*)\)\s*", text or "")
-    if not m or m.group(2) not in _PARAMETERS:
+    shown = _limit(text).strip()
+    name, equals, rest = shown.partition("=")
+    name, rest = name.strip(), rest.strip()
+    opening = rest.find("(")
+    dist = rest[:opening].strip() if opening > 0 else ""
+    raw = rest[opening + 1:-1] if opening > 0 and rest.endswith(")") else None
+    if not equals or not _IDENT.fullmatch(name) or raw is None or ")" in raw or dist not in _PARAMETERS:
         raise ValueError(f"Cannot read '{text}'. Write it like price=normal(10, 2); distributions: {', '.join(_PARAMETERS)}.")
-    name, dist, raw = m.groups()
     try:
         numbers = [float(x) for x in raw.split(",") if x.strip()]
     except ValueError:
@@ -390,45 +416,59 @@ def parse_input(text: str) -> tuple:
 
 def parse_variable(text: str) -> tuple:
     """`x=0:10` -> ("x", (0.0, 10.0))."""
-    m = re.fullmatch(r"\s*([A-Za-z_]\w*)\s*=\s*(-?[\d.eE+-]+)\s*:\s*(-?[\d.eE+-]+)\s*", text or "")
-    if not m:
+    name, equals, rest = _limit(text).partition("=")
+    low, colon, high = rest.partition(":")
+    if not equals or not colon or not _IDENT.fullmatch(name.strip()):
         raise ValueError(f"Cannot read '{text}'. Write it like x=0:10 (minimum:maximum).")
     try:
-        return m.group(1), (float(m.group(2)), float(m.group(3)))
+        return name.strip(), (float(low), float(high))
     except ValueError:
         raise ValueError(f"'{text}': the bounds must be numbers.") from None
 
 
-_TERM = re.compile(r"([+-]?)\s*(\d+\.?\d*(?:[eE][+-]?\d+)?|\.\d+)?\s*\*?\s*([A-Za-z_]\w*)?")
-
-
 def parse_linear(text: str) -> dict:
     """`3x + 5*y - 2z` -> {"x": 3, "y": 5, "z": -2}. Solo términos lineales (nada de x*y ni x**2)."""
-    source = (text or "").replace(" ", "")
+    source = _limit(text).replace(" ", "")
     if not source:
         raise ValueError("The expression is empty.")
-    if re.search(r"[A-Za-z_]\w*\*[A-Za-z_]|\*\*|/|\(|\)", source):
+    if any(ch in source for ch in "/()"):
         raise ValueError(f"'{text}' is not linear: use sums of numbers times variables, like 3*x + 5*y.")
-    out, pos = {}, 0
-    while pos < len(source):
-        m = _TERM.match(source, pos)
-        if not m or m.end() == pos or (m.group(2) is None and m.group(3) is None):
-            raise ValueError(f"Cannot read '{text}' near '{source[pos:pos + 8]}'.")
-        sign, number, name = m.groups()
+    tokens = _TOKEN.findall(source)
+    if sum(len(t) for t in tokens) != len(source):
+        raise ValueError(f"Cannot read '{text}': it has characters that are not numbers, names, + - or *.")
+    out, i, n = {}, 0, len(tokens)
+    while i < n:
+        sign = 1
+        while i < n and tokens[i] in ("+", "-"):
+            sign *= -1 if tokens[i] == "-" else 1
+            i += 1
+        number = name = None
+        if i < n and (tokens[i][0].isdigit() or tokens[i][0] == "."):
+            number = float(tokens[i])
+            i += 1
+            if i < n and tokens[i] == "*":
+                i += 1
+        if i < n and _IDENT.fullmatch(tokens[i]):
+            name = tokens[i]
+            i += 1
+        if number is None and name is None:
+            raise ValueError(f"Cannot read '{text}' near '{''.join(tokens[i:i + 3])}'.")
         if name is None:
             raise ValueError(f"'{text}' has a constant term; move it to the other side of the constraint.")
-        out[name] = out.get(name, 0.0) + (-1 if sign == "-" else 1) * (float(number) if number else 1.0)
-        pos = m.end()
+        if i < n and tokens[i] == "*":
+            raise ValueError(f"'{text}' is not linear: use sums of numbers times variables, like 3*x + 5*y.")
+        out[name] = out.get(name, 0.0) + sign * (1.0 if number is None else number)
     return out
 
 
 def parse_linear_constraint(text: str, name: str | None = None) -> dict:
     """`x + 2y <= 12` -> {"coefs": {...}, "op": "<=", "rhs": 12.0}."""
-    m = re.fullmatch(r"(.+?)(<=|>=|==|=)\s*(-?[\d.eE+-]+)\s*", (text or "").replace(" ", ""))
-    if not m:
+    found = _split_operator(_limit(text).replace(" ", ""))
+    if not found or not found[0] or not found[2] or found[1] in ("<", ">"):
         raise ValueError(f"Cannot read the constraint '{text}'. Write it like 'x + 2*y <= 12' with a number on the right.")
+    left, op, right = found
     try:
-        rhs = float(m.group(3))
+        rhs = float(right)
     except ValueError:
         raise ValueError(f"'{text}': the right-hand side must be a number.") from None
-    return {"coefs": parse_linear(m.group(1)), "op": "==" if m.group(2) == "=" else m.group(2), "rhs": rhs, "name": name or text.strip()}
+    return {"coefs": parse_linear(left), "op": "==" if op == "=" else op, "rhs": rhs, "name": name or text.strip()}

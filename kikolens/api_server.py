@@ -147,8 +147,9 @@ class Store:
     def read_file(self, name: str) -> pd.DataFrame:
         if self.data_dir is None:
             raise ApiError(400, "This server was not started with a data folder, so it cannot read files; send the rows or the csv text.")
-        target = (self.data_dir / name).resolve()
-        if self.data_dir not in target.parents or not target.is_file():
+        available = {entry.name: entry for entry in self.data_dir.iterdir() if entry.is_file()}      # lista permitida: el cliente elige entre lo que hay, no escribe una ruta
+        target = available.get(name)
+        if target is None:
             raise ApiError(404, "No such file in the data folder.")
         from kikolens.utils.loaders import load_data
         try:
