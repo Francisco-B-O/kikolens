@@ -1,0 +1,70 @@
+name: Release
+
+# Al subir una etiqueta v1.2.3 se construye el paquete y se crea la publicación en GitHub con las notas del CHANGELOG.
+# También publica la imagen de Docker en ghcr.io. PyPI no: eso se hace a mano, a propósito, porque no se puede deshacer.
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  release:
+    name: Build and publish the release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check that the tag matches the package version
+        run: |
+          pip install -e . --no-deps
+          version=$(python -c "import kikolens; print(kikolens.__version__)")
+          if [ "v$version" != "${GITHUB_REF_NAME}" ]; then
+            echo "The tag ${GITHUB_REF_NAME} does not match the package version v$version"
+            exit 1
+          fi
+
+      - name: Build the package
+        run: |
+          pip install build
+          python -m build
+
+      - name: Extract the notes of this version from the changelog
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          awk -v v="$version" '$0 ~ "^## "v"$" {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+          if [ ! -s notes.md ]; then echo "See CHANGELOG.md for the changes in this version." > notes.md; fi
+
+      - name: Create the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${GITHUB_REF_NAME}" dist/* --title "${GITHUB_REF_NAME}" --notes-file notes.md
+
+  docker:
+    name: Publish the Docker image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to the GitHub container registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build and push the image
+        run: |
+          image="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/kikolens"
+          version="${GITHUB_REF_NAME#v}"
+          docker build -t "$image:$version" -t "$image:latest" .
+          docker push "$image:$version"
+          docker push "$image:latest"
