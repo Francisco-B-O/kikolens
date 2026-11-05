@@ -104,6 +104,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens mmm SOURCE DATE TARGET --channels a,b [--controls c] [--reallocate] [--budget N]` | Marketing mix model: contribution, return and saturation of each channel, optionally with a proposed split of the spend. |
 | `kikolens elasticity SOURCE QUANTITY PRICE [--controls a,b] [--group COL] [--instrument COL] [--unit-cost N]` | Price elasticity of demand with the revenue or margin curve and the margin-maximising price. |
 | `kikolens attribution FILE USER TIME CHANNEL CONVERTED [--value COL] [--half-life 7] [--output FILE]` | Share the credit for conversions between channels with seven models. |
+| `kikolens likert FILE --items a,b [--reverse c]` / `reliability FILE --items a,b,c` | Scale questions (favourable share, mean, spread); Cronbach's alpha and what each question contributes. |
+| `kikolens nps FILE SCORE [--group COL]` / `crosstab FILE ROW COLUMN` | Net Promoter Score with its interval; a cross-tab with residuals and Cramér's V. |
+| `kikolens key-drivers FILE OUTCOME --items a,b,c` / `survey-groups FILE GROUP --items a,b` / `response-quality FILE --items a,b,...` | What matters most for an overall rating; which questions differ between groups; straight-liners and blanks. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
 | `kikolens stationarity SOURCE DATE VALUE [--trend]` | ADF and KPSS together, and how many differences the series needs. |
 | `kikolens acf SOURCE DATE VALUE [--nlags N]` | Autocorrelation and partial autocorrelation with the Ljung-Box test. |

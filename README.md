@@ -42,6 +42,7 @@ The dashboard groups its sections into four areas.
 | | Analyst | A chat with your data: it draws charts from a validated specification, runs read-only SQL or chains analyses step by step, showing every step. The local model only chooses; the numbers come from the analyses. |
 | | Ask | Question the data in plain language (a local model writes the SQL) or run your own read-only SQL. |
 | **Analysis** | Experiments | Compare groups (the right test is chosen for you, with effect size and post-hoc comparisons), association between categories, correlation with confidence intervals, A/B tests (classical and Bayesian) with sample-size planning, and a screen of every column against a target corrected for testing many at once. |
+| | Survey | Scale questions, Cronbach's alpha, NPS with groups, cross-tabs with residuals, key drivers of the overall rating (relative weights), group comparisons and answer-quality checks. |
 | | Is the test sound? | Part of Experiments: the split of users checked against the plan, CUPED noise reduction, the effect over time and by segment, and a verdict that refuses to name a winner when the test is broken. |
 | | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged; and periods of a series that are unusual once trend and season are taken out. |
 | | Dimensions | PCA with loadings, t-SNE maps, and a redundancy check (VIF). |

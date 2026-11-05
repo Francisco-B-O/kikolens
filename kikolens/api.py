@@ -677,6 +677,48 @@ def attribution(df: pd.DataFrame, user: str, time: str, channel: str, converted:
     return _wrap("attribution", res, table=res["table"])
 
 
+def likert(df: pd.DataFrame, items: list, scale: tuple | None = None, reverse: list | None = None) -> Result:
+    """Resumen de preguntas de escala (números o textos como «Totalmente de acuerdo»): media, % favorable y desfavorable y reparto."""
+    from kikolens.analyze import survey
+    return _wrap("likert", survey.likert_summary(df, items, scale, reverse))
+
+
+def cronbach(df: pd.DataFrame, items: list, reverse: list | None = None) -> Result:
+    """Alfa de Cronbach de un grupo de preguntas, con la correlación de cada una con el resto y el alfa si se quitara."""
+    from kikolens.analyze import survey
+    return _wrap("reliability", survey.reliability(df, items, reverse))
+
+
+def nps(df: pd.DataFrame, score: str, group: str | None = None) -> Result:
+    """Net Promoter Score (promotores menos detractores) con su intervalo y, con `group`, por grupo."""
+    from kikolens.analyze import survey
+    return _wrap("nps", survey.nps(df, score, group))
+
+
+def crosstab(df: pd.DataFrame, row: str, column: str) -> Result:
+    """Tabla cruzada con chi-cuadrado, V de Cramér y residuos que señalan las celdas que se salen de lo esperado."""
+    from kikolens.analyze import survey
+    return _wrap("crosstab", survey.crosstab(df, row, column))
+
+
+def key_drivers(df: pd.DataFrame, outcome: str, items: list) -> Result:
+    """Qué preguntas pesan más en la valoración global (pesos relativos) y cuáles hay que mejorar primero."""
+    from kikolens.analyze import survey
+    return _wrap("key drivers", survey.key_drivers(df, outcome, items))
+
+
+def compare_items(df: pd.DataFrame, items: list, group: str) -> Result:
+    """Qué preguntas puntúan distinto entre grupos (pruebas para datos ordinales, con corrección por comparaciones múltiples)."""
+    from kikolens.analyze import survey
+    return _wrap("item comparison", survey.compare_groups(df, items, group))
+
+
+def response_quality(df: pd.DataFrame, items: list, time_seconds: str | None = None) -> Result:
+    """Quién contesta siempre lo mismo, deja muchas en blanco o contesta demasiado rápido."""
+    from kikolens.analyze import survey
+    return _wrap("response quality", survey.response_quality(df, items, time_seconds))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality")

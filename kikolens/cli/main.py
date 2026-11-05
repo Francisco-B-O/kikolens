@@ -2778,6 +2778,124 @@ def attribution(
         console.print(f"Credit written to {output}")
 
 
+def _survey(file: str, items: Optional[str] = None):
+    df = _load(file)
+    names = _names(items)
+    return df, names
+
+
+@app.command()
+def likert(file: str, items: str = typer.Option(..., help="Comma-separated scale questions."), reverse: Optional[str] = typer.Option(None, help="Questions worded the other way round.")):
+    """Scale questions: mean, favourable and unfavourable share and the spread of answers."""
+    from kikolens.analyze import survey
+
+    df, names = _survey(file, items)
+    try:
+        res = survey.likert_summary(df, names, None, _names(reverse) or None)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"][["question", "answers", "mean", "favourable", "neutral", "unfavourable"]].round(3), "By question")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def reliability(file: str, items: str = typer.Option(..., help="Comma-separated questions that measure the same thing."), reverse: Optional[str] = typer.Option(None, help="Reversed questions.")):
+    """Cronbach's alpha of a group of questions, and what happens if each one is removed."""
+    from kikolens.analyze import survey
+
+    df, names = _survey(file, items)
+    try:
+        res = survey.reliability(df, names, _names(reverse) or None)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(3), "By question")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def nps(file: str, score: str, group: Optional[str] = typer.Option(None, help="Compare these groups.")):
+    """Net Promoter Score from a 0 to 10 recommendation question."""
+    from kikolens.analyze import survey
+
+    df = _load(file)
+    try:
+        res = survey.nps(df, score, group)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if group:
+        _print_frame(res["table"].round(3), "By group")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def crosstab(file: str, row: str, column: str):
+    """Cross two questions: chi-square, strength of the link and the cells that differ from chance."""
+    from kikolens.analyze import survey
+
+    df = _load(file)
+    try:
+        res = survey.crosstab(df, row, column)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["row_percent"].round(3).reset_index(), "Share of each row")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("key-drivers")
+def key_drivers(file: str, outcome: str, items: str = typer.Option(..., help="Comma-separated questions that may drive the overall rating.")):
+    """Which questions matter most for an overall rating, and which to improve first."""
+    from kikolens.analyze import survey
+
+    df, names = _survey(file, items)
+    try:
+        res = survey.key_drivers(df, outcome, names)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"][["question", "importance", "mean score", "favourable", "priority"]].round(3), "Drivers")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("survey-groups")
+def survey_groups(file: str, group: str, items: str = typer.Option(..., help="Comma-separated questions to compare.")):
+    """Which questions score differently between groups (ordinal tests, corrected for looking at many)."""
+    from kikolens.analyze import survey
+
+    df, names = _survey(file, items)
+    try:
+        res = survey.compare_groups(df, names, group)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "By question")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("response-quality")
+def response_quality(file: str, items: str = typer.Option(..., help="Comma-separated scale questions."), seconds: Optional[str] = typer.Option(None, help="Column with seconds spent.")):
+    """Respondents who give the same answer to everything, leave most blank or answer too fast."""
+    from kikolens.analyze import survey
+
+    df, names = _survey(file, items)
+    try:
+        res = survey.response_quality(df, names, seconds)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

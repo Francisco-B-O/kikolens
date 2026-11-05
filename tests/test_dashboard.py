@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control", "Inventory"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control", "Inventory", "Survey"]
 
 
 @pytest.fixture(scope="module")
@@ -745,3 +745,19 @@ def test_marketing_page_attribution_tab():
     at.button(key="at_res_go").click().run()
     assert_clean(at)
     assert at.session_state["at_res"][1]["credit"].loc["A", "markov"] > 30
+
+
+def test_survey_page_runs_every_tab():
+    from tests.test_survey import likert_items
+    d = likert_items(400)
+    d["overall"] = np.clip(np.round(d.mean(axis=1) + np.random.default_rng(1).normal(0, 0.4, 400)), 1, 5)
+    d["recommend"] = np.random.default_rng(2).integers(0, 11, 400)
+    d["region"] = np.random.default_rng(3).choice(["n", "s"], 400)
+    at = open_page(d, "Survey")
+    assert_clean(at)
+    for key in ("sv_likert_go", "sr_res_go", "sn_res_go", "sc_res_go", "sk_res_go", "sg_res_go", "sq_res_go"):
+        at.button(key=key).click().run()
+        assert_clean(at)
+    for state in ("sv_likert", "sr_res", "sn_res", "sc_res", "sk_res", "sg_res", "sq_res"):
+        assert state in at.session_state, state
+    assert at.session_state["sr_res"][1]["alpha"] > 0.5
