@@ -1,0 +1,17 @@
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+[theme.light]
+primaryColor = "#9a3412"
+backgroundColor = "#faf8f3"
+secondaryBackgroundColor = "#f3f0e8"
+textColor = "#1c1b19"
+
+[theme.dark]
+primaryColor = "#e0865a"
+backgroundColor = "#171614"
+secondaryBackgroundColor = "#1f1e1b"
+textColor = "#ece9e1"

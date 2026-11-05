@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.gitignore
+kikolens_output/
+tests/
+*.md
+.env
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+Dockerfile.ollama
+!README.md
