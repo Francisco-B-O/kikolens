@@ -2105,6 +2105,152 @@ def arima(
         console.print(f"Forecast written to {output}")
 
 
+governance_app = typer.Typer(help="Who owns each saved model, what stage it is in, and what was checked before it went live.", no_args_is_help=False)
+app.add_typer(governance_app, name="governance")
+
+
+def _governed(fn, *args, **kwargs):
+    try:
+        return fn(*args, **kwargs)
+    except (ValueError, OSError) as e:
+        _fail(e)
+
+
+@governance_app.callback(invoke_without_command=True)
+def governance_overview(ctx: typer.Context):
+    """Every registered model with its stage, owner, risk, latest validation and whether a review is due."""
+    if ctx.invoked_subcommand is not None:
+        return
+    from kikolens.analyze import governance as gv
+
+    table = gv.overview()
+    if table.empty:
+        console.print("No models are registered yet. Use: kikolens governance register MODEL --owner NAME")
+        return
+    _print_frame(table, "Model governance")
+    check = gv.verify_audit()
+    if not check["ok"]:
+        console.print(f"[red]Audit log: {check['message']}[/red]")
+
+
+@governance_app.command("register")
+def governance_register(
+    model: str, owner: str = typer.Option(..., help="The person who answers for this model."),
+    description: str = typer.Option("", help="What the model is for."), intended_use: str = typer.Option("", help="Where and how it should be used."),
+    limitations: str = typer.Option("", help="Where it should not be trusted."), risk: str = typer.Option("medium", help="low, medium or high."),
+    actor: Optional[str] = typer.Option(None, help="Who is doing this (default: your user name)."),
+):
+    """Register a saved model for governance. It starts as a draft."""
+    from kikolens.analyze import governance as gv
+
+    record = _governed(gv.register, model, owner, description, intended_use, limitations, risk, actor)
+    console.print(f"{record['model']} registered as a draft, owned by {record['owner']} (risk {record['risk']}).")
+
+
+@governance_app.command("update")
+def governance_update(
+    model: str, owner: Optional[str] = None, description: Optional[str] = None, intended_use: Optional[str] = None, limitations: Optional[str] = None,
+    risk: Optional[str] = None, actor: Optional[str] = typer.Option(None, help="Who is doing this."),
+):
+    """Change the owner, the card text or the risk of a registered model."""
+    from kikolens.analyze import governance as gv
+
+    fields = {k: v for k, v in dict(owner=owner, description=description, intended_use=intended_use, limitations=limitations, risk=risk).items() if v is not None}
+    _governed(gv.update_card, model, actor, **fields)
+    console.print(f"Updated: {', '.join(fields) or 'nothing'}.")
+
+
+@governance_app.command("validate")
+def governance_validate(
+    model: str, data: str = typer.Argument(..., help="Rows the model has not seen, with the real result in the target column."),
+    actor: Optional[str] = typer.Option(None, help="Who is doing this."),
+    max_drop: float = typer.Option(0.20, help="How much worse than in training is tolerated, as a fraction."),
+    raw: bool = typer.Option(False, "--raw", help="The data is uncleaned: repeat the cleaning steps used in training first."),
+):
+    """Test the model on new rows with known results and record whether it holds up."""
+    from kikolens.analyze import governance as gv
+
+    result = _governed(gv.validate, model, _load(data), actor, raw, max_drop)
+    colour = "green" if result["passed"] else "red" if result["passed"] is False else "yellow"
+    label = "Passed" if result["passed"] else "Not passed" if result["passed"] is False else "Recorded"
+    console.print(f"[{colour}]{label}[/{colour}] on {result['rows']:,} rows. {result['note']}")
+
+
+@governance_app.command("checks")
+def governance_checks(model: str, stage: str, data: Optional[str] = typer.Option(None, help="Rows with real results, to compare with the model in production.")):
+    """What would stop this model from moving to a stage, without moving it."""
+    from kikolens.analyze import governance as gv
+
+    gates = _governed(gv.checks, model, stage, _load(data) if data else None)
+    for gate in gates:
+        colour = "green" if gate["passed"] else "red"
+        console.print(f"[{colour}]{'ok  ' if gate['passed'] else 'FAIL'}[/{colour}] {gate['name']}: {gate['detail']}")
+
+
+@governance_app.command("promote")
+def governance_promote(
+    model: str, stage: str, actor: Optional[str] = typer.Option(None, help="Who is doing this."),
+    data: Optional[str] = typer.Option(None, help="Rows with real results, to compare with the model in production."),
+    reason: str = typer.Option("", help="Why (needed with --force)."), force: bool = typer.Option(False, "--force", help="Move it even if a check fails; recorded as an override."),
+    raw: bool = typer.Option(False, "--raw", help="The data is uncleaned."),
+):
+    """Move a model to another stage if its checks pass."""
+    from kikolens.analyze import governance as gv
+
+    out = _governed(gv.promote, model, stage, actor, _load(data) if data else None, reason, force, raw)
+    console.print(f"{out['model']} is now in {out['to']} (was {out['from']})." + (f" It replaced {out['replaced']}, now archived." if out["replaced"] else "")
+                  + (f" Overrode: {', '.join(out['overridden'])}." if out["overridden"] else ""))
+
+
+@governance_app.command("approve")
+def governance_approve(model: str, actor: str = typer.Option(..., help="Who approves (not the owner)."), comment: str = typer.Option("", help="Optional note.")):
+    """Record an approval of this exact version of the model (high-risk models need one from someone other than the owner)."""
+    from kikolens.analyze import governance as gv
+
+    _governed(gv.approve, model, actor, comment)
+    console.print(f"Approval by {actor} recorded.")
+
+
+@governance_app.command("rollback")
+def governance_rollback(target: str, actor: Optional[str] = typer.Option(None, help="Who is doing this."), reason: str = typer.Option("", help="Why.")):
+    """Go back to the model that was in production for TARGET before the current one."""
+    from kikolens.analyze import governance as gv
+
+    out = _governed(gv.rollback, target, actor, reason)
+    console.print(f"{out['restored']} is back in production" + (f"; {out['demoted']} moved to staging." if out["demoted"] else "."))
+
+
+@governance_app.command("card")
+def governance_card(model: str, output: Optional[Path] = typer.Option(None, help="Write the card (Markdown) to this file.")):
+    """The model card: purpose, owner, performance, validations, approvals and history."""
+    from kikolens.analyze import governance as gv
+
+    card = _governed(gv.model_card, model)
+    if output:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(card, encoding="utf-8")
+        console.print(f"Card written to {output}")
+    else:
+        console.print(card)
+
+
+@governance_app.command("audit")
+def governance_audit(model: Optional[str] = typer.Argument(None), last: int = typer.Option(25, help="How many entries to show.")):
+    """Check the audit log chain and show the latest entries."""
+    import json
+
+    from kikolens.analyze import governance as gv
+
+    check = gv.verify_audit()
+    colour = "green" if check["ok"] else "red"
+    console.print(f"[{colour}]{check['message']}[/{colour}]")
+    log = gv.audit_log(model)
+    if len(log):
+        view = log.tail(last)[["ts", "actor", "action", "model", "details"]].copy()
+        view["details"] = view["details"].map(lambda d: json.dumps(d, ensure_ascii=False)[:80])
+        _print_frame(view)
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

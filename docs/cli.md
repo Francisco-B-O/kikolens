@@ -42,6 +42,12 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens models` | List the saved models. |
 | `kikolens models info NAME [--card FILE]` | Metrics and expected columns of a model; `--card` writes a Markdown model card. |
 | `kikolens models compare SOURCE MODEL MODEL [MODEL...]` | Which of several saved models predicts better on data whose real results are known, and whether the gap is reliable. |
+| `kikolens governance` | Every registered model with its stage, owner, risk, latest validation and whether a review is due. |
+| `kikolens governance register MODEL --owner NAME [--description T] [--intended-use T] [--limitations T] [--risk low\|medium\|high]` | Register a saved model (it starts as a draft). `governance update` changes the card. |
+| `kikolens governance validate MODEL DATA [--max-drop 0.2]` | Test on rows with known results and record whether it holds up. |
+| `kikolens governance checks MODEL STAGE` / `promote MODEL STAGE [--data DATA] [--reason T] [--force]` | See what blocks a move, or make it. Moving to production replaces and archives the current production model of the same target. |
+| `kikolens governance approve MODEL --actor NAME` / `rollback TARGET` | Approve this version of a model; go back to the previous production model. |
+| `kikolens governance card MODEL [--output FILE]` / `audit [MODEL]` | The model card in Markdown; verify the audit log chain and show the latest entries. |
 | `kikolens models delete NAME` | Remove a saved model. |
 | `kikolens forecast SOURCE DATE VALUE [--horizon N] [--freq D] [--agg mean]` | Forecast a numeric column. Frequencies: `h`, `D`, `W`, `MS`, `QS`, `YS`. |
 | `kikolens forecast ... --compare` | Compare five models with rolling-origin tests and forecast with the best one. |

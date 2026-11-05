@@ -468,6 +468,28 @@ def arima(df: pd.DataFrame, date: str, value: str, order: tuple | None = None, s
     return _wrap("arima", res)
 
 
+def governance(action: str | None = None, model: str | None = None, **kwargs):
+    """Gobierno de modelos. Sin argumentos devuelve el resumen de todos; con `action` (`register`, `validate`, `promote`, `approve`, `rollback`, `checks`, `update`)
+    y el nombre de un modelo guardado ejecuta esa acción (ver `kikolens.analyze.governance` para los parámetros)."""
+    from kikolens.analyze import governance as gv
+    if action is None:
+        return gv.overview()
+    actions = {"register": gv.register, "validate": gv.validate, "promote": gv.promote, "approve": gv.approve, "checks": gv.checks, "update": gv.update_card}
+    if action == "rollback":
+        return gv.rollback(model, **kwargs)
+    if action not in actions:
+        raise ValueError(f"Unknown action '{action}'. Use one of: {', '.join([*actions, 'rollback'])}.")
+    if model is None:
+        raise ValueError("Say which model.")
+    return actions[action](model, **kwargs)
+
+
+def model_card(model: str) -> str:
+    """La ficha de un modelo registrado para gobierno, en Markdown."""
+    from kikolens.analyze import governance as gv
+    return gv.model_card(model)
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card")
