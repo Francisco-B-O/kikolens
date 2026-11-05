@@ -5,7 +5,7 @@ import duckdb
 import pandas as pd
 
 _COMMENTS = re.compile(r"--[^\n]*|/\*.*?\*/", re.DOTALL)
-_STRINGS = re.compile(r"'(?:[^']|'')*'|\"(?:[^\"]|\"\")*\"")
+_STRINGS = re.compile(r"'[^']*(?:''[^']*)*'|\"[^\"]*(?:\"\"[^\"]*)*\"")
 _ALLOWED_START = ("SELECT", "WITH", "VALUES", "DESCRIBE", "SUMMARIZE", "SHOW")
 _FORBIDDEN = re.compile(
     r"\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|ATTACH|DETACH|COPY|EXPORT|INSTALL|PRAGMA|TRUNCATE)\b"

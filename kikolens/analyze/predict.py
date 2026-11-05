@@ -2,6 +2,7 @@
 usarlo después con datos nuevos: el esquema de columnas de entrada, las clases, las métricas y el margen de error.
 Los paquetes se guardan con joblib (pickle), así que solo deben abrirse si se confía en su origen."""
 import json
+import os
 import re
 import warnings
 from datetime import datetime, timezone
@@ -290,6 +291,15 @@ def slugify(name: str) -> str:
     return slug[:60] or "model"
 
 
+def _inside(folder: Path, filename: str) -> Path:
+    """Una ruta dentro de `folder`: un nombre que intente salirse (`..`, rutas absolutas) se rechaza."""
+    base = os.path.abspath(folder)
+    full = os.path.normpath(os.path.join(base, filename))
+    if not full.startswith(base + os.sep):
+        raise ValueError("The model name points outside the registry folder.")
+    return Path(full)
+
+
 def save_bundle(bundle: dict, path=None, directory=None) -> Path:
     """Guarda el paquete. Sin `path` entra en el registro (nunca pisa otra versión: añade -v2, -v3...)."""
     if path is not None:
@@ -297,9 +307,9 @@ def save_bundle(bundle: dict, path=None, directory=None) -> Path:
     else:
         folder = models_dir(directory)
         slug, n = slugify(bundle["name"]), 1
-        while (folder / f"{slug}{'' if n == 1 else f'-v{n}'}{EXTENSION}").exists():
+        while _inside(folder, f"{slug}{'' if n == 1 else f'-v{n}'}{EXTENSION}").exists():
             n += 1
-        target = folder / f"{slug}{'' if n == 1 else f'-v{n}'}{EXTENSION}"
+        target = _inside(folder, f"{slug}{'' if n == 1 else f'-v{n}'}{EXTENSION}")
         bundle = {**bundle, "name": bundle["name"] if n == 1 else f"{bundle['name']} (v{n})"}
     target.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(bundle, target)
@@ -351,7 +361,7 @@ def resolve_model(reference: str, directory=None) -> Path:
         from kikolens.analyze import governance
         return governance.resolve_reference(str(reference))
     stem = Path(reference).stem if str(reference).endswith(EXTENSION) else slugify(reference)
-    registered = models_dir(directory) / f"{stem}{EXTENSION}"
+    registered = _inside(models_dir(directory), f"{stem}{EXTENSION}")
     if registered.is_file():
         return registered
     raise ValueError(f"No model called '{reference}'. See the saved ones with: kikolens models")

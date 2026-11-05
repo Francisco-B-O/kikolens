@@ -12,6 +12,7 @@ FORMAT_VERSION = 1
 CHECKS = ["not_null", "unique", "range", "in_set", "regex", "compare", "not_future"]
 COMPARATORS = {"<": np.less, "<=": np.less_equal, ">": np.greater, ">=": np.greater_equal, "==": np.equal, "!=": np.not_equal}
 MAX_PATTERN = 200
+_NESTED_QUANTIFIER = re.compile(r"\((?:[^()\\]|\\.)*[+*](?:[^()\\]|\\.)*\)[+*{]")          # (a+)+, (a*)*: tiempo exponencial con ciertas entradas
 MAX_RULES = 100
 
 
@@ -54,6 +55,8 @@ def violations(df: pd.DataFrame, rule: dict) -> pd.Series:
         pattern = str(rule.get("pattern", ""))
         if not pattern or len(pattern) > MAX_PATTERN:
             raise ValueError(f"The pattern must be 1 to {MAX_PATTERN} characters.")
+        if _NESTED_QUANTIFIER.search(pattern):
+            raise ValueError("The pattern repeats a repeated group, which can take very long to evaluate. Simplify it.")
         try:
             compiled = re.compile(pattern)
         except re.error as e:
