@@ -36,7 +36,10 @@ def label(text: str, sidebar: bool = False) -> None:
     target.markdown(f'<span class="kl-label">{html.escape(t(text))}</span>', unsafe_allow_html=True)
 
 
-def chart(fig, height: int = 420, key=None) -> None:
+def chart(fig, height: int = 420, key=None, select: bool = False):
+    """Dibuja un gráfico. Con `select=True` se puede marcar con clic, recuadro o lazo y devuelve lo marcado."""
+    if select:
+        return st.plotly_chart(style_chart(fig, height), width="stretch", theme=None, key=key, on_select="rerun", selection_mode=("points", "box"))
     st.plotly_chart(style_chart(fig, height), width="stretch", theme=None, key=key)
 
 

@@ -343,10 +343,13 @@ def list_models(directory=None) -> pd.DataFrame:
 
 
 def resolve_model(reference: str, directory=None) -> Path:
-    """Acepta una ruta a un archivo o el nombre de un modelo del registro."""
+    """Acepta una ruta a un archivo, el nombre de un modelo del registro o `nombre@etapa` (ver `kikolens.analyze.governance`)."""
     candidate = Path(reference)
     if candidate.is_file():
         return candidate
+    if "@" in str(reference) and str(reference).rpartition("@")[2] in ("draft", "staging", "production", "archived"):
+        from kikolens.analyze import governance
+        return governance.resolve_reference(str(reference))
     stem = Path(reference).stem if str(reference).endswith(EXTENSION) else slugify(reference)
     registered = models_dir(directory) / f"{stem}{EXTENSION}"
     if registered.is_file():

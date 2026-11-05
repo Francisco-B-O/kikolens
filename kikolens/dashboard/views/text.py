@@ -3,6 +3,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from kikolens.analyze import text as tx
+from kikolens.analyze import textmining as tm
 from kikolens.dashboard import components as ui
 
 TITLE = "Text"
@@ -124,6 +125,113 @@ def _summary(series: pd.Series) -> None:
         st.markdown(st.session_state.tx_summary)
 
 
+def _run(key: str, signature, fn):
+    """Calcula al pulsar el botón y recuerda el resultado mientras no cambien las opciones."""
+    if st.button("Run", key=f"{key}_go", type="primary"):
+        try:
+            st.session_state[key] = (signature, fn())
+        except ValueError as e:
+            st.session_state.pop(key, None)
+            ui.note(str(e), "high")
+    cached = st.session_state.get(key)
+    return cached[1] if cached and cached[0] == signature else None
+
+
+def _notes(res: dict) -> None:
+    for note in res.get("notes", []):
+        ui.note(note, "medium")
+
+
+def _topics(df: pd.DataFrame, col: str, language: str) -> None:
+    c1, c2, c3 = st.columns(3)
+    auto = c1.checkbox("Choose the number of topics for me", True, key="tx_tm_auto")
+    k = int(c2.number_input("Topics", 2, tm.MAX_K, 4, key="tx_tm_k", disabled=auto))
+    method = c3.radio("Method", ["nmf", "lda"], horizontal=True, key="tx_tmethod", help="NMF is faster and steadier; LDA is the classic probabilistic model.")
+    dates = [c for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])]
+    date = st.selectbox("Follow them over time with", ["(no)"] + dates, key="tx_tdate")
+    signature = (col, language, auto, k, method, date)
+    chosen = None if auto else k
+
+    def fit():
+        if date.startswith("("):
+            return tm.topics(df[col], chosen, method=method, language=language)
+        return tm.topics_over_time(df, col, date, chosen, method=method, language=language)
+
+    res = _run("tx_topics", signature, fit)
+    if res is None:
+        return
+    ui.note(res["summary"], "ok")
+    _notes(res)
+    ui.chart(res["figure"], 380 if "over_time" in res else 320)
+    ui.table(res["table"].drop(columns="examples").round(3))
+    for _, row in res["table"].iterrows():
+        with st.expander(f"Topic {row['topic']}: {row['label']}"):
+            for example in row["examples"]:
+                st.markdown(f"> {example}")
+    if len(res["coherence"]) > 1:
+        with st.expander("Coherence for each number of topics"):
+            ui.table(res["coherence"].round(3))
+
+
+def _duplicates(series: pd.Series, language: str) -> None:
+    c1, c2 = st.columns(2)
+    threshold = c1.slider("How alike counts as the same text", 0.5, 1.0, 0.9, 0.01, key="tx_dthr")
+    res = _run("tx_dups", (series.name, threshold), lambda: tm.find_duplicates(series, threshold))
+    if res is not None:
+        ui.note(res["summary"], "ok" if not res["groups"] else "accent")
+        _notes(res)
+        if res["groups"]:
+            ui.table(res["table"].drop(columns="rows").round(3))
+    st.subheader("Texts like this one")
+    query = st.text_input("A phrase", key="tx_sim_q")
+    if query:
+        try:
+            ui.table(tm.similar_texts(series, query, 8, language).round(3))
+        except ValueError as e:
+            ui.note(str(e), "high")
+
+
+def _patterns(series: pd.Series) -> None:
+    kinds = st.multiselect("Look for", list(tm.PATTERNS), default=list(tm.PATTERNS), key="tx_pat")
+    res = _run("tx_patterns", (series.name, tuple(kinds)), lambda: tm.extract_patterns(series, kinds))
+    if res is None:
+        return
+    ui.note(res["summary"], "ok")
+    _notes(res)
+    ui.table(res["table"].round(3))
+    if len(res["found"]):
+        ui.table(res["found"].head(500))
+        ui.download_csv(res["found"], "patterns_found.csv", "Download every match (CSV)")
+
+
+def _phrases(series: pd.Series, language: str) -> None:
+    c1, c2 = st.columns(2)
+    n = c1.slider("Phrases to show", 5, 40, 15, key="tx_kp_n")
+    min_count = c2.slider("A pair of words counts after (times)", 2, 50, 5, key="tx_col_n")
+    try:
+        ui.table(tm.keyphrases(series, n, language).round(2))
+    except ValueError as e:
+        ui.note(str(e), "medium")
+    st.subheader("Words that go together")
+    try:
+        ui.table(tm.collocations(series, n, min_count, language).round(3))
+    except ValueError as e:
+        ui.note(str(e), "medium")
+
+
+def _readability(series: pd.Series, language: str) -> None:
+    try:
+        res = tm.readability(series, language)
+    except ValueError as e:
+        ui.note(str(e), "high")
+        return
+    ui.note(res["summary"], "ok")
+    _notes(res)
+    fig = go.Figure(go.Bar(x=list(res["distribution"].index.astype(str)), y=res["distribution"].values))
+    fig.update_layout(title="Texts by reading ease", yaxis_title="Texts")
+    ui.chart(fig, 300)
+
+
 def render(df: pd.DataFrame) -> None:
     candidates = tx.free_text_columns(df)
     others = [c for c in df.columns if c not in candidates and pd.api.types.is_object_dtype(df[c])]
@@ -136,7 +244,7 @@ def render(df: pd.DataFrame) -> None:
     series = df[col]
     language = st.radio("Language", list(tx.STOPWORDS), index=list(tx.STOPWORDS).index(tx.detect_language(series)),
                         horizontal=True, key="tx_lang")
-    tabs = st.tabs(["Terms", "By group", "Themes", "Classify", "Tone", "Summary"])
+    tabs = st.tabs(["Terms", "By group", "Themes", "Classify", "Tone", "Summary", "Topics", "Duplicates and similar", "Patterns", "Phrases", "Readability"])
     with tabs[0]:
         _terms(series, language)
     with tabs[1]:
@@ -149,3 +257,13 @@ def render(df: pd.DataFrame) -> None:
         _tone(series, language)
     with tabs[5]:
         _summary(series)
+    with tabs[6]:
+        _topics(df, col, language)
+    with tabs[7]:
+        _duplicates(series, language)
+    with tabs[8]:
+        _patterns(series)
+    with tabs[9]:
+        _phrases(series, language)
+    with tabs[10]:
+        _readability(series, language)

@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control", "Inventory", "Survey"]
 
 
 @pytest.fixture(scope="module")
@@ -548,3 +548,216 @@ def test_sequential_recommendations_synthetic_and_history_pages():
 
     at = open_page(people, "Run history")
     assert_clean(at)
+
+
+def test_causal_effect_page_estimates_and_remembers(data):
+    rng = np.random.default_rng(3)
+    n = 500
+    age = rng.normal(size=n)
+    treated = (rng.random(n) < 1 / (1 + np.exp(-age))).astype(int)
+    df = pd.DataFrame({"treated": treated, "outcome": 2 * treated + 3 * age + rng.normal(size=n), "age": age})
+    at = open_page(df, "Causal effect")
+    assert_clean(at)
+    at.button(key="cz_res_go").click().run()
+    assert_clean(at)
+    assert "cz_res" in at.session_state and "Treatment 'treated'" in at.session_state["cz_res"][1]["summary"]
+
+
+def test_simulation_page_runs_all_three_tools(data):
+    at = open_page(data, "Simulation")
+    assert_clean(at)
+    at.button(key="mc_go").click().run()
+    assert_clean(at)
+    assert "averages" in at.session_state["mc_res"]["summary"]
+    at.button(key="lp_go").click().run()
+    assert_clean(at)
+    assert at.session_state["lp_res"]["objective"] == pytest.approx(36)
+    at.button(key="of_go").click().run()
+    assert_clean(at)
+    assert at.session_state["of_res"]["objective"] > 99
+    at.text_input(key="lp_obj").set_value("3*x*y").run()
+    at.button(key="lp_go").click().run()
+    assert_clean(at)
+    assert "lp_res" not in at.session_state
+
+
+def test_marketing_mix_page_estimates_splits_the_budget_and_measures_elasticity():
+    from test_marketing import demand, weekly
+    at = open_page(weekly(), "Marketing mix")
+    assert_clean(at)
+    at.button(key="mm_go").click().run()
+    assert_clean(at)
+    assert at.session_state["mm_res"][1]["r2"] > 0.9
+    at = open_page(demand(500), "Marketing mix")
+    at.button(key="pe_go").click().run()
+    assert_clean(at)
+    assert "pe_res" in at.session_state
+
+
+def test_panel_cross_filter_and_office_downloads(data):
+    at = open_page(data, "Panel")
+    at.button(key="pn_suggest").click().run()
+    assert_clean(at)
+    chart = next(t for t in at.session_state["panel"].tiles if t["type"] == "chart" and t["kind"] == "bar")
+    column = chart["x"]
+    value = str(data[column].iloc[0])
+    at.session_state["pn_cross"] = {chart["id"]: [{"column": column, "op": "in", "value": [value]}]}
+    at.run()
+    assert_clean(at)
+    shown = int((data[column].astype(str) == value).sum())
+    assert any(f"Showing {shown:,} of {len(data):,} rows" in str(c.value) for c in at.caption)
+    at.button(key="pn_pptx_make").click().run()
+    assert_clean(at)
+    assert at.session_state["pn_pptx_ready"][1][:2] == b"PK"
+    at.button(key="pn_docx_make").click().run()
+    assert_clean(at)
+    assert at.session_state["pn_docx_ready"][1][:2] == b"PK"
+    at.button(key="pn_clear_cross").click().run()
+    assert_clean(at)
+    assert at.session_state["pn_cross"] == {}
+
+
+def test_classical_series_page_runs_every_tab():
+    from test_classic import monthly
+    y, _ = monthly()
+    df = pd.DataFrame({"month": y.index, "sales": y.values})
+    at = open_page(df, "Classical series")
+    assert_clean(at)
+    for key, state in (("cs_stat_go", "cs_stat"), ("cs_acf_go", "cs_acf"), ("cs_stl_go", "cs_stl"), ("cs_arima_go", "cs_arima")):
+        at.button(key=key).click().run()
+        assert_clean(at)
+        assert state in at.session_state, state
+    assert at.session_state["cs_arima"][1]["order"][1] in (0, 1) and at.session_state["cs_stl"][1]["period"] in range(2, 400)
+
+
+def test_text_page_new_tabs_run():
+    from test_textmining import corpus
+    texts, _ = corpus(150)
+    df = pd.DataFrame({"review": texts, "when": pd.date_range("2024-01-01", periods=150, freq="D")})
+    at = open_page(df, "Text")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][6:] == ["Topics", "Duplicates and similar", "Patterns", "Phrases", "Readability"]
+    at.button(key="tx_topics_go").click().run()
+    assert_clean(at)
+    assert at.session_state["tx_topics"][1]["k"] in range(2, 9)
+    at.button(key="tx_dups_go").click().run()
+    at.button(key="tx_patterns_go").click().run()
+    assert_clean(at)
+    assert "tx_dups" in at.session_state and "tx_patterns" in at.session_state
+    at.selectbox(key="tx_tdate").set_value("when").run()
+    at.button(key="tx_topics_go").click().run()
+    assert_clean(at)
+    assert "over_time" in at.session_state["tx_topics"][1]
+
+
+def test_network_page_runs_every_tab():
+    from test_network import planted
+    edges, _ = planted(20, 3)
+    at = open_page(edges, "Network")
+    assert_clean(at)
+    at.button(key="nw_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["nw_res"][1]["nodes"] >= 55
+    for key in ("nw_path_go", "nw_links_go", "nw_rob_go"):
+        at.button(key=key).click().run()
+        assert_clean(at)
+    assert all(k in at.session_state for k in ("nw_path", "nw_links", "nw_rob"))
+
+
+def test_geography_page_runs_every_tab():
+    from test_geo import two_cities
+    d = two_cities(300)
+    at = open_page(d, "Geography")
+    assert_clean(at)
+    at.button(key="geo_dist_go").click().run()
+    at.button(key="geo_zones_go").click().run()
+    at.button(key="geo_spatial_go").click().run()
+    at.button(key="geo_grid_go").click().run()
+    assert_clean(at)
+    assert at.session_state["geo_zones"][1]["zones"] == 2 and at.session_state["geo_spatial"][1]["moran"] != 0
+    assert at.session_state["geo_dist"][1]["median_km"] >= 0 and at.session_state["geo_grid"][1]["cells"] > 1
+
+
+def test_experiments_page_checks_that_the_test_is_sound():
+    from test_experiment import trial
+    d = trial(2500)
+    at = open_page(d, "Experiments")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][-1] == "Is the test sound?"
+    at.selectbox(key="xq_group").set_value("g").run()
+    at.selectbox(key="xq_control").set_value("control").run()
+    at.selectbox(key="xq_outcome").set_value("y").run()
+    at.selectbox(key="xq_pre").set_value("pre").run()
+    at.button(key="xq_go").click().run()
+    assert_clean(at)
+    res = at.session_state["xq_res"][1]
+    assert res["verdict"].startswith("new beats control") and "cuped" in res
+
+
+def test_process_control_page_runs_every_tab():
+    rng = np.random.default_rng(3)
+    d = pd.DataFrame({"v": np.r_[rng.normal(10, 1, 80), rng.normal(12.5, 1, 40)], "bad": rng.binomial(100, 0.05, 120), "n": 100})
+    at = open_page(d, "Process control")
+    assert_clean(at)
+    at.selectbox(key="pc_value").set_value("v").run()
+    at.checkbox(key="pc_usebase").set_value(True).run()
+    at.number_input(key="pc_base").set_value(80).run()
+    at.button(key="pc_res_go").click().run()
+    assert_clean(at)
+    assert not at.session_state["pc_res"][1]["in_control"]
+    at.text_input(key="pcap_lsl").set_value("5").run()
+    at.text_input(key="pcap_usl").set_value("15").run()
+    at.button(key="pcap_res_go").click().run()
+    at.button(key="pcs_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["pcap_res"][1]["cpk"] > 0 and at.session_state["pcs_res"][1][0]["signal_at"] is not None
+
+
+def test_inventory_page_runs_every_tab():
+    from test_inventory import sales
+    d = sales()
+    at = open_page(d, "Inventory")
+    assert_clean(at)
+    at.selectbox(key="iv_date").set_value("week").run()
+    at.button(key="iv_abc_go").click().run()
+    assert_clean(at)
+    assert at.session_state["iv_abc"][1]["matrix"] is not None
+    at.button(key="nv_res_go").click().run()
+    at.button(key="rp_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["nv_res"][1]["quantity"] > 100 and at.session_state["rp_res"][1][0]["safety_stock"] > 0
+    daily = pd.DataFrame({"sku": np.repeat(["a", "b"], 60), "day": list(pd.date_range("2024-01-01", periods=60)) * 2, "units": np.random.default_rng(3).poisson(8, 120)})
+    at = open_page(daily, "Inventory")
+    at.button(key="ip_res_go").click().run()
+    assert_clean(at)
+    assert len(at.session_state["ip_res"][1]["table"]) == 2
+
+
+def test_marketing_page_attribution_tab():
+    from test_attribution import worked_example
+    at = open_page(worked_example(), "Marketing mix")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][-1] == "Attribution"
+    at.selectbox(key="at_user").set_value("user").run()
+    at.selectbox(key="at_time").set_value("time").run()
+    at.selectbox(key="at_channel").set_value("channel").run()
+    at.selectbox(key="at_conv").set_value("converted").run()
+    at.button(key="at_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["at_res"][1]["credit"].loc["A", "markov"] > 30
+
+
+def test_survey_page_runs_every_tab():
+    from test_survey import likert_items
+    d = likert_items(400)
+    d["overall"] = np.clip(np.round(d.mean(axis=1) + np.random.default_rng(1).normal(0, 0.4, 400)), 1, 5)
+    d["recommend"] = np.random.default_rng(2).integers(0, 11, 400)
+    d["region"] = np.random.default_rng(3).choice(["n", "s"], 400)
+    at = open_page(d, "Survey")
+    assert_clean(at)
+    for key in ("sv_likert_go", "sr_res_go", "sn_res_go", "sc_res_go", "sk_res_go", "sg_res_go", "sq_res_go"):
+        at.button(key=key).click().run()
+        assert_clean(at)
+    for state in ("sv_likert", "sr_res", "sn_res", "sc_res", "sk_res", "sg_res", "sq_res"):
+        assert state in at.session_state, state
+    assert at.session_state["sr_res"][1]["alpha"] > 0.5

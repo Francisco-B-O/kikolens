@@ -42,6 +42,8 @@ The dashboard groups its sections into four areas.
 | | Analyst | A chat with your data: it draws charts from a validated specification, runs read-only SQL or chains analyses step by step, showing every step. The local model only chooses; the numbers come from the analyses. |
 | | Ask | Question the data in plain language (a local model writes the SQL) or run your own read-only SQL. |
 | **Analysis** | Experiments | Compare groups (the right test is chosen for you, with effect size and post-hoc comparisons), association between categories, correlation with confidence intervals, A/B tests (classical and Bayesian) with sample-size planning, and a screen of every column against a target corrected for testing many at once. |
+| | Survey | Scale questions, Cronbach's alpha, NPS with groups, cross-tabs with residuals, key drivers of the overall rating (relative weights), group comparisons and answer-quality checks. |
+| | Is the test sound? | Part of Experiments: the split of users checked against the plan, CUPED noise reduction, the effect over time and by segment, and a verdict that refuses to name a winner when the test is broken. |
 | | Anomalies | Isolation Forest, Local Outlier Factor, robust z-score or Mahalanobis distance, with the reason each row was flagged; and periods of a series that are unusual once trend and season are taken out. |
 | | Dimensions | PCA with loadings, t-SNE maps, and a redundancy check (VIF). |
 | | Compare data | What changed between two datasets, two periods, or the raw and the cleaned data: PSI, KS and chi-squared per column. |
@@ -54,6 +56,14 @@ The dashboard groups its sections into four areas.
 | | Customers | Retention by cohort, RFM segments, conversion funnels and what is bought together. |
 | | Why it changed | A figure moved between two periods: which regions, channels or products explain it, with a waterfall and mix and rate effects for averages. |
 | | Impact | Did a change move the numbers? Compared with what a control or the earlier trend predicted, with a range that reflects how wrong that method was before; also difference-in-differences. |
+| | Causal effect | Did a treatment really work? Propensity weighting, matching and a doubly robust estimate next to the raw difference, balance and overlap checks, uplift per row, thresholds, synthetic control and instrumental variables. |
+| | Simulation | Monte Carlo over uncertain inputs (distributions, correlations, risk, what moves the result), linear and integer programs with the worth of each limit, and optimisation of any formula within bounds. |
+| | Marketing mix | What each channel adds to sales (carry-over, saturation, trend and season), a budget split from the response curves, and price elasticity with an instrument for prices that follow demand. |
+| | Attribution | Part of Marketing mix: the credit for conversions shared between channels by seven models (first and last touch, linear, time decay, position, Markov chain and Shapley), to see where they disagree. |
+| | Inventory | ABC and XYZ classes with demand patterns, the newsvendor quantity, economic order quantity, safety stock and reorder point for a service level, and a simulation that checks the policy. |
+| | Plugins | Your own analyses and file formats from a Python file, with a form generated in the dashboard; they also reach the terminal, the Python API, the Analyst and the API server. |
+| | Network | From a list of links: who matters (PageRank, betweenness), communities, distances, shortest paths, links that are probably missing and how the network breaks when hubs go. |
+| | Geography | Coordinate checks, distances to the nearest store or warehouse, dense zones, Moran's I and hot and cold spots, and grid summaries, with no map tiles downloaded. |
 | **Models** | Models | AutoML for regression and classification with a written rationale, feature importance, row explanations and a what-if simulator. |
 | | Model lab | Up to 12 models (a baseline included) compared with cross-validation, the best one tuned, data-leak detection, diagnostics, partial dependence, Shapley values, **where the model fails**, decision thresholds with costs, a row-by-row comparison of two models, ranges that hold the truth as often as you ask (conformal), the smallest changes that would flip a prediction, and a fairness check across groups. SVM, AdaBoost, Bagging, voting and stacking ensembles, and an optional PyTorch network, are available too. |
 | | Regression | What pushes a result up or down, other things equal: linear or logistic regression with ranges, p-values, odds ratios, each effect in a sentence and warnings when the model cannot be trusted. |
@@ -63,10 +73,13 @@ The dashboard groups its sections into four areas.
 | | Feature ideas | Tries ratios, products and other new columns and keeps the ones that make a model better, as recipe steps. |
 | | Neural network | Configurable multilayer perceptron with the architecture drawn, the training curve, permutation importance and a comparison with the classical model. |
 | | Time series | Trend and seasonality, then five models (naive, seasonal naive, trend + seasonality, Holt-Winters, boosting on lags) tested on the past, the best one forecast with an honest range, changes of level or trend, special dates, and one forecast per group. |
+| | Classical series | Stationarity tests (ADF and KPSS together), autocorrelation, robust STL decomposition and seasonal ARIMA with automatic order selection, forecast ranges and a check against repeating the last season. |
 | | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
 | | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
+| | Process control | Control charts (individuals, subgroups, p, u, c) with signal rules, capability indices against a specification, and CUSUM and EWMA for small drifts. |
+| | Model governance | Owners, risk and model cards for saved models; draft, staging, production and archived stages with checks before each move, approvals, rollback, and an audit log that detects edits. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
-| **Share** | Panel | Pin metrics, charts and tables with global filters, and export them as one self-contained web page. |
+| **Share** | Panel | Pin metrics, charts and tables with global filters, click a chart to filter the others, and export to a web page, PowerPoint (native charts) or Word. |
 | | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
 | | Synthetic data | A table with the same distributions and correlations as yours but not real people, with fidelity, privacy and utility reports. |
 | | Export | CSV, Excel, Parquet, JSON or Feather; a formatted Excel workbook with the whole analysis; a database table; a data dictionary; or a Jupyter notebook that reproduces the session. |
@@ -127,7 +140,7 @@ kikolens doctor        # checks versions, optional extras, Ollama and your confi
 Settings (the Ollama model, the port, the language the dashboard opens in) go in a `kikolens.toml`: see [Configuration](docs/configuration.md).
 To contribute, read [CONTRIBUTING.md](CONTRIBUTING.md); the documentation is built with `mkdocs` (`docs/`).
 
-Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
+Optional extras: `pip install -e ".[cloud]"` for `s3://` and `gs://`, `".[postgres]"` and `".[mysql]"` for those databases, `".[jupyter]"` for JupyterLab, `".[office]"` for PowerPoint and Word export, `".[torch]"` for the PyTorch network (a large download, so it is not in `all`), and `".[all]"` for the rest.
 
 For the language-model features, install Ollama and pull a model:
 
@@ -177,6 +190,7 @@ kikolens text reviews.csv review --group product --themes 4
 kikolens drift reference.csv current.csv          # exit code 2 when the data changed a lot
 kikolens monitor create NAME SOURCE / run / list / history / watch / schedule / delete
 kikolens panel data.csv --output panel.html
+kikolens panel data.csv --format pptx --where "region in North,West"
 kikolens export data.csv out.xlsx --workbook      # formatted workbook with the analysis
 kikolens to-db data.csv sqlite:///results.db results
 kikolens report data.csv --target revenue --nn --output report.html

@@ -42,12 +42,21 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens models` | List the saved models. |
 | `kikolens models info NAME [--card FILE]` | Metrics and expected columns of a model; `--card` writes a Markdown model card. |
 | `kikolens models compare SOURCE MODEL MODEL [MODEL...]` | Which of several saved models predicts better on data whose real results are known, and whether the gap is reliable. |
+| `kikolens governance` | Every registered model with its stage, owner, risk, latest validation and whether a review is due. |
+| `kikolens governance register MODEL --owner NAME [--description T] [--intended-use T] [--limitations T] [--risk low\|medium\|high]` | Register a saved model (it starts as a draft). `governance update` changes the card. |
+| `kikolens governance validate MODEL DATA [--max-drop 0.2]` | Test on rows with known results and record whether it holds up. |
+| `kikolens governance checks MODEL STAGE` / `promote MODEL STAGE [--data DATA] [--reason T] [--force]` | See what blocks a move, or make it. Moving to production replaces and archives the current production model of the same target. |
+| `kikolens governance approve MODEL --actor NAME` / `rollback TARGET` | Approve this version of a model; go back to the previous production model. |
+| `kikolens governance card MODEL [--output FILE]` / `audit [MODEL]` | The model card in Markdown; verify the audit log chain and show the latest entries. |
 | `kikolens models delete NAME` | Remove a saved model. |
 | `kikolens forecast SOURCE DATE VALUE [--horizon N] [--freq D] [--agg mean]` | Forecast a numeric column. Frequencies: `h`, `D`, `W`, `MS`, `QS`, `YS`. |
 | `kikolens forecast ... --compare` | Compare five models with rolling-origin tests and forecast with the best one. |
 | `kikolens forecast ... --changes` | Also list level shifts and trend changes in the series. |
 | `kikolens forecast ... --by COLUMN` | One forecast per value of a column (the 20 with the most activity). |
 | `kikolens serve MODEL [--port 8000] [--host 127.0.0.1] [--token T]` | Serve a saved model as a small JSON API. `POST /predict` with `{"rows": [{...}]}` returns predictions and warnings; `GET /model` describes the inputs; `GET /health`. It listens only on this computer unless you give another `--host`, which requires `--token` (sent as `Authorization: Bearer T`). |
+| `kikolens api [--port 8000] [--host 127.0.0.1] [--token T] [--data-dir DIR] [--model NAME] [--cors ORIGIN]` | The whole toolkit as a JSON API: datasets, analyses, background jobs, models and plugins. See [API server](api-server.md). |
+| `kikolens plugins` | The loaded plugins, their analyses and formats, and anything that failed to load. |
+| `kikolens plugin NAME SOURCE [--arg name=value] [--output FILE]` | Run an analysis added by a plugin. See [Plugins](plugins.md). |
 
 `predict` and `lab` take `--save PATH` to write a model package to a file and `--register NAME` to keep it with your saved models. `lab` also takes `--folds`, `--no-tune`, `--bayes` (Bayesian optimisation instead of a random search), `--models "Ridge,Random Forest"`, `--balance` and `--exclude col1,col2`. Besides the default models, `--models` accepts `SVM`, `AdaBoost`, `Bagging`, `Voting Ensemble`, `Stacking Ensemble` and, with PyTorch installed, `PyTorch MLP`.
 
@@ -60,7 +69,18 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens ab SOURCE GROUP OUTCOME --control VALUE [--success VALUE]` | Compare a control and a treatment group on rates or averages. |
 | `kikolens drift REFERENCE CURRENT [--output FILE]` | Compare two datasets column by column. Exits with code `2` when the data changed a lot, so it works as an alarm in scripts and CI. |
 | `kikolens text SOURCE COLUMN [--group COL] [--ngram 1\|2\|3] [--themes K]` | Key terms of a free-text column, the terms that distinguish each group, and themes. |
-| `kikolens panel SOURCE [PANEL.json] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables; without a definition, one is suggested from the data. |
+| `kikolens topics SOURCE COLUMN [--topics N] [--method nmf\|lda] [--date COL]` | Topics in a text column; the number is chosen by coherence unless given. With `--date`, how each topic changes over time. |
+| `kikolens near-duplicates SOURCE COLUMN [--threshold 0.9]` / `similar SOURCE COLUMN "a phrase" [--n 5]` | Groups of near-identical texts; the texts most like a phrase. |
+| `kikolens patterns SOURCE COLUMN [--kinds email,url,...]` | Emails, links, phones, amounts, percentages, dates, hashtags and mentions. |
+| `kikolens keyphrases SOURCE COLUMN` / `readability SOURCE COLUMN` | Key phrases (RAKE); reading ease per text. |
+| `kikolens network FILE SOURCE TARGET [--weight COL] [--directed] [--output FILE]` | Important nodes, communities and connectivity of a network given as a list of links. |
+| `kikolens network-path FILE SOURCE TARGET START END` / `suggest-links FILE SOURCE TARGET` / `network-robustness FILE SOURCE TARGET` | The shortest path between two nodes; the links that are probably missing; how the network breaks when hubs are removed. |
+| `kikolens geo-check FILE [--lat COL --lon COL]` | Which rows have usable coordinates and what looks wrong (swapped, out of range, 0,0, repeated). |
+| `kikolens geo-distances FILE --point LAT,LON` or `--centers FILE [--center-name COL] [--reach-km N]` | Kilometres to a place or to the nearest centre, and how many points each centre serves. |
+| `kikolens geo-hotspots FILE [--value COL] [--eps-km 5] [--min-points 10]` | Dense zones of points. |
+| `kikolens spatial FILE VALUE [--k 8]` | Moran's I and Getis-Ord hot and cold spots for a numeric column. |
+| `kikolens geo-grid FILE [--value COL] [--cell-km 10] [--agg mean]` | Summary by square cells. |
+| `kikolens panel SOURCE [PANEL.json] [--format html\|pptx\|docx] [--where "region in North,West"] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables as a web page, a PowerPoint with native charts or a Word document (the last two need `kikolens[office]`); without a definition, one is suggested from the data. `--where` keeps only matching rows and can be repeated. |
 | `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE] [--pdf FILE]` | Build the HTML report, and a PDF with `--pdf`. |
 | `kikolens survival SOURCE DURATION EVENT [--group COL]` | Kaplan-Meier medians and a log-rank test between groups. |
 | `kikolens cohorts SOURCE USER DATE [--period Day\|Week\|Month]` | Retention by cohort. |
@@ -73,10 +93,39 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens ab-seq SOURCE GROUP OUTCOME CONTROL [--order COL] [--alpha 0.05]` | Sequential A/B test (mSPRT): valid even if you look after every observation. |
 | `kikolens bandit RATES [--visitors N]` | Simulate a Thompson-sampling bandit against an even split. |
 | `kikolens granger SOURCE DATE CAUSE EFFECT [--max-lag 7]` | Does the past of one column help predict another? Predictive, not proof of cause. |
+| `kikolens effect SOURCE TREATMENT OUTCOME [--covariates a,b] [--method aipw\|regression\|ipw\|matching] [--treated-value V]` | Causal effect of a treatment, adjusting for confounders, with the raw difference, balance and overlap warnings and an E-value. |
+| `kikolens uplift SOURCE TREATMENT OUTCOME [--covariates a,b]` | Who responds most to a treatment: effect by decile and a Qini curve. |
+| `kikolens discontinuity SOURCE RUNNING OUTCOME CUTOFF [--bandwidth H]` | Effect of crossing a threshold, with a bandwidth sweep and a manipulation test. |
+| `kikolens synth-control SOURCE UNIT TIME OUTCOME TREATED_UNIT INTERVENTION` | Effect on one unit against a weighted mix of control units, with placebo tests. |
+| `kikolens iv SOURCE OUTCOME ENDOGENOUS --instruments z1,z2 [--covariates a,b]` | Instrumental variables (two-stage least squares) with a first-stage strength check. |
+| `kikolens simulate FORMULA [--data FILE] [--input price=normal(10,2)] [--corr a,b=0.6] [--n 10000] [--threshold V] [--output CSV]` | Monte Carlo: spread the uncertainty of the inputs through a formula. Columns of `--data` are resampled with their correlation; `--input` defines or overrides inputs. |
+| `kikolens optimize FORMULA --var x=0:10 [--constraint "x + y <= 20"] [--minimize]` | Values of the variables that make a formula as high (or low) as possible within limits. |
+| `kikolens lp PROBLEM.json` | Solve a linear or integer program: `objective`, `constraints` (`coefs`, `op`, `rhs`, `name`), `bounds`, `maximize`, `integer`. |
+| `kikolens mmm SOURCE DATE TARGET --channels a,b [--controls c] [--reallocate] [--budget N]` | Marketing mix model: contribution, return and saturation of each channel, optionally with a proposed split of the spend. |
+| `kikolens elasticity SOURCE QUANTITY PRICE [--controls a,b] [--group COL] [--instrument COL] [--unit-cost N]` | Price elasticity of demand with the revenue or margin curve and the margin-maximising price. |
+| `kikolens attribution FILE USER TIME CHANNEL CONVERTED [--value COL] [--half-life 7] [--output FILE]` | Share the credit for conversions between channels with seven models. |
+| `kikolens likert FILE --items a,b [--reverse c]` / `reliability FILE --items a,b,c` | Scale questions (favourable share, mean, spread); Cronbach's alpha and what each question contributes. |
+| `kikolens nps FILE SCORE [--group COL]` / `crosstab FILE ROW COLUMN` | Net Promoter Score with its interval; a cross-tab with residuals and Cramér's V. |
+| `kikolens key-drivers FILE OUTCOME --items a,b,c` / `survey-groups FILE GROUP --items a,b` / `response-quality FILE --items a,b,...` | What matters most for an overall rating; which questions differ between groups; straight-liners and blanks. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
+| `kikolens stationarity SOURCE DATE VALUE [--trend]` | ADF and KPSS together, and how many differences the series needs. |
+| `kikolens acf SOURCE DATE VALUE [--nlags N]` | Autocorrelation and partial autocorrelation with the Ljung-Box test. |
+| `kikolens stl SOURCE DATE VALUE [--period N] [--output FILE]` | Robust trend, seasonal and remainder, with the strength of each. |
+| `kikolens arima SOURCE DATE VALUE [--order p,d,q] [--seasonal P,D,Q] [--period N] [--horizon N]` | Seasonal ARIMA forecast with ranges and diagnostics; without `--order` the best model is searched by AICc. |
 | `kikolens select-features SOURCE TARGET [--exclude a,b] [--output FILE]` | Which columns are worth keeping: consensus of four methods and a cross-validated curve. |
 | `kikolens runs [--target COL] [--best] [--compare id,id] [--delete id]` | The history of model lab runs. |
 | `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |
+| `kikolens experiment FILE GROUP OUTCOME CONTROL [--pre COL] [--date COL] [--segments a,b] [--expected control=50,new=50]` | Full A/B analysis: split check, effect of each group against the control (CUPED with `--pre`), effect over time and by segment, and a verdict. |
+| `kikolens srm FILE GROUP [--expected a=50,b=50]` / `cuped FILE GROUP OUTCOME PRE CONTROL` | Only the split check; only the noise reduction. |
+| `kikolens control-chart FILE VALUE [--chart individuals\|xbar\|p\|u\|c] [--subgroup COL] [--size COL] [--baseline N] [--rules 1,4]` | Control chart with signal rules; `--baseline` sets the limits from the first N points. |
+| `kikolens capability FILE VALUE --lsl N --usl N [--target N]` | Cp, Cpk, Pp, Ppk and the share out of specification. |
+| `kikolens shift-detect FILE VALUE [--baseline N]` | CUSUM and EWMA for small sustained shifts. |
+| `kikolens abc-xyz FILE ITEM QUANTITY [--date COL] [--value COL] [--freq W]` | Classify items by value (ABC), demand variation (XYZ) and pattern (smooth, erratic, intermittent, lumpy). |
+| `kikolens newsvendor --cost N --price N [--salvage N] --mean N --sd N` | How much to order of something sold once. |
+| `kikolens eoq --demand N --order-cost N --holding-cost N` | Economic order quantity. |
+| `kikolens reorder --mean N --sd N --lead-time N [--lead-time-sd N] [--service-level 0.95] [--order-quantity N]` | Safety stock and reorder point for a service level. |
+| `kikolens stock-simulate --mean N --sd N --lead-time N --order-quantity N --reorder-point N [--runs 300] [--lost-sales]` | Simulate the reorder policy for many years to see the service it really gives. |
+| `kikolens inventory-plan FILE ITEM DATE QUANTITY --lead-time N [--service-level 0.95] [--order-cost N --holding-cost N]` | A reorder policy for every item in a table of sales. |
 | `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 
 ## Monitoring

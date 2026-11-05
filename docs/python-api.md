@@ -58,6 +58,31 @@ An unknown field raises an error that lists what is available. Text from your da
 | `segment(df, "gmm" \| "hierarchical" \| "dbscan")` | Segments with each group described in words; `res.labels` is the group of every row. |
 | `ab_sequential(df, group, outcome, control, order=None)` | A sequential A/B test that stays valid when checked after every observation. |
 | `granger(df, date, cause, effect)` / `forecast_drivers(df, date, target, drivers, scenario=...)` | Granger test; forecast using other columns, with what-if scenarios. |
+| `effect(df, treatment, outcome, covariates=None, method="aipw")` | Causal effect with five estimators side by side; `res.effect`, `res.interval`, `res.table`, `res.balance`, `res.e_value`. |
+| `uplift(df, treatment, outcome, covariates=None)` | Effect per row and who to target; `res.cate`, `res.deciles`, `res.qini`. |
+| `discontinuity(df, running, outcome, cutoff)` | Effect of crossing a threshold, with a bandwidth sweep. |
+| `synthetic_control(df, unit, time, outcome, treated_unit, intervention)` | Effect on one unit against a synthetic control; `res.p_value` comes from placebos. |
+| `instrumental(df, outcome, endogenous, instruments, covariates=None)` | Two-stage least squares; `res.first_stage_f` tells whether the instrument is strong. |
+| `simulate(inputs, formula, n=10000, correlations=None, threshold=None)` | Monte Carlo; `inputs` is a dictionary of distributions or a DataFrame whose columns are resampled. `res.mean`, `res.percentiles`, `res.p_above`, `res.sensitivity`, `res.samples`. |
+| `optimize(formula_or_objective, bounds, constraints)` | A formula as text (bounds `{"x": (0, 10)}`, restrictions `["x + y <= 20"]`) or a linear program if you pass a dictionary of coefficients; `res.solution`, `res.objective`. |
+| `marketing_mix(df, date, target, channels, controls=None)` | What each channel contributes; `res.table`, `res.parts`, `res.params`, `res.r2`. |
+| `attribution(df, user, time, channel, converted, value=None)` | Multi-touch attribution; `res.credit` (conversions or value per channel and model), `res.shares`, `res.top_paths`. |
+| `likert(df, items)` / `cronbach(df, items)` / `nps(df, score, group=None)` / `crosstab(df, row, column)` | Survey basics: scale summary, reliability, Net Promoter Score, cross-tab with residuals. |
+| `key_drivers(df, outcome, items)` / `compare_items(df, items, group)` / `response_quality(df, items)` | What matters most for an overall rating (`res.table` with importance and `priority`); questions that differ between groups; answer-quality flags. |
+| `budget(model, total=None, low=0.5, high=2.0)` | A split of the spend per period from a `marketing_mix` result; `res.table`, `res.gain`. |
+| `elasticity(df, quantity, price, controls=None, group=None, instrument=None, unit_cost=None)` | Price elasticity (log-log); `res.elasticity`, `res.interval`, `res.groups`, `res.optimal_price`. |
+| `panel(df, path=None, definition=None, where=None)` | A panel of metrics, charts and tables. With a `path` ending in `.html`, `.pptx` or `.docx` it writes the file; without one it returns the `Panel` to add tiles to. |
+| `run(name, df, **args)` / `list_plugins()` | Run an analysis added by a plugin; list the loaded plugins, their analyses, formats and load errors. See [Plugins](plugins.md). |
+| `stationarity(df, date, value)` / `autocorrelation(df, date, value)` | ADF and KPSS with suggested differences; autocorrelation with Ljung-Box. |
+| `governance()` / `governance("promote", "model", to="production")` | The governance overview, or one action (`register`, `update`, `validate`, `approve`, `checks`, `promote`, `rollback`). `model_card("model")` returns the card as Markdown. |
+| `topics(df, text, k=None, date=None)` | Topics (`res.table`, `res.assignments`, `res.coherence`; with `date`, `res.over_time`). `near_duplicates(df, text)`, `similar(df, text, "a phrase")`, `text_patterns(df, text)`, `keyphrases(df, text)` and `readability(df, text)` work on one text column. |
+| `network(df, source, target, weight=None, directed=False)` | Network analysis from a list of links: `res.table` (PageRank, betweenness, clustering, community per node), `res.communities`, `res.modularity`. `network_path`, `suggest_links` and `network_robustness` take the same columns. |
+| `geo_check(df)` / `geo_distances(df, centers)` / `geo_hotspots(df)` / `spatial_autocorrelation(df, value)` / `geo_grid(df)` | Geography on a table with latitude and longitude columns, found by name (or give `lat=` and `lon=`). `centers` is a `(lat, lon)` pair or a table with `center_lat=`, `center_lon=`, `center_name=`. |
+| `experiment(df, group, outcome, control, pre=None, date=None, segments=None)` | Full A/B analysis; `res.verdict`, `res.table`, `res.srm`, and with the options `res.cuped`, `res.over_time`, `res.segments`. `srm(df, group)` and `cuped(df, group, outcome, pre, control)` run one step. |
+| `control_chart(df, value, chart="individuals", baseline=None)` / `process_capability(df, value, lsl=, usl=)` / `shift_detection(df, value)` | Control chart with signal rules (`res.signals`, `res.in_control`); capability indices (`res.cpk`, `res.ppk`); CUSUM and EWMA (`res.cusum`, `res.ewma`). |
+| `abc_xyz(df, item, quantity, date=None, value=None)` / `inventory_plan(df, item, date, quantity, lead_time_days=)` | Item classification; a reorder policy for each item. `newsvendor(unit_cost, price, salvage, mean, sd)`, `eoq(demand, order_cost, holding_cost)`, `reorder_policy(mean, sd, lead_time)` and `simulate_stock_policy(...)` answer single questions. |
+| `decompose_stl(df, date, value, period=None)` | Robust STL; `res.components`, `res.seasonal_strength`, `res.trend_strength`. |
+| `arima(df, date, value, order=None, seasonal=(0,0,0), period=None, horizon=12)` | Seasonal ARIMA; without `order` it searches (`res.candidates`). `res.forecast`, `res.backtest`, `res.ljung_box`. |
 | `recommender(df, user, item, rating=None)` | An item-based recommender: `.recommend(person)`, `.similar_items(item)`, `.popular()`. |
 | `synthesize(df, n=None)` | Synthetic data; `res.data` is the table and `res.report` the fidelity and privacy figures. |
 | `runs(target=None)` | The history of model lab runs (the dashboard and `kikolens lab` record them). |

@@ -4,6 +4,7 @@ import streamlit as st
 from kikolens.analyze import panel as pn
 from kikolens.analyze import transform as tf
 from kikolens.dashboard import components as ui
+from kikolens.dashboard.i18n import t
 
 TITLE = "Panel"
 SUBTITLE = "Pin the numbers and charts you care about into one page you can export."
@@ -73,12 +74,49 @@ def _new_tile(df: pd.DataFrame, panel: pn.Panel) -> None:
             st.rerun()
 
 
+def _selection(state) -> dict | None:
+    """Lo marcado en un gráfico, sea cual sea la forma en que Streamlit entregue el estado."""
+    try:
+        selection = state["selection"]
+        return {"points": list(selection["points"] or []), "box": list(selection["box"] or [])}
+    except (KeyError, TypeError, AttributeError):
+        return None
+
+
+def _sync_cross(df: pd.DataFrame, panel: pn.Panel) -> dict:
+    """Recoge las selecciones hechas en los gráficos. Una selección vacía no borra la anterior (al cambiar los demás gráficos se puede perder el
+    estado de la selección), se borra con el botón; así el filtro no desaparece solo."""
+    cross = st.session_state.setdefault("pn_cross", {})
+    ids = {t["id"] for t in panel.tiles}
+    for gone in [k for k in cross if k not in ids]:
+        cross.pop(gone)
+    for tile in panel.tiles:
+        if tile["type"] != "chart":
+            continue
+        filters = pn.selection_filters(tile, _selection(st.session_state.get(f"pn_fig_{tile['id']}")), df)
+        if filters:
+            cross[tile["id"]] = filters
+    return cross
+
+
+def _cross_bar(panel: pn.Panel, cross: dict) -> None:
+    if not cross:
+        return
+    titles = {t["id"]: t.get("title") or "chart" for t in panel.tiles}
+    st.caption(t("Selected in the charts:") + " " + " | ".join(f"{titles.get(k, 'chart')}: {pn.describe_filters(v)}" for k, v in cross.items()))
+    if st.button("Clear the selections", key="pn_clear_cross"):
+        for tile in panel.tiles:
+            st.session_state.pop(f"pn_fig_{tile['id']}", None)
+        st.session_state["pn_cross"] = {}
+        st.rerun()
+
+
 def _render_tile(tile: dict, value, error, panel: pn.Panel) -> None:
     title = tile.get("title") or tile["type"].title()
     if error:
         ui.note(error, "high", bold=title)
     elif tile["type"] == "chart":
-        ui.chart(value, 340, key=f"pn_fig_{tile['id']}")
+        ui.chart(value, 340, key=f"pn_fig_{tile['id']}", select=True)
     elif tile["type"] == "table":
         st.markdown(f"**{title}**")
         ui.table(value, height=260)
@@ -119,11 +157,14 @@ def render(df: pd.DataFrame) -> None:
         ui.note("The panel is empty. Add a tile above or press Suggest a panel.", "low")
         return
 
-    data, results = panel.evaluate(df)
+    cross = _sync_cross(df, panel)
+    data, results = panel.evaluate(df, cross)
     metrics = [(t.get("title") or "Metric", pn.format_metric(v)) for t, v, e in results if t["type"] == "metric" and not e]
     if metrics:
         ui.stats(metrics)
     st.caption(f"Showing {len(data):,} of {len(df):,} rows.")
+    st.caption("Click bars or slices, or drag a box on a chart, to filter the other tiles.")
+    _cross_bar(panel, cross)
     others = [r for r in results if r[0]["type"] != "metric" or r[2]]
     for i in range(0, len(others), 2):
         for col, (tile, value, error) in zip(st.columns(2, gap="large"), others[i:i + 2]):
@@ -131,8 +172,32 @@ def render(df: pd.DataFrame) -> None:
                 _render_tile(tile, value, error, panel)
 
     st.divider()
-    a, b = st.columns(2)
-    a.download_button("Download as a web page", pn.panel_html(df, panel).encode("utf-8"), "kikolens_panel.html", "text/html",
+    a, b, c, d = st.columns(4)
+    a.download_button("Web page", pn.panel_html(df, panel).encode("utf-8"), "kikolens_panel.html", "text/html",
                       key="pn_html", help="One self-contained page with the charts. The data is not included.")
-    b.download_button("Download panel definition (JSON)", panel.to_json().encode("utf-8"), "panel.json",
-                      "application/json", key="pn_json")
+    b.download_button("Panel definition (JSON)", panel.to_json().encode("utf-8"), "panel.json", "application/json", key="pn_json")
+    _office(df, panel, cross, c, d)
+
+
+def _office(df: pd.DataFrame, panel: pn.Panel, cross: dict, pptx_slot, docx_slot) -> None:
+    """PowerPoint y Word se preparan al pedirlos (llevan un rato) y se recuerdan mientras no cambie el panel, los datos ni la selección."""
+    try:
+        from kikolens.report import office
+    except ImportError:
+        st.caption("PowerPoint and Word export needs  pip install kikolens[office]")
+        return
+    signature = (panel.to_json(), repr(sorted(cross.items())), df.shape, st.session_state.get("filename"))
+    for slot, key, make, name, mime in (
+            (pptx_slot, "pptx", office.panel_pptx, "kikolens_panel.pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"),
+            (docx_slot, "docx", office.panel_docx, "kikolens_panel.docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document")):
+        ready = st.session_state.get(f"pn_{key}_ready")
+        if ready and ready[0] == signature:
+            slot.download_button("Download PowerPoint" if key == "pptx" else "Download Word", ready[1], name, mime, key=f"pn_{key}",
+                                 help="Native, editable charts. Includes the current selection." if key == "pptx" else "Charts as images. Includes the current selection.")
+        elif slot.button("Prepare PowerPoint" if key == "pptx" else "Prepare Word", key=f"pn_{key}_make"):
+            try:
+                st.session_state[f"pn_{key}_ready"] = (signature, make(df, panel, cross))
+            except (ImportError, ValueError) as e:
+                ui.note(str(e), "high")
+            else:
+                st.rerun()

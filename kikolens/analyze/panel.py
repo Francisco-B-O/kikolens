@@ -170,18 +170,25 @@ class Panel:
         i, j = ids.index(tile_id), max(0, min(len(ids) - 1, ids.index(tile_id) + offset))
         self.tiles.insert(j, self.tiles.pop(i))
 
-    def evaluate(self, df: pd.DataFrame):
-        """Calcula cada tarjeta. Devuelve (datos filtrados, [(tarjeta, valor o None, error o None)])."""
-        data = apply_filters(df, self.filters)
+    def evaluate(self, df: pd.DataFrame, cross: dict | None = None):
+        """Calcula cada tarjeta. Devuelve (datos filtrados, [(tarjeta, valor o None, error o None)]).
+        `cross` son selecciones hechas en los gráficos ({id de tarjeta: [filtros]}): filtran a las demás tarjetas pero no a la que las originó,
+        para que siga mostrando todas las opciones entre las que se puede elegir."""
+        base = apply_filters(df, self.filters)
+        cross = {k: v for k, v in (cross or {}).items() if v}
+        data = apply_filters(base, [f for fs in cross.values() for f in fs])
         results = []
         for tile in self.tiles:
+            own = apply_filters(base, [f for tid, fs in cross.items() if tid != tile.get("id") for f in fs]) if cross else base
             try:
+                if cross and not len(own):
+                    raise ValueError("No rows match the current selection.")
                 if tile["type"] == "metric":
-                    value = compute_metric(data, tile)
+                    value = compute_metric(own, tile)
                 elif tile["type"] == "chart":
-                    value = build_figure(data, tile)
+                    value = build_figure(own, tile)
                 else:
-                    value = build_table(data, tile)
+                    value = build_table(own, tile)
                 results.append((tile, value, None))
             except (ValueError, KeyError, TypeError) as e:
                 results.append((tile, None, str(e)))
@@ -207,6 +214,88 @@ class Panel:
                 raise ValueError("Malformed tile in the panel.")
             panel.add(tile)
         return panel
+
+
+def _iso(value):
+    return value.isoformat() if hasattr(value, "isoformat") else value
+
+
+def selection_filters(tile: dict, selection: dict | None, df: pd.DataFrame) -> list:
+    """Convierte lo que se marcó en un gráfico (puntos o un recuadro) en filtros sobre las columnas que lo dibujan.
+    Barras, sectores, líneas y cajas filtran por el grupo marcado (o por el rango de fechas); histogramas y dispersiones, por el recuadro."""
+    if tile.get("type") != "chart" or not selection:
+        return []
+    kind, x, y = tile.get("kind", "bar"), tile.get("x"), tile.get("y")
+    if x not in df.columns:
+        return []
+    points, box = selection.get("points") or [], selection.get("box") or []
+
+    def values(key):
+        return [p[key] for p in points if p.get(key) is not None]
+
+    def span(column, lo, hi):
+        if _numeric(df[column]):
+            return [{"column": column, "op": ">=", "value": min(lo, hi)}, {"column": column, "op": "<=", "value": max(lo, hi)}]
+        if pd.api.types.is_datetime64_any_dtype(df[column]):
+            lo, hi = pd.to_datetime(lo), pd.to_datetime(hi)
+            return [{"column": column, "op": ">=", "value": _iso(min(lo, hi))}, {"column": column, "op": "<=", "value": _iso(max(lo, hi))}]
+        return []
+
+    if kind in ("histogram", "scatter"):
+        if not box:
+            return []
+        out = span(x, *box[0]["x"][:2])
+        if kind == "scatter" and y in df.columns and box[0].get("y"):
+            out += span(y, *box[0]["y"][:2])
+        return out
+    if not points:
+        return []
+    if kind == "pie":
+        chosen = values("label") or values("x")
+    elif kind == "bar":
+        chosen = values("y") or values("x")                        # las barras son horizontales: el grupo va en el eje vertical
+    else:
+        chosen = values("x")
+    if not chosen:
+        return []
+    if kind in ("line", "area") and (_numeric(df[x]) or pd.api.types.is_datetime64_any_dtype(df[x])):
+        try:
+            return span(x, min(pd.to_datetime(chosen) if pd.api.types.is_datetime64_any_dtype(df[x]) else chosen),
+                        max(pd.to_datetime(chosen) if pd.api.types.is_datetime64_any_dtype(df[x]) else chosen))
+        except (TypeError, ValueError):
+            return []
+    return [{"column": x, "op": "in", "value": [str(v) for v in dict.fromkeys(chosen)]}]
+
+
+def parse_filter(text: str) -> dict:
+    """`region in North,West` -> {"column": "region", "op": "in", "value": ["North", "West"]}."""
+    text = text.strip()
+    for op in ("is not empty", "is empty"):
+        if text.endswith(f" {op}") and text[: -len(op)].strip():
+            return {"column": text[: -len(op)].strip(), "op": op, "value": None}
+    for op in sorted((o for o in transform.FILTER_OPERATORS if not o.startswith("is ")), key=len, reverse=True):
+        marker = f" {op} " if op[0].isalpha() else op
+        column, found, value = text.partition(marker)
+        if found and column.strip():
+            return {"column": column.strip(), "op": op, "value": [v.strip() for v in value.split(",")] if op in ("in", "not in") else value.strip()}
+    raise ValueError(f"Cannot read the condition '{text}'. Write it like \"region in North,West\" or \"revenue > 100\".")
+
+
+def describe_filters(filters: list) -> str:
+    """Una frase corta para mostrar qué filtra una selección."""
+    by = {}
+    for f in filters:
+        by.setdefault(f["column"], []).append(f)
+    parts = []
+    for column, fs in by.items():
+        if len(fs) == 2 and {f["op"] for f in fs} == {">=", "<="}:
+            lo, hi = sorted((f["value"] for f in fs), key=str)
+            parts.append(f"{column} from {lo} to {hi}")
+        else:
+            f = fs[0]
+            value = ", ".join(map(str, f["value"])) if isinstance(f["value"], list) else f["value"]
+            parts.append(f"{column} {'is' if f['op'] == 'in' else f['op']} {value}")
+    return "; ".join(parts)
 
 
 def suggest_panel(df: pd.DataFrame, title: str = "Overview") -> Panel:
