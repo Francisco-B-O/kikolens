@@ -2589,6 +2589,66 @@ def cuped(file: str, group: str, outcome: str, pre: str, control: str):
         console.print(f"[yellow]{note}[/yellow]")
 
 
+@app.command("control-chart")
+def control_chart(
+    file: str, value: str, chart: str = typer.Option("individuals", help="individuals, xbar, p, u or c."), order: Optional[str] = typer.Option(None, help="Column that gives the time order."),
+    subgroup: Optional[str] = typer.Option(None, help="For xbar: the column that identifies each subgroup."), size: Optional[str] = typer.Option(None, help="For p and u: examined or units."),
+    baseline: Optional[int] = typer.Option(None, help="How many initial points set the limits; the rest are monitored."),
+    rules: str = typer.Option("1,4", help="Signal rules, 1 to 6 (more rules find changes sooner and give more false alarms)."),
+):
+    """Control chart with signal rules: is the process stable, or did something change?"""
+    from kikolens.analyze import spc
+
+    df = _load(file)
+    try:
+        res = spc.control_chart(df, value, chart, order, subgroup, size, baseline, True, tuple(int(r) for r in rules.split(",")))
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if len(res["signals"]):
+        shown = res["signals"][["position", "rule", "meaning"]].copy()
+        shown["position"] += 1
+        _print_frame(shown.head(15), "Signals")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def capability(file: str, value: str, lsl: Optional[float] = typer.Option(None, help="Lower specification limit."), usl: Optional[float] = typer.Option(None, help="Upper specification limit."),
+               target: Optional[float] = typer.Option(None, help="Target value, for Cpm.")):
+    """Process capability (Cp, Cpk, Pp, Ppk) against the specification limits."""
+    from kikolens.analyze import spc
+
+    df = _load(file)
+    if value not in df.columns:
+        _fail(ValueError(f"Column '{value}' not found."))
+    try:
+        res = spc.capability(df[value], lsl, usl, target)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(3), "Indices")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("shift-detect")
+def shift_detect(file: str, value: str, target: Optional[float] = typer.Option(None, help="The value the process should have (default: the baseline mean)."),
+                 sigma: Optional[float] = typer.Option(None, help="Its standard deviation (default: from the baseline)."), baseline: Optional[int] = typer.Option(None, help="Initial points that define normal.")):
+    """CUSUM and EWMA: small, sustained shifts that an ordinary control chart takes long to see."""
+    from kikolens.analyze import spc
+
+    df = _load(file)
+    if value not in df.columns:
+        _fail(ValueError(f"Column '{value}' not found."))
+    try:
+        one, two = spc.cusum(df[value], target, sigma, baseline=baseline), spc.ewma(df[value], target=target, sigma=sigma, baseline=baseline)
+    except ValueError as e:
+        _fail(e)
+    console.print(f"CUSUM: {one['summary']}")
+    console.print(f"EWMA: {two['summary']}")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

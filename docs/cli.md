@@ -113,6 +113,9 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |
 | `kikolens experiment FILE GROUP OUTCOME CONTROL [--pre COL] [--date COL] [--segments a,b] [--expected control=50,new=50]` | Full A/B analysis: split check, effect of each group against the control (CUPED with `--pre`), effect over time and by segment, and a verdict. |
 | `kikolens srm FILE GROUP [--expected a=50,b=50]` / `cuped FILE GROUP OUTCOME PRE CONTROL` | Only the split check; only the noise reduction. |
+| `kikolens control-chart FILE VALUE [--chart individuals\|xbar\|p\|u\|c] [--subgroup COL] [--size COL] [--baseline N] [--rules 1,4]` | Control chart with signal rules; `--baseline` sets the limits from the first N points. |
+| `kikolens capability FILE VALUE --lsl N --usl N [--target N]` | Cp, Cpk, Pp, Ppk and the share out of specification. |
+| `kikolens shift-detect FILE VALUE [--baseline N]` | CUSUM and EWMA for small sustained shifts. |
 | `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 
 ## Monitoring

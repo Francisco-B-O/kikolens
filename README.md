@@ -73,6 +73,7 @@ The dashboard groups its sections into four areas.
 | | Classical series | Stationarity tests (ADF and KPSS together), autocorrelation, robust STL decomposition and seasonal ARIMA with automatic order selection, forecast ranges and a check against repeating the last season. |
 | | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
 | | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
+| | Process control | Control charts (individuals, subgroups, p, u, c) with signal rules, capability indices against a specification, and CUSUM and EWMA for small drifts. |
 | | Model governance | Owners, risk and model cards for saved models; draft, staging, production and archived stages with checks before each move, approvals, rollback, and an audit log that detects edits. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
 | **Share** | Panel | Pin metrics, charts and tables with global filters, click a chart to filter the others, and export to a web page, PowerPoint (native charts) or Word. |

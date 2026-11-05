@@ -615,6 +615,25 @@ def cuped(df: pd.DataFrame, group: str, outcome: str, pre: str, control) -> Resu
     return _wrap("cuped", ex.cuped(df, group, outcome, pre, control))
 
 
+def control_chart(df: pd.DataFrame, value: str, chart: str = "individuals", **kwargs) -> Result:
+    """Carta de control (`individuals`, `xbar`, `p`, `u`, `c`) con las reglas de señal; `baseline=` fija cuántos puntos iniciales calculan los límites."""
+    from kikolens.analyze import spc
+    return _wrap("control chart", spc.control_chart(df, value, chart, **kwargs))
+
+
+def process_capability(df: pd.DataFrame, value: str, lsl: float | None = None, usl: float | None = None, target: float | None = None) -> Result:
+    """Cp, Cpk, Pp y Ppk frente a los límites de especificación."""
+    from kikolens.analyze import spc
+    return _wrap("capability", spc.capability(df[value], lsl, usl, target))
+
+
+def shift_detection(df: pd.DataFrame, value: str, target: float | None = None, sigma: float | None = None, baseline: int | None = None) -> Result:
+    """CUSUM y EWMA juntos para ver cambios pequeños y sostenidos: `res.cusum`, `res.ewma`."""
+    from kikolens.analyze import spc
+    one, two = spc.cusum(df[value], target, sigma, baseline=baseline), spc.ewma(df[value], target=target, sigma=sigma, baseline=baseline)
+    return _wrap("shift detection", {"cusum": one, "ewma": two, "notes": [], "summary": f"CUSUM: {one['summary']} EWMA: {two['summary']}"})
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection")

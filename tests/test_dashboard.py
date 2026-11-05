@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control"]
 
 
 @pytest.fixture(scope="module")
@@ -692,3 +692,22 @@ def test_experiments_page_checks_that_the_test_is_sound():
     assert_clean(at)
     res = at.session_state["xq_res"][1]
     assert res["verdict"].startswith("new beats control") and "cuped" in res
+
+
+def test_process_control_page_runs_every_tab():
+    rng = np.random.default_rng(3)
+    d = pd.DataFrame({"v": np.r_[rng.normal(10, 1, 80), rng.normal(12.5, 1, 40)], "bad": rng.binomial(100, 0.05, 120), "n": 100})
+    at = open_page(d, "Process control")
+    assert_clean(at)
+    at.selectbox(key="pc_value").set_value("v").run()
+    at.checkbox(key="pc_usebase").set_value(True).run()
+    at.number_input(key="pc_base").set_value(80).run()
+    at.button(key="pc_res_go").click().run()
+    assert_clean(at)
+    assert not at.session_state["pc_res"][1]["in_control"]
+    at.text_input(key="pcap_lsl").set_value("5").run()
+    at.text_input(key="pcap_usl").set_value("15").run()
+    at.button(key="pcap_res_go").click().run()
+    at.button(key="pcs_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["pcap_res"][1]["cpk"] > 0 and at.session_state["pcs_res"][1][0]["signal_at"] is not None
