@@ -1,0 +1,51 @@
+site_name: KikoLens
+site_description: Private, local-first data analysis with AutoML, forecasting, causal tools and local language models.
+site_url: https://francisco-b-o.github.io/kikolens/docs/
+repo_url: https://github.com/Francisco-B-O/kikolens
+repo_name: Francisco-B-O/kikolens
+edit_uri: edit/develop/docs/
+docs_dir: docs
+exclude_docs: |
+  make_screenshots.py
+
+theme:
+  name: material
+  logo: images/logo.svg
+  favicon: images/logo.svg
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep orange
+      accent: deep orange
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep orange
+      accent: deep orange
+  features:
+    - navigation.sections
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.snippets:
+      base_path: ["."]
+  - pymdownx.superfences
+
+nav:
+  - Home: index.md
+  - Using KikoLens:
+      - Dashboard guide: dashboard.md
+      - Command line: cli.md
+      - Python API and Jupyter: python-api.md
+      - Workflows: workflows.md
+      - API server: api-server.md
+  - How it works: models.md
+  - Setup and development:
+      - Configuration: configuration.md
+      - Development: development.md
+  - Changelog: changelog.md

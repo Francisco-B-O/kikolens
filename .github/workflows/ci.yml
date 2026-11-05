@@ -1,0 +1,153 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+  push:
+    branches:
+      - develop
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check the code with ruff
+        run: |
+          pip install ruff
+          ruff check kikolens tests
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]" pytest-cov
+
+      - name: Run tests with coverage
+        run: pytest tests/ -v --cov=kikolens --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+  compatibility:
+    name: Compatibility (${{ matrix.os }}, Python ${{ matrix.python }}, ${{ matrix.pandas }})
+    runs-on: ${{ matrix.os }}
+    # Las combinaciones experimentales avisan pero no bloquean: la principal es el trabajo "Tests".
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {os: ubuntu-latest, python: "3.12", pandas: "pandas<3", experimental: false}
+          - {os: windows-latest, python: "3.12", pandas: "pandas>=3", experimental: false}
+          - {os: macos-latest, python: "3.12", pandas: "pandas>=3", experimental: true}
+          - {os: ubuntu-latest, python: "3.13", pandas: "pandas>=3", experimental: true}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]" "${{ matrix.pandas }}"
+
+      - name: Run tests
+        run: pytest tests/ -q
+
+  package:
+    name: Build package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Build the wheel
+        run: |
+          pip install build
+          python -m build
+
+      - name: Install the wheel and run the command line
+        run: |
+          pip install dist/*.whl
+          kikolens --help
+          kikolens models
+          kikolens monitor list
+          kikolens doctor --offline
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Build the documentation site
+        run: |
+          pip install mkdocs-material
+          mkdocs build --strict
+
+  sonar:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
