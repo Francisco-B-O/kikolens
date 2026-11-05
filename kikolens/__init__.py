@@ -1,5 +1,5 @@
 # kikolens/__init__.py
-__version__ = "1.4.0"
+__version__ = "1.0.0"
 
 from . import cli
 from . import analyze
