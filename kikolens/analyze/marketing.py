@@ -168,7 +168,7 @@ def marketing_mix(df: pd.DataFrame, date: str, target: str, channels: list, cont
     holdout = holdout_error(params)
     if holdout > 0.25:
         notes.append(f"On the last {HOLDOUT:.0%} of the periods the model is off by {holdout:.0%} on average: treat the split between channels as rough.")
-    corr = spend.corr().abs().to_numpy()
+    corr = spend.corr().abs().to_numpy().copy()                  # pandas 3 devuelve arrays de solo lectura
     np.fill_diagonal(corr, 0)
     if corr.size and corr.max() > 0.8:
         i, j = np.unravel_index(corr.argmax(), corr.shape)
