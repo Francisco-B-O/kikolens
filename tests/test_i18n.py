@@ -77,7 +77,7 @@ def test_most_widget_labels_are_translated():
 def test_no_translation_is_orphaned_or_empty():
     strings = set(ui_strings()) | {m for m in ES if m.startswith(("#### ", "**"))}
     package = VIEWS.parent
-    extra = [package / "demo.py", package / "analyze" / "story.py", package / "analyze" / "visuals.py"]     # textos que el panel muestra desde fuera de las vistas
+    extra = [package / "demo.py", package / "analyze" / "story.py", package / "analyze" / "visuals.py", package / "analyze" / "concepts.py"]     # textos que el panel muestra desde fuera de las vistas
     source = "".join(p.read_text(encoding="utf-8") for p in list(VIEWS.rglob("*.py")) + extra if p.name != "es.py")
     orphans = [k for k in ES if k not in strings and k not in source.replace("\\'", "'")]
     assert len(orphans) <= 8, orphans      # algunos textos se construyen por partes (name.capitalize(), cadenas largas)

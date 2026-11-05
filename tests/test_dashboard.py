@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control", "Inventory", "Survey"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control", "Inventory", "Survey", "Concept lab"]
 
 
 @pytest.fixture(scope="module")
@@ -761,3 +761,23 @@ def test_survey_page_runs_every_tab():
     for state in ("sv_likert", "sr_res", "sn_res", "sc_res", "sk_res", "sg_res", "sq_res"):
         assert state in at.session_state, state
     assert at.session_state["sr_res"][1]["alpha"] > 0.5
+
+
+def test_concept_lab_works_with_data_and_without():
+    at = open_page(pd.DataFrame({"a": [1, 2, 3]}), "Concept lab")
+    assert_clean(at)
+    at.selectbox(key="cl_concept").set_value("power").run()
+    assert_clean(at)
+    assert at.session_state["cl_result"][1]["needed_per_group"] in (63, 64, 65)
+    at.slider(key="cl_power_effect").set_value(1.0).run()
+    assert_clean(at)
+    assert at.session_state["cl_result"][1]["needed_per_group"] < 20
+    again = AppTest.from_file(APP, default_timeout=60).run()
+    again.button(key="open_lab").click().run()
+    assert_clean(again)
+    assert again.session_state["cl_result"][1]["concept"] == "clt"
+    again.button(key="cl_new_clt").click().run()
+    assert_clean(again)
+    assert again.session_state["cl_seed_clt"] == 1
+    again.button(key="leave_lab").click().run()
+    assert not again.session_state["learn_only"]

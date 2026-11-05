@@ -107,6 +107,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens likert FILE --items a,b [--reverse c]` / `reliability FILE --items a,b,c` | Scale questions (favourable share, mean, spread); Cronbach's alpha and what each question contributes. |
 | `kikolens nps FILE SCORE [--group COL]` / `crosstab FILE ROW COLUMN` | Net Promoter Score with its interval; a cross-tab with residuals and Cramér's V. |
 | `kikolens key-drivers FILE OUTCOME --items a,b,c` / `survey-groups FILE GROUP --items a,b` / `response-quality FILE --items a,b,...` | What matters most for an overall rating; which questions differ between groups; straight-liners and blanks. |
+| `kikolens learn [CONCEPT] [--set name=value] [--seed N] [--figure FILE]` | The concept lab: without a name it lists the concepts; with one it runs the simulation and prints what it shows, the lesson and what to try. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
 | `kikolens stationarity SOURCE DATE VALUE [--trend]` | ADF and KPSS together, and how many differences the series needs. |
 | `kikolens acf SOURCE DATE VALUE [--nlags N]` | Autocorrelation and partial autocorrelation with the Ljung-Box test. |

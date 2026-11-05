@@ -2896,6 +2896,40 @@ def response_quality(file: str, items: str = typer.Option(..., help="Comma-separ
         console.print(f"[yellow]{note}[/yellow]")
 
 
+@app.command()
+def learn(
+    concept: Optional[str] = typer.Argument(None, help="A concept to simulate; leave it out to list them."),
+    set_: list[str] = typer.Option([], "--set", help="A parameter as name=value. Repeat it."), seed: int = typer.Option(0, help="Seed: the same seed gives the same simulation."),
+    figure: Optional[Path] = typer.Option(None, help="Write the main chart to this HTML file."),
+):
+    """Concept lab: simulations that show why statistics works the way it does (central limit theorem, p-values, confidence, power, overfitting...)."""
+    from kikolens.analyze import concepts as cp
+
+    if concept is None:
+        _print_frame(pd.DataFrame([{"concept": k, "question": v["question"]} for k, v in cp.CONCEPTS.items()]), "Concepts (run one with: kikolens learn NAME)")
+        return
+    try:
+        params = {}
+        for text in set_:
+            key, sep, value = text.partition("=")
+            if not sep or not key.strip():
+                raise ValueError(f"Cannot read '{text}'. Write parameters as name=value.")
+            params[key.strip()] = value.strip()
+        res = cp.run(concept, seed, **params)
+    except ValueError as e:
+        _fail(e)
+    console.print(f"[bold]{res['title']}[/bold]")
+    console.print(res["summary"])
+    console.print(f"[bold]Lesson:[/bold] {res['lesson']}")
+    console.print(f"[bold]Try:[/bold] {res['try']}")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if figure:
+        figure.parent.mkdir(parents=True, exist_ok=True)
+        res["figure"].write_html(str(figure), include_plotlyjs=True)
+        console.print(f"Chart written to {figure}")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:
