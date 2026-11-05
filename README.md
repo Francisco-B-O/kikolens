@@ -67,6 +67,7 @@ The dashboard groups its sections into four areas.
 | | Feature ideas | Tries ratios, products and other new columns and keeps the ones that make a model better, as recipe steps. |
 | | Neural network | Configurable multilayer perceptron with the architecture drawn, the training curve, permutation importance and a comparison with the classical model. |
 | | Time series | Trend and seasonality, then five models (naive, seasonal naive, trend + seasonality, Holt-Winters, boosting on lags) tested on the past, the best one forecast with an honest range, changes of level or trend, special dates, and one forecast per group. |
+| | Classical series | Stationarity tests (ADF and KPSS together), autocorrelation, robust STL decomposition and seasonal ARIMA with automatic order selection, forecast ranges and a check against repeating the last season. |
 | | Predict | Score a new file with a model, with warnings about missing columns, unseen categories, out-of-range values and dates. Save models, keep versions, export a model card. |
 | | Model health | Is a saved model still as good as when tested? Scores newer data with known results period by period and warns of a drop or a steady decline. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |

@@ -2013,6 +2013,98 @@ def api_server_command(
         server.store.pool.shutdown(wait=False, cancel_futures=True)
 
 
+def _classic_series(source: str, date: str, value: str, agg: str):
+    from kikolens.analyze import timeseries as ts
+
+    df = _load(source)
+    try:
+        return ts.prepare_series(df, date, value, agg=agg)
+    except ValueError as e:
+        _fail(e)
+
+
+@app.command()
+def stationarity(source: str, date: str, value: str, agg: str = typer.Option("mean", help="mean or sum, for rows that share a period."),
+                 trend: bool = typer.Option(False, "--trend", help="Allow a deterministic trend under the null (regression ct).")):
+    """Is the series stationary? ADF and KPSS together, and how many differences it needs."""
+    from kikolens.analyze import classic
+
+    series = _classic_series(source, date, value, agg)
+    try:
+        res = classic.stationarity(series, "ct" if trend else "c")
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "By number of differences")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def acf(source: str, date: str, value: str, agg: str = typer.Option("mean", help="mean or sum."), nlags: Optional[int] = typer.Option(None, help="How many lags to show.")):
+    """Autocorrelation and partial autocorrelation, with the Ljung-Box test."""
+    from kikolens.analyze import classic
+
+    series = _classic_series(source, date, value, agg)
+    try:
+        res = classic.acf_pacf(series, nlags)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].head(16).round(3), "First lags")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def stl(source: str, date: str, value: str, period: Optional[int] = typer.Option(None, help="Observations per season (default: detected)."),
+        agg: str = typer.Option("mean", help="mean or sum."), output: Optional[Path] = typer.Option(None, help="Write trend, seasonal and remainder to this file.")):
+    """Trend, seasonal and remainder with STL (robust to outliers), with the strength of each."""
+    from kikolens.analyze import classic
+
+    series = _classic_series(source, date, value, agg)
+    try:
+        res = classic.stl(series, period)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        _write_frame(res["components"].reset_index(names="date"), output)
+        console.print(f"Components written to {output}")
+
+
+@app.command()
+def arima(
+    source: str, date: str, value: str,
+    order: Optional[str] = typer.Option(None, help="p,d,q such as 1,1,1. Without it the best model is searched by AICc."),
+    seasonal: str = typer.Option("0,0,0", help="P,D,Q of the seasonal part."),
+    period: Optional[int] = typer.Option(None, help="Observations per season (default: detected)."),
+    horizon: int = typer.Option(12, help="Periods to forecast."),
+    agg: str = typer.Option("mean", help="mean or sum."),
+    output: Optional[Path] = typer.Option(None, help="Write the forecast to this file."),
+):
+    """ARIMA with seasonal terms: forecast with ranges, residual diagnostics and a check against repeating the last season."""
+    from kikolens.analyze import classic
+
+    series = _classic_series(source, date, value, agg)
+    try:
+        if order is None:
+            res = classic.auto_arima(series, period, horizon)
+        else:
+            res = classic.arima(series, tuple(int(x) for x in order.split(",")), tuple(int(x) for x in seasonal.split(",")), period, horizon)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["forecast"].reset_index(names="date").round(3), "Forecast")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        _write_frame(res["forecast"].reset_index(names="date"), output)
+        console.print(f"Forecast written to {output}")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

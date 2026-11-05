@@ -436,6 +436,38 @@ def list_plugins() -> dict:
             "loaders": sorted(registry.loaders()), "loaded": registry.loaded(), "errors": registry.errors()}
 
 
+def _series(df: pd.DataFrame, date: str, value: str, agg: str = "mean") -> pd.Series:
+    from kikolens.analyze import timeseries as ts
+    return ts.prepare_series(df, date, value, agg=agg)
+
+
+def stationarity(df: pd.DataFrame, date: str, value: str, agg: str = "mean", regression: str = "c") -> Result:
+    """¿Es estacionaria la serie? ADF y KPSS juntos, y cuántas diferencias hacen falta."""
+    from kikolens.analyze import classic
+    return _wrap("stationarity", classic.stationarity(_series(df, date, value, agg), regression))
+
+
+def autocorrelation(df: pd.DataFrame, date: str, value: str, agg: str = "mean", nlags: int | None = None) -> Result:
+    """Autocorrelación y autocorrelación parcial con bandas, y la prueba de Ljung-Box."""
+    from kikolens.analyze import classic
+    return _wrap("autocorrelation", classic.acf_pacf(_series(df, date, value, agg), nlags))
+
+
+def decompose_stl(df: pd.DataFrame, date: str, value: str, period: int | None = None, agg: str = "mean", robust: bool = True) -> Result:
+    """Tendencia, estacionalidad y resto con STL (robusto a valores extremos)."""
+    from kikolens.analyze import classic
+    return _wrap("stl", classic.stl(_series(df, date, value, agg), period, robust))
+
+
+def arima(df: pd.DataFrame, date: str, value: str, order: tuple | None = None, seasonal: tuple = (0, 0, 0), period: int | None = None, horizon: int = 12,
+          agg: str = "mean", level: float = 0.95) -> Result:
+    """ARIMA estacional con intervalos. Sin `order` busca el mejor por AICc (`res.candidates`); con él ajusta ese modelo."""
+    from kikolens.analyze import classic
+    series = _series(df, date, value, agg)
+    res = classic.auto_arima(series, period, horizon, level=level) if order is None else classic.arima(series, order, seasonal, period, horizon, level)
+    return _wrap("arima", res)
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima")

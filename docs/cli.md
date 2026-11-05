@@ -87,6 +87,10 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens mmm SOURCE DATE TARGET --channels a,b [--controls c] [--reallocate] [--budget N]` | Marketing mix model: contribution, return and saturation of each channel, optionally with a proposed split of the spend. |
 | `kikolens elasticity SOURCE QUANTITY PRICE [--controls a,b] [--group COL] [--instrument COL] [--unit-cost N]` | Price elasticity of demand with the revenue or margin curve and the margin-maximising price. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
+| `kikolens stationarity SOURCE DATE VALUE [--trend]` | ADF and KPSS together, and how many differences the series needs. |
+| `kikolens acf SOURCE DATE VALUE [--nlags N]` | Autocorrelation and partial autocorrelation with the Ljung-Box test. |
+| `kikolens stl SOURCE DATE VALUE [--period N] [--output FILE]` | Robust trend, seasonal and remainder, with the strength of each. |
+| `kikolens arima SOURCE DATE VALUE [--order p,d,q] [--seasonal P,D,Q] [--period N] [--horizon N]` | Seasonal ARIMA forecast with ranges and diagnostics; without `--order` the best model is searched by AICc. |
 | `kikolens select-features SOURCE TARGET [--exclude a,b] [--output FILE]` | Which columns are worth keeping: consensus of four methods and a cross-validated curve. |
 | `kikolens runs [--target COL] [--best] [--compare id,id] [--delete id]` | The history of model lab runs. |
 | `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |

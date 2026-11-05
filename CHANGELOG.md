@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* **Classical time series** (dashboard section "Classical series", `kikolens stationarity`, `acf`, `stl` and `arima`, `kl.stationarity`, `kl.autocorrelation`, `kl.decompose_stl` and `kl.arima`): ADF and KPSS read together with the number of differences they suggest; autocorrelation with bands and the Ljung-Box test; robust STL decomposition with the strength of trend and season; and seasonal ARIMA, fitted or chosen by AICc over small candidate orders, with forecast ranges, residual diagnostics and a rolling-origin comparison with repeating the last season, which the model must beat to be trusted. No new dependencies.
+
 * **Plugins:** your own analyses and file formats from a Python file with a `register(registry)` function, found in `~/.kikolens/plugins`, in `[plugins] paths` of `kikolens.toml` or in packages with the `kikolens.plugins` entry point. They get a form in the dashboard (section Plugins), `kikolens plugin` and `kikolens plugins`, `kl.run` and `kl.list_plugins`, a place among the Analyst's tools and the API server. Arguments are checked before the plugin runs, a plugin that fails to load never stops KikoLens, and `KIKOLENS_PLUGINS=0` turns them off. See `docs/plugins.md`.
 * **API server** (`kikolens api`): datasets in memory, every main analysis from a closed list plus plugin analyses at `POST /run/{function}`, background jobs, served models, an OpenAPI description, CORS on request, a mandatory token off this computer and a data folder as the only way to read files. See `docs/api-server.md`.
 * `kl.regress` and `POST /run/regress` now say so when the target column does not exist instead of raising `KeyError`.

@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series"]
 
 
 @pytest.fixture(scope="module")
@@ -615,3 +615,16 @@ def test_panel_cross_filter_and_office_downloads(data):
     at.button(key="pn_clear_cross").click().run()
     assert_clean(at)
     assert at.session_state["pn_cross"] == {}
+
+
+def test_classical_series_page_runs_every_tab():
+    from tests.test_classic import monthly
+    y, _ = monthly()
+    df = pd.DataFrame({"month": y.index, "sales": y.values})
+    at = open_page(df, "Classical series")
+    assert_clean(at)
+    for key, state in (("cs_stat_go", "cs_stat"), ("cs_acf_go", "cs_acf"), ("cs_stl_go", "cs_stl"), ("cs_arima_go", "cs_arima")):
+        at.button(key=key).click().run()
+        assert_clean(at)
+        assert state in at.session_state, state
+    assert at.session_state["cs_arima"][1]["order"][1] in (0, 1) and at.session_state["cs_stl"][1]["period"] in range(2, 400)
