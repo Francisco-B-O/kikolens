@@ -3,157 +3,315 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KikoLens - Private data analysis</title>
-<meta name="description" content="KikoLens is a local-first data analysis app: clean data, compare many models, forecast, monitor and share. Nothing leaves your machine.">
-<meta property="og:title" content="KikoLens">
-<meta property="og:description" content="Private, local-first data analysis. Nothing leaves your machine.">
+<title>KikoLens - Private data analysis that explains itself</title>
+<meta name="description" content="KikoLens is a local-first data analysis workbench: clean data, compare models honestly, forecast, test hypotheses and learn the statistics behind every result. Nothing leaves your machine.">
+<meta property="og:title" content="KikoLens - Private data analysis that explains itself">
+<meta property="og:description" content="Clean, model, forecast and learn. 52 sections, a concept lab and a glossary. Nothing leaves your machine.">
 <meta property="og:image" content="img/lab-leaderboard-light.png">
+<meta name="theme-color" content="#9b3412">
 <style>
 :root{
-  --bg:#f9f7f2; --surface:#ffffff; --sunk:#f0ede4; --ink:#1c1a17; --muted:#6a655c;
-  --line:#ddd8cb; --accent:#9b3412; --accent-ink:#ffffff; --code:#1c1a17; --code-ink:#f3efe6;
+  --bg:#f8f5ee; --bg2:#f1ece0; --surface:#ffffff; --ink:#1b1814; --muted:#6a645a; --line:#dcd5c5;
+  --accent:#9b3412; --accent2:#c2562b; --accent-ink:#ffffff; --code:#1b1814; --code-ink:#f3efe6;
+  --shadow:0 1px 2px rgba(40,25,10,.06),0 18px 50px -18px rgba(60,30,10,.28);
+  --glow:radial-gradient(60% 60% at 70% 0%,rgba(194,86,43,.16),transparent 70%);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#181614; --surface:#201e1b; --sunk:#26231f; --ink:#f0ece3; --muted:#a39d91;
-    --line:#38342e; --accent:#e0805a; --accent-ink:#181614; --code:#0f0e0d; --code-ink:#f0ece3;
+    --bg:#15130f; --bg2:#1c1915; --surface:#211e19; --ink:#f2ede2; --muted:#a69f92; --line:#37322a;
+    --accent:#e9855c; --accent2:#f0a07c; --accent-ink:#15130f; --code:#0d0c0a; --code-ink:#f2ede2;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 22px 60px -20px rgba(0,0,0,.7);
+    --glow:radial-gradient(60% 60% at 70% 0%,rgba(233,133,92,.14),transparent 70%);
   }
 }
 :root[data-theme="dark"]{
-  --bg:#181614; --surface:#201e1b; --sunk:#26231f; --ink:#f0ece3; --muted:#a39d91;
-  --line:#38342e; --accent:#e0805a; --accent-ink:#181614; --code:#0f0e0d; --code-ink:#f0ece3;
+  --bg:#15130f; --bg2:#1c1915; --surface:#211e19; --ink:#f2ede2; --muted:#a69f92; --line:#37322a;
+  --accent:#e9855c; --accent2:#f0a07c; --accent-ink:#15130f; --code:#0d0c0a; --code-ink:#f2ede2;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 22px 60px -20px rgba(0,0,0,.7);
+  --glow:radial-gradient(60% 60% at 70% 0%,rgba(233,133,92,.14),transparent 70%);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
-.serif{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+.serif,h1,h2,h3{font-family:Georgia,"Iowan Old Style","Palatino Linotype",serif}
 a{color:var(--accent)}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
-header.top{border-bottom:1px solid var(--line)}
-header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
-.brand{font:700 22px Georgia,serif;text-decoration:none;color:var(--ink)}
-nav a{margin-left:22px;color:var(--muted);text-decoration:none;font-size:15px}
-nav a:hover{color:var(--ink)}
-.hero{padding:76px 0 44px}
-.hero h1{font:700 clamp(36px,6vw,60px)/1.1 Georgia,serif;margin:0 0 18px;max-width:18ch}
-.hero p.lead{font-size:20px;color:var(--muted);max-width:60ch;margin:0 0 30px}
+code{font:.9em ui-monospace,Consolas,Menlo,monospace;background:var(--bg2);padding:1px 6px;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+.img-dark{display:none!important}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .img-light{display:none!important}:root:not([data-theme="light"]) .img-dark{display:block!important}}
+:root[data-theme="dark"] .img-light{display:none!important}
+:root[data-theme="dark"] .img-dark{display:block!important}
+html,body{overflow-x:hidden}
+
+/* header */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{font:700 23px Georgia,serif;text-decoration:none;color:var(--ink);display:flex;align-items:center;gap:10px}
+.brand i{width:22px;height:22px;border-radius:50%;border:3px solid var(--accent);position:relative;display:inline-block}
+.brand i::after{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--accent);right:-4px;bottom:-4px}
+nav{display:flex;align-items:center;gap:6px}
+nav a{padding:8px 12px;color:var(--muted);text-decoration:none;font-size:15px;border-radius:6px}
+nav a:hover{color:var(--ink);background:var(--bg2)}
+.toggle{margin-left:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;width:36px;height:36px;cursor:pointer;font-size:16px;line-height:1}
+.toggle:hover{border-color:var(--accent)}
+.gh{margin-left:6px;background:var(--ink);color:var(--bg)!important}
+.gh:hover{background:var(--accent)!important;color:var(--accent-ink)!important}
+
+/* hero */
+.hero{position:relative;padding:84px 0 36px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:var(--glow);pointer-events:none}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--surface);color:var(--muted);padding:5px 14px;border-radius:999px;font-size:13.5px;letter-spacing:.02em}
+.eyebrow b{color:var(--accent);font-weight:700}
+.hero h1{font-size:clamp(40px,7vw,78px);line-height:1.04;margin:22px 0 22px;max-width:15ch;letter-spacing:-.02em}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero p.lead{font-size:clamp(18px,2.2vw,22px);color:var(--muted);max-width:56ch;margin:0 0 32px}
 .btns{display:flex;gap:12px;flex-wrap:wrap}
-.btn{display:inline-block;padding:11px 20px;border:1px solid var(--ink);border-radius:4px;text-decoration:none;color:var(--ink);font-weight:600;font-size:15px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border:1px solid var(--ink);border-radius:8px;text-decoration:none;color:var(--ink);font-weight:600;font-size:15.5px;transition:transform .15s,box-shadow .15s,background .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.shot{margin:44px 0 0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
-.shot img{display:block;width:100%;height:auto}
-section{padding:60px 0;border-top:1px solid var(--line)}
-section h2{font:700 32px/1.2 Georgia,serif;margin:0 0 10px}
-section p.sub{color:var(--muted);margin:0 0 34px;max-width:62ch}
-.grid{display:grid;gap:1px;background:var(--line);border:1px solid var(--line);grid-template-columns:repeat(3,1fr)}
-.grid>div{background:var(--bg);padding:22px}
-.grid h3{font:700 18px Georgia,serif;margin:0 0 8px}
-.grid p{margin:0;color:var(--muted);font-size:15px}
-.gallery{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
-.gallery figure{margin:0}
-.gallery img{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:6px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin:54px 0 0;border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
+.stats div{padding:20px 14px;text-align:center;border-right:1px solid var(--line)}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font:700 34px/1.1 Georgia,serif;color:var(--accent)}
+.stats span{font-size:13.5px;color:var(--muted)}
+
+/* browser frame */
+.frame{margin:44px auto 0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.frame .bar{display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.frame .bar span{width:11px;height:11px;border-radius:50%;background:var(--line)}
+.frame .bar em{margin-left:12px;font:13px ui-monospace,Consolas,monospace;color:var(--muted);font-style:normal;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:2px 12px}
+.frame img{display:block;width:100%;height:auto}
+
+/* sections */
+section{padding:96px 0;position:relative}
+section.alt{background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.kicker{font:600 13px system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 12px}
+h2{font-size:clamp(30px,4.4vw,46px);line-height:1.12;margin:0 0 14px;letter-spacing:-.015em;max-width:20ch}
+p.sub{color:var(--muted);font-size:19px;max-width:60ch;margin:0 0 44px}
+
+/* pillars */
+.pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.pillar{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:30px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.pillar:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:var(--accent)}
+.pillar .n{font:700 15px Georgia,serif;color:var(--accent);margin-bottom:14px;display:block}
+.pillar h3{font-size:24px;margin:0 0 10px}
+.pillar p{margin:0;color:var(--muted);font-size:16px}
+
+/* showcase */
+.showcase{display:grid;grid-template-columns:320px 1fr;gap:36px;align-items:start}
+.areas{display:flex;flex-direction:column;gap:8px}
+.areas button{text-align:left;background:transparent;border:1px solid transparent;border-radius:12px;padding:16px 18px;cursor:pointer;color:var(--ink);font:inherit;transition:all .18s}
+.areas button strong{display:flex;justify-content:space-between;align-items:center;font:700 19px Georgia,serif}
+.areas button strong small{font:600 12px system-ui;color:var(--muted);background:var(--bg);border:1px solid var(--line);padding:2px 9px;border-radius:999px}
+.areas button span{display:block;color:var(--muted);font-size:14.5px;margin-top:4px;line-height:1.45}
+.areas button:hover{background:var(--surface)}
+.areas button[aria-selected="true"]{background:var(--surface);border-color:var(--accent);box-shadow:var(--shadow)}
+.areas button[aria-selected="true"] strong{color:var(--accent)}
+.stage .panel{display:none;animation:rise .45s ease both}
+.stage .panel.on{display:block}
+.stage ul{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-wrap:wrap;gap:8px}
+.stage li{border:1px solid var(--line);background:var(--surface);padding:5px 13px;border-radius:999px;font-size:14px;color:var(--muted)}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* learn */
+.learn{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center}
+.learn .frame{margin:0}
+.checks{list-style:none;padding:0;margin:26px 0 0}
+.checks li{padding:10px 0 10px 34px;position:relative;color:var(--muted);border-top:1px solid var(--line)}
+.checks li::before{content:"";position:absolute;left:4px;top:19px;width:14px;height:8px;border-left:3px solid var(--accent);border-bottom:3px solid var(--accent);transform:rotate(-45deg)}
+.checks li b{color:var(--ink)}
+
+/* honest */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px}
+.card h3{font-size:19px;margin:0 0 8px}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.card .tag{display:inline-block;font:600 11.5px system-ui;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+
+/* gallery */
+.gallery{columns:3 320px;column-gap:20px}
+.gallery figure{margin:0 0 20px;break-inside:avoid;cursor:zoom-in}
+.gallery .shot{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface);transition:transform .2s,box-shadow .2s}
+.gallery figure:hover .shot{transform:translateY(-3px);box-shadow:var(--shadow)}
+.gallery img{display:block;width:100%;height:auto}
 .gallery figcaption{font-size:14px;color:var(--muted);margin-top:8px}
-.code{position:relative;background:var(--code);color:var(--code-ink);border-radius:6px;padding:18px 70px 18px 20px;font:14.5px/1.7 ui-monospace,Consolas,Menlo,monospace;overflow-x:auto;white-space:pre;margin:0 0 14px}
-.copy{position:absolute;top:10px;right:10px;background:transparent;border:1px solid #6a655c;color:var(--code-ink);border-radius:4px;font-size:12px;padding:4px 10px;cursor:pointer}
-.copy:hover{border-color:var(--code-ink)}
-.tabs{display:flex;gap:4px;margin-bottom:12px;border-bottom:1px solid var(--line)}
-.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:8px 14px;font:inherit;font-size:15px;color:var(--muted);cursor:pointer}
+.lightbox{position:fixed;inset:0;background:rgba(10,8,5,.86);display:none;align-items:center;justify-content:center;z-index:50;padding:24px;cursor:zoom-out}
+.lightbox.on{display:flex}
+.lightbox img{max-width:min(1360px,100%);max-height:100%;border-radius:10px;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+
+/* install */
+.tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 16px;font:inherit;font-size:15px;color:var(--muted);cursor:pointer}
 .tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
 .pane[hidden]{display:none}
-.note{color:var(--muted);font-size:15px;margin:4px 0 0}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:34px}
+.code{position:relative;background:var(--code);color:var(--code-ink);border-radius:10px;padding:18px 84px 18px 20px;font:14.5px/1.75 ui-monospace,Consolas,Menlo,monospace;overflow-x:auto;white-space:pre}
+.copy{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.06);border:1px solid #6a645a;color:var(--code-ink);border-radius:6px;font-size:12px;padding:4px 11px;cursor:pointer}
+.copy:hover{border-color:var(--code-ink)}
+.note{color:var(--muted);font-size:15px;margin:10px 0 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:34px;margin-top:42px}
+.two h3{margin:0 0 12px;font-size:22px}
 ul.plain{margin:0;padding-left:20px;color:var(--muted)}
-ul.plain li{margin:6px 0}
-footer{border-top:1px solid var(--line);padding:30px 0 50px;color:var(--muted);font-size:14px}
+ul.plain li{margin:8px 0}
+
+footer{border-top:1px solid var(--line);padding:38px 0 56px;color:var(--muted);font-size:14.5px}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
-@media (max-width:760px){
-  .grid{grid-template-columns:1fr}.gallery{grid-template-columns:1fr}.two{grid-template-columns:1fr}
-  nav a{margin-left:14px}.hero{padding-top:44px}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.stage .panel{animation:none}html{scroll-behavior:auto}}
+@media (max-width:900px){
+  .pillars,.cards{grid-template-columns:1fr}
+  .showcase{grid-template-columns:1fr}.areas{flex-direction:row;overflow-x:auto;padding-bottom:6px}.areas button{min-width:210px}
+  .learn,.two{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}.stats div{border-bottom:1px solid var(--line)}
+  nav a.hide-sm{display:none}.hero{padding-top:52px}section{padding:68px 0}
 }
 </style>
 </head>
 <body>
 <header class="top"><div class="wrap">
-  <a class="brand" href="#">KikoLens</a>
-  <nav><a href="#features">Features</a><a href="#gallery">Screens</a><a href="#install">Install</a><a href="https://github.com/Francisco-B-O/kikolens">GitHub</a></nav>
+  <a class="brand" href="#top"><i></i>KikoLens</a>
+  <nav>
+    <a class="hide-sm" href="#why">Why</a><a class="hide-sm" href="#tour">Tour</a><a class="hide-sm" href="#learn">Learn</a><a class="hide-sm" href="#screens">Screens</a><a href="#install">Install</a>
+    <a class="gh" href="https://github.com/Francisco-B-O/kikolens">GitHub</a>
+    <button class="toggle" id="theme" aria-label="Switch between light and dark">&#9680;</button>
+  </nav>
 </div></header>
 
-<main>
+<main id="top">
 <div class="wrap">
   <div class="hero">
-    <h1>Data analysis that stays on your machine.</h1>
-    <p class="lead">Load a dataset (or try a built-in example) and let the autopilot take a first pass, fix its quality, compare a dozen models and see where they fail, forecast, study customers and the effect of a change, watch a source over time and keep everything you built. No account, no upload. Language features run on a local model.</p>
+    <span class="eyebrow"><b>1.0</b> &nbsp;Local-first &middot; Open source &middot; MIT</span>
+    <h1>Data analysis that <em>explains itself</em>, on your machine.</h1>
+    <p class="lead">Clean a dataset, compare models honestly, forecast, test hypotheses and learn the statistics behind every result. Your data never leaves your computer.</p>
     <div class="btns">
-      <a class="btn primary" href="#install">Install</a>
+      <a class="btn primary" href="#install">Get started</a>
+      <a class="btn" href="#tour">Take the tour</a>
       <a class="btn" href="https://github.com/Francisco-B-O/kikolens">View the source</a>
     </div>
-    <div class="shot">
-      <picture>
-        <source srcset="img/home-dark.png" media="(prefers-color-scheme: dark)">
-        <img src="img/home-light.png" alt="The KikoLens home page">
-      </picture>
+
+    <div class="stats reveal">
+      <div><b>52</b><span>sections</span></div>
+      <div><b>12</b><span>models compared</span></div>
+      <div><b>74</b><span>glossary terms</span></div>
+      <div><b>830+</b><span>automated tests</span></div>
+      <div><b>0</b><span>bytes sent anywhere</span></div>
+    </div>
+
+    <div class="frame reveal">
+      <div class="bar"><span></span><span></span><span></span><em>localhost:8501</em></div>
+      <img class="img-light" src="img/home-light.png" alt="The KikoLens home page">
+      <img class="img-dark" src="img/home-dark.png" alt="The KikoLens home page, dark theme">
     </div>
   </div>
 </div>
 
-<section id="features"><div class="wrap">
-  <h2>What it does</h2>
-  <p class="sub">One dashboard and one command line, built around work you can repeat: every cleaning step is a recipe, every model a package, every result a file you can share.</p>
-  <div class="grid">
-    <div><h3>Autopilot</h3><p>A first full analysis in one click: it cleans, finds patterns, models a column and forecasts dates, then writes a summary and what to do next.</p></div>
-    <div><h3>Feature ideas</h3><p>Tries ratios, products and other new columns and keeps the ones that make a model better, as steps you can replay.</p></div>
-    <div><h3>Quality and cleaning</h3><p>Score the data, find missing-data patterns, fill smartly, merge similar spellings, catch near-duplicates and enforce your own rules. Every fix is undoable.</p></div>
-    <div><h3>Model lab</h3><p>Up to twelve models, plus ensembles and an optional PyTorch network, cross-validated and tuned. Data leaks flagged, Shapley explanations, honest ranges, "what would change it" and a fairness check.</p></div>
-    <div><h3>Forecasting</h3><p>Five models tested on the past, an honest range from real errors, level and trend changes, special dates and one forecast per group.</p></div>
-    <div><h3>Monitoring</h3><p>Keep a baseline and check new data for drift, quality, rule violations and prediction shifts, with alerts and history.</p></div>
-    <div><h3>Experiments</h3><p>The right statistical test is chosen for you, with effect sizes. A/B tests with sample-size planning, and a screen of every column corrected for many comparisons.</p></div>
-    <div><h3>Customers and impact</h3><p>Retention by cohort, valuable segments, funnels, what is bought together, and whether a campaign really moved the numbers.</p></div>
-    <div><h3>Survival</h3><p>How long until something happens, counting the cases that have not happened yet, with a test between groups.</p></div>
-    <div><h3>Text</h3><p>Key terms, themes, tone and a classifier for comments and reviews, plus an optional summary from a local model.</p></div>
-    <div><h3>Panel and reports</h3><p>Pin the numbers and charts you care about, with global filters, and export one self-contained page.</p></div>
-    <div><h3>Export and connections</h3><p>Excel workbooks, Parquet, databases, shared Google Sheets and cloud storage, both ways.</p></div>
-    <div><h3>Data story</h3><p>Your data told as short chapters with charts: what is there, what stands out, what moves together, what to do next.</p></div>
-    <div><h3>Chart gallery</h3><p>Sankey flows, treemaps, radar profiles, correlation networks, calendars and ridgelines for what a bar chart cannot show.</p></div>
-    <div><h3>Sequential A/B tests</h3><p>Stop a test as soon as the evidence is enough without inflating false positives, plus a planner and a bandit simulator.</p></div>
-    <div><h3>Bayesian tuning</h3><p>Hyperparameter search that learns from every attempt, with the whole run history to compare.</p></div>
-    <div><h3>Forecast with drivers</h3><p>Use price, promotions or weather in a forecast, test whether they help and try what-if scenarios.</p></div>
-    <div><h3>Segments and recommendations</h3><p>Gaussian mixtures, hierarchical clustering and DBSCAN, and an item-based recommender with an honest evaluation.</p></div>
-    <div><h3>Privacy and synthetic data</h3><p>Detect personal data, mask or hash it, measure k-anonymity and generate look-alike data that is not real people.</p></div>
-    <div><h3>Python API and Jupyter</h3><p>import kikolens as kl, magics for notebooks and a quickstart notebook that runs on its own.</p></div>
-    <div><h3>Pipelines</h3><p>Run a recipe, validation, drift check and scoring from one JSON file, with exit codes for schedulers.</p></div>
-    <div><h3>Reproducible</h3><p>Save a whole project in one file, replay the recipe on new data or export it as a Python script.</p></div>
-    <div><h3>Serve a model</h3><p>One command turns a saved model into a small JSON API that listens only on your computer unless you give it a token.</p></div>
-    <div><h3>In English and Spanish</h3><p>A language menu in the dashboard, and reports as web pages or PDF.</p></div>
+<section id="why"><div class="wrap">
+  <p class="kicker reveal">Why KikoLens</p>
+  <h2 class="reveal">Three ideas hold the whole app together.</h2>
+  <p class="sub reveal">Plenty of tools calculate. KikoLens is built to be trusted, to be repeated and to be understood.</p>
+  <div class="pillars">
+    <div class="pillar reveal"><span class="n">01</span><h3>Private by design</h3><p>Files are read from and written to your own disk. No account, no telemetry. The optional language model runs on your computer through Ollama, and it only chooses which analysis to run: the numbers always come from the analysis itself.</p></div>
+    <div class="pillar reveal"><span class="n">02</span><h3>Honest by default</h3><p>Every model is compared with a baseline. Data leaks are flagged, broken A/B splits stop the verdict, a saved model warns when new data looks unlike its training data, and results come with ranges, not just a single number.</p></div>
+    <div class="pillar reveal"><span class="n">03</span><h3>Built to teach</h3><p>A concept lab turns the central limit theorem, p-values and overfitting into simulations you can play with. A bilingual glossary and a reading guide on each page say what a result means and what to watch out for.</p></div>
   </div>
 </div></section>
 
-<section id="gallery"><div class="wrap">
-  <h2>Screens</h2>
-  <p class="sub">The dashboard follows your light or dark setting.</p>
-  <div class="gallery">
-    <figure><picture><source srcset="img/home-dark.png" media="(prefers-color-scheme: dark)"><img src="img/home-light.png" alt="Home page" loading="lazy"></picture><figcaption>Home: quality ring, sparklines and one-click actions</figcaption></figure>
-    <figure><picture><source srcset="img/story-dark.png" media="(prefers-color-scheme: dark)"><img src="img/story-light.png" alt="Data story" loading="lazy"></picture><figcaption>Data story: your data told in chapters</figcaption></figure>
-    <figure><picture><source srcset="img/gallery-dark.png" media="(prefers-color-scheme: dark)"><img src="img/gallery-light.png" alt="Chart gallery" loading="lazy"></picture><figcaption>Chart gallery: a Sankey diagram of the flow between columns</figcaption></figure>
-    <figure><picture><source srcset="img/gallery-network-dark.png" media="(prefers-color-scheme: dark)"><img src="img/gallery-network-light.png" alt="Correlation network" loading="lazy"></picture><figcaption>A network of correlated columns</figcaption></figure>
-    <figure><picture><source srcset="img/autopilot-dark.png" media="(prefers-color-scheme: dark)"><img src="img/autopilot-light.png" alt="Autopilot" loading="lazy"></picture><figcaption>Autopilot: a first full analysis in one click</figcaption></figure>
-    <figure><picture><source srcset="img/segments-dark.png" media="(prefers-color-scheme: dark)"><img src="img/segments-light.png" alt="Segment explorer" loading="lazy"></picture><figcaption>Segment explorer: groups described in words</figcaption></figure>
-    <figure><picture><source srcset="img/sequential-dark.png" media="(prefers-color-scheme: dark)"><img src="img/sequential-light.png" alt="Sequential tests" loading="lazy"></picture><figcaption>Sequential tests: stop as soon as the evidence is enough</figcaption></figure>
-    <figure><picture><source srcset="img/feature-selection-dark.png" media="(prefers-color-scheme: dark)"><img src="img/feature-selection-light.png" alt="Feature selection" loading="lazy"></picture><figcaption>Feature selection: which columns to keep</figcaption></figure>
-    <figure><picture><source srcset="img/drivers-dark.png" media="(prefers-color-scheme: dark)"><img src="img/drivers-light.png" alt="Forecast with drivers" loading="lazy"></picture><figcaption>Forecast with drivers and what-if scenarios</figcaption></figure>
-    <figure><picture><source srcset="img/run-history-dark.png" media="(prefers-color-scheme: dark)"><img src="img/run-history-light.png" alt="Run history" loading="lazy"></picture><figcaption>Run history: every lab training, compared</figcaption></figure>
-    <figure><picture><source srcset="img/synthetic-dark.png" media="(prefers-color-scheme: dark)"><img src="img/synthetic-light.png" alt="Synthetic data" loading="lazy"></picture><figcaption>Synthetic data with fidelity and privacy checks</figcaption></figure>
-    <figure><picture><source srcset="img/lab-uncertainty-dark.png" media="(prefers-color-scheme: dark)"><img src="img/lab-uncertainty-light.png" alt="Model lab ranges" loading="lazy"></picture><figcaption>Model lab: ranges that hold the truth as often as you ask</figcaption></figure>
-    <figure><picture><source srcset="img/customers-dark.png" media="(prefers-color-scheme: dark)"><img src="img/customers-light.png" alt="Customers" loading="lazy"></picture><figcaption>Customers: retention by cohort</figcaption></figure>
-    <figure><picture><source srcset="img/survival-dark.png" media="(prefers-color-scheme: dark)"><img src="img/survival-light.png" alt="Survival curves" loading="lazy"></picture><figcaption>Survival: who stays and who leaves first</figcaption></figure>
-    <figure><picture><source srcset="img/impact-dark.png" media="(prefers-color-scheme: dark)"><img src="img/impact-light.png" alt="Impact of a change" loading="lazy"></picture><figcaption>Impact: what happened against what was expected</figcaption></figure>
-    <figure><picture><source srcset="img/monitoring-dark.png" media="(prefers-color-scheme: dark)"><img src="img/monitoring-light.png" alt="Monitoring" loading="lazy"></picture><figcaption>Monitoring: drift, quality and alerts over time</figcaption></figure>
-    <figure><img src="img/spanish-light.png" alt="Dashboard in Spanish" loading="lazy"><figcaption>The same dashboard in Spanish</figcaption></figure>
+<section id="tour" class="alt"><div class="wrap">
+  <p class="kicker reveal">The tour</p>
+  <h2 class="reveal">From a raw file to a model you can trust.</h2>
+  <p class="sub reveal">Six areas, 52 sections. The first five are the main path; Advanced holds the specialised ones.</p>
+  <div class="showcase reveal">
+    <div class="areas" role="tablist" id="areas">
+      <button role="tab" aria-selected="true" data-i="0"><strong>Data <small>13</small></strong><span>Load, check, clean, reshape and get a first full analysis.</span></button>
+      <button role="tab" aria-selected="false" data-i="1"><strong>Analysis <small>10</small></strong><span>Tests, experiments, anomalies, drift and causal effect.</span></button>
+      <button role="tab" aria-selected="false" data-i="2"><strong>Models <small>13</small></strong><span>Compare, explain, forecast, save and monitor.</span></button>
+      <button role="tab" aria-selected="false" data-i="3"><strong>Learn <small>2</small></strong><span>Simulations and a glossary that explain the ideas.</span></button>
+      <button role="tab" aria-selected="false" data-i="4"><strong>Share <small>4</small></strong><span>Panels, reports, workbooks and projects.</span></button>
+    </div>
+    <div class="stage">
+      <div class="panel on">
+        <div class="frame" style="margin-top:0"><div class="bar"><span></span><span></span><span></span><em>Data / Quality and cleaning</em></div><img class="img-light" src="img/quality-light.png" alt="Quality and cleaning" ><img class="img-dark" src="img/quality-dark.png" alt="Quality and cleaning, dark theme" loading="lazy"></div>
+        <ul><li>Autopilot</li><li>Quality score and undo</li><li>Privacy and k-anonymity</li><li>Fuzzy record matching</li><li>Replayable recipes</li><li>Chart gallery</li><li>Data story</li><li>Chat with your data</li></ul>
+      </div>
+      <div class="panel">
+        <div class="frame" style="margin-top:0"><div class="bar"><span></span><span></span><span></span><em>Analysis / Experiments</em></div><img class="img-light" src="img/experiments-light.png" alt="Experiments" ><img class="img-dark" src="img/experiments-dark.png" alt="Experiments, dark theme" loading="lazy"></div>
+        <ul><li>The right test, chosen for you</li><li>Sequential A/B tests</li><li>CUPED and split checks</li><li>Anomalies with reasons</li><li>PCA and t-SNE</li><li>Drift</li><li>Causal effect</li><li>Survival</li></ul>
+      </div>
+      <div class="panel">
+        <div class="frame" style="margin-top:0"><div class="bar"><span></span><span></span><span></span><em>Models / Model lab</em></div><img class="img-light" src="img/lab-leaderboard-light.png" alt="Model lab leaderboard" ><img class="img-dark" src="img/lab-leaderboard-dark.png" alt="Model lab leaderboard, dark theme" loading="lazy"></div>
+        <ul><li>12 models, one baseline</li><li>Leak detection</li><li>Shapley values</li><li>Where the model fails</li><li>Conformal ranges</li><li>Neural network</li><li>Forecasting</li><li>ARIMA and STL</li><li>Monitoring</li></ul>
+      </div>
+      <div class="panel">
+        <div class="frame" style="margin-top:0"><div class="bar"><span></span><span></span><span></span><em>Learn / Concept lab</em></div><img class="img-light" src="img/concept-lab-light.png" alt="Concept lab" ><img class="img-dark" src="img/concept-lab-dark.png" alt="Concept lab, dark theme" loading="lazy"></div>
+        <ul><li>Central limit theorem</li><li>p-values and peeking</li><li>Confidence</li><li>Power</li><li>Overfitting</li><li>Simpson's paradox</li><li>74-term glossary</li></ul>
+      </div>
+      <div class="panel">
+        <div class="frame" style="margin-top:0"><div class="bar"><span></span><span></span><span></span><em>Share / Panel</em></div><img class="img-light" src="img/panel-light.png" alt="Panel" ><img class="img-dark" src="img/panel-dark.png" alt="Panel, dark theme" loading="lazy"></div>
+        <ul><li>Cross-filtering panel</li><li>HTML and PDF report</li><li>Formatted Excel workbook</li><li>Jupyter notebook of the session</li><li>Single-file project</li></ul>
+      </div>
+    </div>
   </div>
 </div></section>
 
-<section id="install"><div class="wrap">
-  <h2>Install</h2>
-  <p class="sub">Requires Python 3.12 or newer.</p>
+<section id="learn"><div class="wrap">
+  <div class="learn">
+    <div>
+      <p class="kicker reveal">Learn while you analyse</p>
+      <h2 class="reveal">Stop trusting results you cannot explain.</h2>
+      <p class="sub reveal" style="margin-bottom:0">Most tools give you a number. KikoLens also tells you what it means, and lets you see why with a simulation.</p>
+      <ul class="checks reveal">
+        <li><b>Concept lab.</b> Eight seeded simulations with a conclusion written from the result, no data needed.</li>
+        <li><b>Glossary.</b> 74 terms in English and Spanish, each with what to watch out for.</li>
+        <li><b>How to read this page.</b> A short guide on the main sections, pointing to the right terms.</li>
+        <li><b>From the terminal too.</b> <code>kikolens learn</code> and <code>kikolens glossary p-value</code>.</li>
+      </ul>
+    </div>
+    <div class="frame reveal">
+      <div class="bar"><span></span><span></span><span></span><em>Learn / Glossary</em></div>
+      <img class="img-light" src="img/glossary-light.png" alt="The glossary" >
+      <img class="img-dark" src="img/glossary-dark.png" alt="The glossary, dark theme" >
+    </div>
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <p class="kicker reveal">What it refuses to do</p>
+  <h2 class="reveal">Honest results beat impressive ones.</h2>
+  <p class="sub reveal">Details that are easy to skip and expensive to get wrong.</p>
+  <div class="cards">
+    <div class="card reveal"><span class="tag">Models</span><h3>Always against a baseline</h3><p>A model is only good if it beats the simple alternative. Cross-validation scores are shown next to it, and leaks are flagged.</p></div>
+    <div class="card reveal"><span class="tag">Experiments</span><h3>A broken split stops the verdict</h3><p>If the groups did not get the share of users planned, the tool refuses to name a winner.</p></div>
+    <div class="card reveal"><span class="tag">Forecasts</span><h3>Tested on the past first</h3><p>Every forecast is backtested against naive and seasonal baselines, and its range comes from real errors.</p></div>
+    <div class="card reveal"><span class="tag">Scoring</span><h3>Models that notice new data</h3><p>A saved model knows its columns, ranges and classes, and warns when new rows no longer look like its training data.</p></div>
+    <div class="card reveal"><span class="tag">Cleaning</span><h3>Every fix is undoable</h3><p>The original file is never touched. Steps are recorded as a recipe you can replay or export as a script.</p></div>
+    <div class="card reveal"><span class="tag">Safety</span><h3>No eval, ever</h3><p>Formulas run in a small arithmetic interpreter, SQL is checked as read-only, and Excel exports never store a formula by accident.</p></div>
+  </div>
+</div></section>
+
+<section id="screens"><div class="wrap">
+  <p class="kicker reveal">Screens</p>
+  <h2 class="reveal">Light or dark, English or Spanish.</h2>
+  <p class="sub reveal">Click any screenshot to enlarge it. The page follows your theme.</p>
+  <div class="gallery" id="gallery">
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/autopilot-light.png" alt="Autopilot" ><img class="img-dark" src="img/autopilot-dark.png" alt="Autopilot, dark" loading="lazy"></div><figcaption>Autopilot: a first full analysis in one click</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/story-light.png" alt="Data story" ><img class="img-dark" src="img/story-dark.png" alt="Data story, dark" loading="lazy"></div><figcaption>Data story: your data told in chapters</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/lab-errors-light.png" alt="Where a model fails" ><img class="img-dark" src="img/lab-errors-dark.png" alt="Where a model fails, dark" loading="lazy"></div><figcaption>Model lab: where the model fails</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/timeseries-light.png" alt="Time series" ><img class="img-dark" src="img/timeseries-dark.png" alt="Time series, dark" loading="lazy"></div><figcaption>Forecast with an honest range</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/sequential-light.png" alt="Sequential tests" ><img class="img-dark" src="img/sequential-dark.png" alt="Sequential tests, dark" loading="lazy"></div><figcaption>Sequential A/B tests that stay valid</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/gallery-light.png" alt="Chart gallery" ><img class="img-dark" src="img/gallery-dark.png" alt="Chart gallery, dark" loading="lazy"></div><figcaption>Chart gallery: flows, networks, ridgelines</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/compare-light.png" alt="Compare data" ><img class="img-dark" src="img/compare-dark.png" alt="Compare data, dark" loading="lazy"></div><figcaption>Compare two datasets and see what drifted</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/monitoring-light.png" alt="Monitoring" ><img class="img-dark" src="img/monitoring-dark.png" alt="Monitoring, dark" loading="lazy"></div><figcaption>Monitoring: drift, quality and alerts</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/lab-uncertainty-light.png" alt="Ranges" ><img class="img-dark" src="img/lab-uncertainty-dark.png" alt="Ranges, dark" loading="lazy"></div><figcaption>Ranges that hold the truth as often as you ask</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/survival-light.png" alt="Survival" ><img class="img-dark" src="img/survival-dark.png" alt="Survival, dark" loading="lazy"></div><figcaption>Survival curves with a log-rank test</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img class="img-light" src="img/text-light.png" alt="Text" ><img class="img-dark" src="img/text-dark.png" alt="Text, dark" loading="lazy"></div><figcaption>Text: themes, terms and tone</figcaption></figure>
+    <figure class="reveal"><div class="shot"><img src="img/spanish-light.png" alt="Dashboard in Spanish" ></div><figcaption>The same dashboard in Spanish</figcaption></figure>
+  </div>
+</div></section>
+
+<section id="install" class="alt"><div class="wrap">
+  <p class="kicker reveal">Install</p>
+  <h2 class="reveal">Running in a minute.</h2>
+  <p class="sub reveal">Requires Python 3.12 or newer.</p>
+  <div class="reveal">
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-pane="p-pip">pip</button>
     <button role="tab" aria-selected="false" data-pane="p-pipx">pipx</button>
@@ -162,7 +320,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
   </div>
   <div class="pane" id="p-pip">
     <div class="code" data-copy>pip install "kikolens @ git+https://github.com/Francisco-B-O/kikolens.git"<button class="copy">Copy</button></div>
-    <p class="note">Add extras with <code>kikolens[cloud]</code>, <code>[postgres]</code>, <code>[mysql]</code>, <code>[torch]</code> or <code>[all]</code>.</p>
+    <p class="note">Extras: <code>kikolens[cloud]</code>, <code>[postgres]</code>, <code>[mysql]</code>, <code>[jupyter]</code>, <code>[torch]</code> or <code>[all]</code>.</p>
   </div>
   <div class="pane" id="p-pipx" hidden>
     <div class="code" data-copy>pipx install git+https://github.com/Francisco-B-O/kikolens.git<button class="copy">Copy</button></div>
@@ -180,38 +338,38 @@ docker compose up<button class="copy">Copy</button></div>
     <p class="note">Then open <code>http://localhost:8501</code>.</p>
   </div>
 
-  <h3 class="serif" style="margin:34px 0 10px">Then run it</h3>
-  <div class="code" data-copy>kikolens start<button class="copy">Copy</button></div>
-  <p class="note">Drop a CSV, Excel or Parquet file into the sidebar. Everything runs at <code>localhost</code>.</p>
-
-  <div class="two" style="margin-top:40px">
+  <div class="two">
     <div>
-      <h3 class="serif" style="margin:0 0 10px">From the terminal</h3>
+      <h3>Then run it</h3>
+      <div class="code" data-copy>kikolens doctor
+kikolens start<button class="copy">Copy</button></div>
+      <p class="note">Pick "Or try an example" on the welcome screen, or drop in your own CSV, Excel or Parquet file.</p>
+    </div>
+    <div>
+      <h3>From the terminal</h3>
       <div class="code" data-copy>kikolens autopilot sales.csv --pdf summary.pdf
 kikolens lab clean.csv revenue --register sales-model
-kikolens serve sales-model
-kikolens monitor run sales-feed<button class="copy">Copy</button></div>
+kikolens learn clt<button class="copy">Copy</button></div>
+      <p class="note">Optional: install <a href="https://ollama.com/">Ollama</a> and <code>ollama pull llama3.2</code> to ask in plain language. Everything else works without it.</p>
     </div>
-    <div>
-      <h3 class="serif" style="margin:0 0 10px">Optional: local language model</h3>
-      <div class="code" data-copy>ollama pull llama3.2<button class="copy">Copy</button></div>
-      <p class="note">Install <a href="https://ollama.com/">Ollama</a> to ask questions in plain language and summarize text. Without it, everything else still works.</p>
-    </div>
+  </div>
   </div>
 </div></section>
 
 <section><div class="wrap">
-  <h2>Private by design</h2>
-  <div class="two">
-    <ul class="plain">
+  <p class="kicker reveal">Private by design</p>
+  <h2 class="reveal">Nothing leaves your machine.</h2>
+  <div class="two" style="margin-top:30px">
+    <ul class="plain reveal">
       <li>Your data is read from and written to your own disk.</li>
       <li>No telemetry, no account, no network calls unless you load a URL or a cloud source.</li>
       <li>SQL you type is validated as read-only before it runs.</li>
-      <li>The model API listens only on this computer unless you give it a token.</li>
+      <li>The model server listens only on this computer unless you give it a token.</li>
     </ul>
-    <ul class="plain">
+    <ul class="plain reveal">
       <li>Formulas use a small safe interpreter, never <code>eval</code>.</li>
       <li>Excel exports store text starting with <code>=</code> as text, not as a formula.</li>
+      <li>Personal data can be found, masked or hashed, and k-anonymity measured.</li>
       <li>MIT licensed and open source.</li>
     </ul>
   </div>
@@ -219,25 +377,54 @@ kikolens monitor run sales-feed<button class="copy">Copy</button></div>
 </main>
 
 <footer><div class="wrap">
-  <span>KikoLens - MIT license</span>
+  <span>KikoLens 1.0 &middot; MIT license</span>
   <span><a href="https://github.com/Francisco-B-O/kikolens">GitHub</a> &middot; <a href="https://github.com/Francisco-B-O/kikolens/blob/main/CHANGELOG.md">Changelog</a> &middot; <a href="https://github.com/Francisco-B-O/kikolens/issues">Issues</a></span>
 </div></footer>
 
+<div class="lightbox" id="lightbox"><img alt=""></div>
+
 <script>
-document.querySelectorAll('.tabs button').forEach(function(b){
-  b.addEventListener('click',function(){
-    document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-selected',x===b)});
-    document.querySelectorAll('.pane').forEach(function(p){p.hidden=p.id!==b.dataset.pane});
+(function(){
+  var root=document.documentElement;
+  try{var saved=localStorage.getItem('kl-theme');if(saved)root.setAttribute('data-theme',saved)}catch(e){}
+  document.getElementById('theme').addEventListener('click',function(){
+    var dark=root.getAttribute('data-theme')==='dark'||(!root.getAttribute('data-theme')&&matchMedia('(prefers-color-scheme: dark)').matches);
+    var next=dark?'light':'dark';root.setAttribute('data-theme',next);
+    try{localStorage.setItem('kl-theme',next)}catch(e){}
   });
-});
-document.querySelectorAll('[data-copy]').forEach(function(box){
-  var btn=box.querySelector('.copy');
-  btn.addEventListener('click',function(){
-    var text=Array.from(box.childNodes).filter(function(n){return n.nodeType===3}).map(function(n){return n.textContent}).join('');
-    var done=function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1500)};
-    if(navigator.clipboard){navigator.clipboard.writeText(text).then(done,function(){})}
+  var tabs=document.querySelectorAll('#areas button'),panels=document.querySelectorAll('.stage .panel'),cur=0,timer;
+  function show(i){cur=i;tabs.forEach(function(t,k){t.setAttribute('aria-selected',k===i)});panels.forEach(function(p,k){p.classList.toggle('on',k===i)})}
+  tabs.forEach(function(t){t.addEventListener('click',function(){clearInterval(timer);show(+t.dataset.i)})});
+  var tour=document.getElementById('tour');
+  if(window.IntersectionObserver&&!matchMedia('(prefers-reduced-motion: reduce)').matches){
+    new IntersectionObserver(function(es){es.forEach(function(e){
+      if(e.isIntersecting){clearInterval(timer);timer=setInterval(function(){show((cur+1)%tabs.length)},6500)}else clearInterval(timer)
+    })},{threshold:.35}).observe(tour);
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.12});
+    document.querySelectorAll('.reveal').forEach(function(el){io.observe(el)});
+  }else{document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in')})}
+  document.querySelectorAll('.tabs button').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.tabs button').forEach(function(x){x.setAttribute('aria-selected',x===b)});
+      document.querySelectorAll('.pane').forEach(function(p){p.hidden=p.id!==b.dataset.pane});
+    });
   });
-});
+  document.querySelectorAll('[data-copy]').forEach(function(box){
+    var btn=box.querySelector('.copy');
+    btn.addEventListener('click',function(){
+      var text=Array.from(box.childNodes).filter(function(n){return n.nodeType===3}).map(function(n){return n.textContent}).join('');
+      var done=function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1500)};
+      if(navigator.clipboard){navigator.clipboard.writeText(text).then(done,function(){})}
+    });
+  });
+  var lb=document.getElementById('lightbox'),lbi=lb.querySelector('img');
+  document.querySelectorAll('#gallery figure').forEach(function(f){f.addEventListener('click',function(){
+    var shown=Array.from(f.querySelectorAll('img')).filter(function(i){return i.offsetParent!==null})[0];
+    if(shown){lbi.src=shown.src;lbi.alt=shown.alt;lb.classList.add('on')}
+  })});
+  lb.addEventListener('click',function(){lb.classList.remove('on')});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')lb.classList.remove('on')});
+})();
 </script>
 </body>
 </html>
