@@ -2251,6 +2251,107 @@ def governance_audit(model: Optional[str] = typer.Argument(None), last: int = ty
         _print_frame(view)
 
 
+def _text_column(source: str, column: str) -> pd.DataFrame:
+    df = _load(source)
+    if column not in df.columns:
+        _fail(ValueError(f"Column '{column}' not found."))
+    return df
+
+
+@app.command()
+def topics(
+    source: str, column: str,
+    n_topics: Optional[int] = typer.Option(None, "--topics", help="How many topics (default: chosen by coherence)."),
+    method: str = typer.Option("nmf", help="nmf or lda."), date: Optional[str] = typer.Option(None, help="A date column, to see how topics change over time."),
+    language: Optional[str] = typer.Option(None, help="english or spanish (default: detected)."),
+):
+    """Topics in a text column, with example texts and (with --date) their evolution."""
+    from kikolens.analyze import textmining
+
+    df = _text_column(source, column)
+    try:
+        res = textmining.topics_over_time(df, column, date, n_topics, method=method, language=language) if date else textmining.topics(df[column], n_topics, method=method, language=language)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].drop(columns="examples").round(3), "Topics")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("near-duplicates")
+def near_duplicates(source: str, column: str, threshold: float = typer.Option(0.9, help="Similarity from 0.5 to 1.")):
+    """Groups of near-identical texts (typos, small edits)."""
+    from kikolens.analyze import textmining
+
+    df = _text_column(source, column)
+    try:
+        res = textmining.find_duplicates(df[column], threshold)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if res["groups"]:
+        _print_frame(res["table"].drop(columns="rows").round(3), "Groups")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def similar(source: str, column: str, query: str, n: int = typer.Option(5, help="How many texts to show.")):
+    """The texts most similar to a phrase."""
+    from kikolens.analyze import textmining
+
+    df = _text_column(source, column)
+    try:
+        res = textmining.similar_texts(df[column], query, n)
+    except ValueError as e:
+        _fail(e)
+    _print_frame(res.round(3), "Most similar texts (similarity)")
+
+
+@app.command()
+def patterns(source: str, column: str, kinds: Optional[str] = typer.Option(None, help="Comma-separated: email, url, phone, money, percent, date, hashtag, mention.")):
+    """Emails, links, phones, amounts, percentages, dates, hashtags and mentions in a text column."""
+    from kikolens.analyze import textmining
+
+    df = _text_column(source, column)
+    try:
+        res = textmining.extract_patterns(df[column], _names(kinds) or None)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(3), "By kind")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def keyphrases(source: str, column: str, n: int = typer.Option(15, help="How many phrases."), language: Optional[str] = typer.Option(None, help="english or spanish.")):
+    """Key phrases (RAKE) of a text column."""
+    from kikolens.analyze import textmining
+
+    df = _text_column(source, column)
+    try:
+        res = textmining.keyphrases(df[column], n, language)
+    except ValueError as e:
+        _fail(e)
+    _print_frame(res.round(2), "Key phrases")
+
+
+@app.command()
+def readability(source: str, column: str, language: Optional[str] = typer.Option(None, help="english or spanish.")):
+    """How easy the texts are to read (Flesch, or Fernandez-Huerta for Spanish)."""
+    from kikolens.analyze import textmining
+
+    df = _text_column(source, column)
+    try:
+        res = textmining.readability(df[column], language)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    console.print(res["notes"][0])
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

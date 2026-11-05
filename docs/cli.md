@@ -69,6 +69,10 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens ab SOURCE GROUP OUTCOME --control VALUE [--success VALUE]` | Compare a control and a treatment group on rates or averages. |
 | `kikolens drift REFERENCE CURRENT [--output FILE]` | Compare two datasets column by column. Exits with code `2` when the data changed a lot, so it works as an alarm in scripts and CI. |
 | `kikolens text SOURCE COLUMN [--group COL] [--ngram 1\|2\|3] [--themes K]` | Key terms of a free-text column, the terms that distinguish each group, and themes. |
+| `kikolens topics SOURCE COLUMN [--topics N] [--method nmf\|lda] [--date COL]` | Topics in a text column; the number is chosen by coherence unless given. With `--date`, how each topic changes over time. |
+| `kikolens near-duplicates SOURCE COLUMN [--threshold 0.9]` / `similar SOURCE COLUMN "a phrase" [--n 5]` | Groups of near-identical texts; the texts most like a phrase. |
+| `kikolens patterns SOURCE COLUMN [--kinds email,url,...]` | Emails, links, phones, amounts, percentages, dates, hashtags and mentions. |
+| `kikolens keyphrases SOURCE COLUMN` / `readability SOURCE COLUMN` | Key phrases (RAKE); reading ease per text. |
 | `kikolens panel SOURCE [PANEL.json] [--format html\|pptx\|docx] [--where "region in North,West"] [--output FILE] [--save FILE]` | Build a one-page panel of metrics, charts and tables as a web page, a PowerPoint with native charts or a Word document (the last two need `kikolens[office]`); without a definition, one is suggested from the data. `--where` keeps only matching rows and can be repeated. |
 | `kikolens report SOURCE [--target COL] [--nn] [--ai] [--output FILE] [--pdf FILE]` | Build the HTML report, and a PDF with `--pdf`. |
 | `kikolens survival SOURCE DURATION EVENT [--group COL]` | Kaplan-Meier medians and a log-rank test between groups. |

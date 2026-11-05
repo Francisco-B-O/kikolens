@@ -628,3 +628,23 @@ def test_classical_series_page_runs_every_tab():
         assert_clean(at)
         assert state in at.session_state, state
     assert at.session_state["cs_arima"][1]["order"][1] in (0, 1) and at.session_state["cs_stl"][1]["period"] in range(2, 400)
+
+
+def test_text_page_new_tabs_run():
+    from tests.test_textmining import corpus
+    texts, _ = corpus(150)
+    df = pd.DataFrame({"review": texts, "when": pd.date_range("2024-01-01", periods=150, freq="D")})
+    at = open_page(df, "Text")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][6:] == ["Topics", "Duplicates and similar", "Patterns", "Phrases", "Readability"]
+    at.button(key="tx_topics_go").click().run()
+    assert_clean(at)
+    assert at.session_state["tx_topics"][1]["k"] in range(2, 9)
+    at.button(key="tx_dups_go").click().run()
+    at.button(key="tx_patterns_go").click().run()
+    assert_clean(at)
+    assert "tx_dups" in at.session_state and "tx_patterns" in at.session_state
+    at.selectbox(key="tx_tdate").set_value("when").run()
+    at.button(key="tx_topics_go").click().run()
+    assert_clean(at)
+    assert "over_time" in at.session_state["tx_topics"][1]

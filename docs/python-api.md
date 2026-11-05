@@ -72,6 +72,7 @@ An unknown field raises an error that lists what is available. Text from your da
 | `run(name, df, **args)` / `list_plugins()` | Run an analysis added by a plugin; list the loaded plugins, their analyses, formats and load errors. See [Plugins](plugins.md). |
 | `stationarity(df, date, value)` / `autocorrelation(df, date, value)` | ADF and KPSS with suggested differences; autocorrelation with Ljung-Box. |
 | `governance()` / `governance("promote", "model", to="production")` | The governance overview, or one action (`register`, `update`, `validate`, `approve`, `checks`, `promote`, `rollback`). `model_card("model")` returns the card as Markdown. |
+| `topics(df, text, k=None, date=None)` | Topics (`res.table`, `res.assignments`, `res.coherence`; with `date`, `res.over_time`). `near_duplicates(df, text)`, `similar(df, text, "a phrase")`, `text_patterns(df, text)`, `keyphrases(df, text)` and `readability(df, text)` work on one text column. |
 | `decompose_stl(df, date, value, period=None)` | Robust STL; `res.components`, `res.seasonal_strength`, `res.trend_strength`. |
 | `arima(df, date, value, order=None, seasonal=(0,0,0), period=None, horizon=12)` | Seasonal ARIMA; without `order` it searches (`res.candidates`). `res.forecast`, `res.backtest`, `res.ljung_box`. |
 | `recommender(df, user, item, rating=None)` | An item-based recommender: `.recommend(person)`, `.similar_items(item)`, `.popular()`. |

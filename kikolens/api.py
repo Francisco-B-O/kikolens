@@ -490,6 +490,46 @@ def model_card(model: str) -> str:
     return gv.model_card(model)
 
 
+def topics(df: pd.DataFrame, text: str, k: int | None = None, date: str | None = None, **kwargs) -> Result:
+    """Temas en una columna de texto (NMF o LDA); sin `k` se elige por coherencia. Con `date` añade cómo cambian por periodo (`res.over_time`)."""
+    from kikolens.analyze import textmining
+    if date:
+        return _wrap("topics", textmining.topics_over_time(df, text, date, k, **kwargs))
+    return _wrap("topics", textmining.topics(df[text], k, **kwargs))
+
+
+def near_duplicates(df: pd.DataFrame, text: str, threshold: float = 0.9) -> Result:
+    """Textos casi idénticos agrupados (erratas, copias con cambios pequeños)."""
+    from kikolens.analyze import textmining
+    return _wrap("near duplicates", textmining.find_duplicates(df[text], threshold))
+
+
+def similar(df: pd.DataFrame, text: str, query, n: int = 5) -> Result:
+    """Los textos más parecidos a una frase o a la fila con esa etiqueta de índice."""
+    from kikolens.analyze import textmining
+    table = textmining.similar_texts(df[text], query, n)
+    return _wrap("similar texts", {"table": table}, f"Closest text: row {table['row'].iloc[0]} (similarity {table['similarity'].iloc[0]:.2f}).")
+
+
+def text_patterns(df: pd.DataFrame, text: str, kinds: list | None = None) -> Result:
+    """Correos, enlaces, teléfonos, importes, porcentajes, fechas, etiquetas y menciones en un texto; `res.found` lista cada coincidencia."""
+    from kikolens.analyze import textmining
+    return _wrap("text patterns", textmining.extract_patterns(df[text], kinds))
+
+
+def keyphrases(df: pd.DataFrame, text: str, n: int = 15, **kwargs) -> Result:
+    """Frases clave (RAKE) de una columna de texto."""
+    from kikolens.analyze import textmining
+    table = textmining.keyphrases(df[text], n, **kwargs)
+    return _wrap("keyphrases", {"table": table}, f"Top phrase: {table['phrase'].iloc[0]}.")
+
+
+def readability(df: pd.DataFrame, text: str, language: str | None = None) -> Result:
+    """Facilidad de lectura por texto (Flesch en inglés, Fernández-Huerta en español)."""
+    from kikolens.analyze import textmining
+    return _wrap("readability", textmining.readability(df[text], language))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability")

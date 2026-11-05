@@ -146,6 +146,8 @@ For columns with sentences, such as comments or reviews. Everything runs on this
 
 ![Text](images/text-light.png)
 
+**Topics** finds the themes in the texts with NMF (fast and steady) or LDA, tries 2 to 8 topics and keeps the one whose main words co-occur most (coherence; the table shows the others), lists each topic's main words, its share of the texts and three example texts, and warns when two topics share most of their words or when most texts mix several topics. Pick a date column to see each topic's share by month. **Duplicates and similar** groups near-identical texts (typos and small edits included) and finds the texts most like a phrase you type. **Patterns** lists emails, links, phones, amounts, percentages, dates, hashtags and mentions; they are patterns, not understanding, and personal data found is flagged for the Privacy section. **Phrases** shows key phrases (RAKE) and word pairs that appear together more than chance. **Readability** gives a reading-ease score per text.
+
 ### Segments
 k-means clustering on the numeric columns, with an optional chart of inertia and silhouette scores to help choose the number of groups. Download the data with the segment label attached.
 
