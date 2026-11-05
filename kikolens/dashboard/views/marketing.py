@@ -1,6 +1,7 @@
 import pandas as pd
 import streamlit as st
 
+from kikolens.analyze import attribution as at
 from kikolens.analyze import marketing as mk
 from kikolens.analyze import timeseries as ts
 from kikolens.dashboard import components as ui
@@ -97,9 +98,59 @@ def _elasticity(df: pd.DataFrame) -> None:
         ui.table(res["groups"].round(3))
 
 
+def _run(key: str, signature, fn):
+    """Calcula al pulsar el botón y recuerda el resultado mientras no cambien las opciones."""
+    if st.button("Estimate", key=f"{key}_go", type="primary"):
+        try:
+            st.session_state[key] = (signature, fn())
+        except ValueError as e:
+            st.session_state.pop(key, None)
+            ui.note(str(e), "high")
+    cached = st.session_state.get(key)
+    return cached[1] if cached and cached[0] == signature else None
+
+
+def _notes(res: dict) -> None:
+    for note in res.get("notes", []):
+        ui.note(note, "medium")
+
+
+def _attribution(df: pd.DataFrame) -> None:
+    st.caption(t("Each row is one contact of a person with a channel. The credit for a conversion is shared between the channels the person went through, in several ways, so you can see where they disagree."))
+    cols = list(df.columns)
+    if len(cols) < 4:
+        ui.note("This needs a person, a time, a channel and a column saying whether the contact ended in a conversion.", "low")
+        return
+    dates = ts.detect_datetime_columns(df) or cols
+    flags = [c for c in cols if df[c].nunique(dropna=True) <= 2] or cols
+    c1, c2, c3, c4 = st.columns(4)
+    user = c1.selectbox("Person", cols, key="at_user")
+    when = c2.selectbox("When", dates, key="at_time")
+    channel = c3.selectbox("Channel", [c for c in cols if c not in (user, when)], key="at_channel")
+    done = c4.selectbox("Converted (yes or no)", [c for c in flags if c not in (user, when, channel)] or flags, key="at_conv")
+    numeric = ["(none)"] + [c for c in df.select_dtypes("number").columns if c not in (user, when, channel, done)]
+    d1, d2 = st.columns(2)
+    value = d1.selectbox("Value of the conversion (optional)", numeric, key="at_value")
+    half = d2.slider("Days after which a contact counts half", 1, 60, 7, key="at_half")
+    value = None if value.startswith("(") else value
+    res = _run("at_res", (user, when, channel, done, value, half), lambda: at.attribute(df, user, when, channel, done, value, half))
+    if res is None:
+        return
+    ui.note(res["summary"], "ok")
+    ui.stats([("People", f"{res['journeys_total']:,}"), ("Conversions", f"{res['conversions']:,}"), ("Contacts per conversion", f"{res['mean_touches']:.1f}"),
+              ("Days to convert (median)", f"{res['median_days_to_convert']:.1f}")])
+    _notes(res)
+    ui.chart(res["figure"], 380)
+    ui.table(res["shares"].reset_index(names="channel").round(3))
+    with st.expander(t("Most common paths of the people who converted")):
+        ui.table(res["top_paths"].rename("people").rename_axis("path").reset_index())
+
+
 def render(df: pd.DataFrame) -> None:
-    tabs = st.tabs(["Channels and budget", "Price elasticity"])
+    tabs = st.tabs(["Channels and budget", "Price elasticity", "Attribution"])
     with tabs[0]:
         _mix(df)
     with tabs[1]:
         _elasticity(df)
+    with tabs[2]:
+        _attribution(df)

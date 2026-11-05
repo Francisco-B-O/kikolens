@@ -2754,6 +2754,30 @@ def inventory_plan(file: str, item: str, date: str, quantity: str, lead_time: fl
         console.print(f"Plan written to {output}")
 
 
+@app.command()
+def attribution(
+    file: str, user: str, time: str, channel: str, converted: str,
+    value: Optional[str] = typer.Option(None, help="A numeric column with the value of the conversion (on the converting row)."),
+    half_life: float = typer.Option(7.0, help="Days after which a contact counts half, for the time-decay model."),
+    output: Optional[Path] = typer.Option(None, help="Write the credit of each channel under every model to this file."),
+):
+    """Share the credit for conversions between channels: first, last, linear, time decay, position, Markov chain and Shapley."""
+    from kikolens.analyze import attribution as at
+
+    df = _load(file)
+    try:
+        res = at.attribute(df, user, time, channel, converted, value, half_life)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["shares"].reset_index(names="channel").round(3), "Share of the credit by model")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        _write_frame(res["credit"].reset_index(names="channel"), output)
+        console.print(f"Credit written to {output}")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

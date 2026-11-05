@@ -731,3 +731,17 @@ def test_inventory_page_runs_every_tab():
     at.button(key="ip_res_go").click().run()
     assert_clean(at)
     assert len(at.session_state["ip_res"][1]["table"]) == 2
+
+
+def test_marketing_page_attribution_tab():
+    from tests.test_attribution import worked_example
+    at = open_page(worked_example(), "Marketing mix")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][-1] == "Attribution"
+    at.selectbox(key="at_user").set_value("user").run()
+    at.selectbox(key="at_time").set_value("time").run()
+    at.selectbox(key="at_channel").set_value("channel").run()
+    at.selectbox(key="at_conv").set_value("converted").run()
+    at.button(key="at_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["at_res"][1]["credit"].loc["A", "markov"] > 30

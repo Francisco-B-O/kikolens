@@ -58,6 +58,7 @@ The dashboard groups its sections into four areas.
 | | Causal effect | Did a treatment really work? Propensity weighting, matching and a doubly robust estimate next to the raw difference, balance and overlap checks, uplift per row, thresholds, synthetic control and instrumental variables. |
 | | Simulation | Monte Carlo over uncertain inputs (distributions, correlations, risk, what moves the result), linear and integer programs with the worth of each limit, and optimisation of any formula within bounds. |
 | | Marketing mix | What each channel adds to sales (carry-over, saturation, trend and season), a budget split from the response curves, and price elasticity with an instrument for prices that follow demand. |
+| | Attribution | Part of Marketing mix: the credit for conversions shared between channels by seven models (first and last touch, linear, time decay, position, Markov chain and Shapley), to see where they disagree. |
 | | Inventory | ABC and XYZ classes with demand patterns, the newsvendor quantity, economic order quantity, safety stock and reorder point for a service level, and a simulation that checks the policy. |
 | | Plugins | Your own analyses and file formats from a Python file, with a form generated in the dashboard; they also reach the terminal, the Python API, the Analyst and the API server. |
 | | Network | From a list of links: who matters (PageRank, betweenness), communities, distances, shortest paths, links that are probably missing and how the network breaks when hubs go. |

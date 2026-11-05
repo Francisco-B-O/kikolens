@@ -66,6 +66,7 @@ An unknown field raises an error that lists what is available. Text from your da
 | `simulate(inputs, formula, n=10000, correlations=None, threshold=None)` | Monte Carlo; `inputs` is a dictionary of distributions or a DataFrame whose columns are resampled. `res.mean`, `res.percentiles`, `res.p_above`, `res.sensitivity`, `res.samples`. |
 | `optimize(formula_or_objective, bounds, constraints)` | A formula as text (bounds `{"x": (0, 10)}`, restrictions `["x + y <= 20"]`) or a linear program if you pass a dictionary of coefficients; `res.solution`, `res.objective`. |
 | `marketing_mix(df, date, target, channels, controls=None)` | What each channel contributes; `res.table`, `res.parts`, `res.params`, `res.r2`. |
+| `attribution(df, user, time, channel, converted, value=None)` | Multi-touch attribution; `res.credit` (conversions or value per channel and model), `res.shares`, `res.top_paths`. |
 | `budget(model, total=None, low=0.5, high=2.0)` | A split of the spend per period from a `marketing_mix` result; `res.table`, `res.gain`. |
 | `elasticity(df, quantity, price, controls=None, group=None, instrument=None, unit_cost=None)` | Price elasticity (log-log); `res.elasticity`, `res.interval`, `res.groups`, `res.optimal_price`. |
 | `panel(df, path=None, definition=None, where=None)` | A panel of metrics, charts and tables. With a `path` ending in `.html`, `.pptx` or `.docx` it writes the file; without one it returns the `Panel` to add tiles to. |

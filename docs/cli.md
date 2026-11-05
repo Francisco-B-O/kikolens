@@ -103,6 +103,7 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens lp PROBLEM.json` | Solve a linear or integer program: `objective`, `constraints` (`coefs`, `op`, `rhs`, `name`), `bounds`, `maximize`, `integer`. |
 | `kikolens mmm SOURCE DATE TARGET --channels a,b [--controls c] [--reallocate] [--budget N]` | Marketing mix model: contribution, return and saturation of each channel, optionally with a proposed split of the spend. |
 | `kikolens elasticity SOURCE QUANTITY PRICE [--controls a,b] [--group COL] [--instrument COL] [--unit-cost N]` | Price elasticity of demand with the revenue or margin curve and the margin-maximising price. |
+| `kikolens attribution FILE USER TIME CHANNEL CONVERTED [--value COL] [--half-life 7] [--output FILE]` | Share the credit for conversions between channels with seven models. |
 | `kikolens forecast-drivers SOURCE DATE TARGET --drivers a,b [--scenario price=1.1] [--horizon N]` | Forecast a column using other columns too, and test whether they help. |
 | `kikolens stationarity SOURCE DATE VALUE [--trend]` | ADF and KPSS together, and how many differences the series needs. |
 | `kikolens acf SOURCE DATE VALUE [--nlags N]` | Autocorrelation and partial autocorrelation with the Ljung-Box test. |
