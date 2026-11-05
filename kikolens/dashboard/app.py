@@ -8,7 +8,7 @@ from kikolens.dashboard import components as ui
 from kikolens import config, demo, plugins
 from kikolens.dashboard import i18n, state, theme
 from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, classic_series, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export, geography,
-                                      features, gallery, governance_view, health, history, home, impact, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
+                                      features, gallery, governance_view, health, history, home, impact, inventory, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
                                       neural, network_view, overview, patterns, plugins_view, predict, privacy, process_control, project, quality, panel, regression, report, simulation, statistics,
                                       story, text, timeseries, transform)
 from kikolens.utils.loaders import list_sheets, list_tables, load_data, load_text
@@ -22,7 +22,7 @@ GROUPS = {
              "Patterns": patterns, "Statistics": statistics, "Ask": ask, "Analyst": analyst},
     "Analysis": {"Experiments": experiments, "Anomalies": anomalies, "Dimensions": dimensions, "Distribution fit": distribution,
                  "Compare data": compare, "Segments": clusters,
-                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Causal effect": causal_effect, "Simulation": simulation, "Marketing mix": marketing, "Plugins": plugins_view, "Network": network_view, "Geography": geography, "Process control": process_control, "Sequential tests": sequential, "Segment explorer": segment_explorer,
+                 "Text": text, "Survival": survival, "Customers": customers, "Impact": impact, "Causal effect": causal_effect, "Simulation": simulation, "Marketing mix": marketing, "Plugins": plugins_view, "Network": network_view, "Geography": geography, "Process control": process_control, "Inventory": inventory, "Sequential tests": sequential, "Segment explorer": segment_explorer,
                  "Recommendations": recommender,
                  "Why it changed": drivers},
     "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries, "Classical series": classic_series, "Model governance": governance_view,

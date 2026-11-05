@@ -15,7 +15,7 @@ PAGES = ["Overview", "Autopilot", "Explore", "Quality and cleaning", "Transform"
          "Panel", "Export", "Monitoring", "Text", "Experiments", "Anomalies", "Dimensions", "Compare data",
          "Survival", "Customers", "Impact", "Feature ideas", "Why it changed", "Regression", "Model health", "Privacy", "Match records", "Distribution fit",
          "Home", "Data story", "Chart gallery", "Analyst", "Sequential tests", "Segment explorer", "Recommendations", "Feature selection",
-         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control"]
+         "Forecast with drivers", "Run history", "Synthetic data", "Causal effect", "Simulation", "Marketing mix", "Classical series", "Model governance", "Network", "Geography", "Process control", "Inventory"]
 
 
 @pytest.fixture(scope="module")
@@ -711,3 +711,23 @@ def test_process_control_page_runs_every_tab():
     at.button(key="pcs_res_go").click().run()
     assert_clean(at)
     assert at.session_state["pcap_res"][1]["cpk"] > 0 and at.session_state["pcs_res"][1][0]["signal_at"] is not None
+
+
+def test_inventory_page_runs_every_tab():
+    from tests.test_inventory import sales
+    d = sales()
+    at = open_page(d, "Inventory")
+    assert_clean(at)
+    at.selectbox(key="iv_date").set_value("week").run()
+    at.button(key="iv_abc_go").click().run()
+    assert_clean(at)
+    assert at.session_state["iv_abc"][1]["matrix"] is not None
+    at.button(key="nv_res_go").click().run()
+    at.button(key="rp_res_go").click().run()
+    assert_clean(at)
+    assert at.session_state["nv_res"][1]["quantity"] > 100 and at.session_state["rp_res"][1][0]["safety_stock"] > 0
+    daily = pd.DataFrame({"sku": np.repeat(["a", "b"], 60), "day": list(pd.date_range("2024-01-01", periods=60)) * 2, "units": np.random.default_rng(3).poisson(8, 120)})
+    at = open_page(daily, "Inventory")
+    at.button(key="ip_res_go").click().run()
+    assert_clean(at)
+    assert len(at.session_state["ip_res"][1]["table"]) == 2

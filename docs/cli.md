@@ -116,6 +116,12 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens control-chart FILE VALUE [--chart individuals\|xbar\|p\|u\|c] [--subgroup COL] [--size COL] [--baseline N] [--rules 1,4]` | Control chart with signal rules; `--baseline` sets the limits from the first N points. |
 | `kikolens capability FILE VALUE --lsl N --usl N [--target N]` | Cp, Cpk, Pp, Ppk and the share out of specification. |
 | `kikolens shift-detect FILE VALUE [--baseline N]` | CUSUM and EWMA for small sustained shifts. |
+| `kikolens abc-xyz FILE ITEM QUANTITY [--date COL] [--value COL] [--freq W]` | Classify items by value (ABC), demand variation (XYZ) and pattern (smooth, erratic, intermittent, lumpy). |
+| `kikolens newsvendor --cost N --price N [--salvage N] --mean N --sd N` | How much to order of something sold once. |
+| `kikolens eoq --demand N --order-cost N --holding-cost N` | Economic order quantity. |
+| `kikolens reorder --mean N --sd N --lead-time N [--lead-time-sd N] [--service-level 0.95] [--order-quantity N]` | Safety stock and reorder point for a service level. |
+| `kikolens stock-simulate --mean N --sd N --lead-time N --order-quantity N --reorder-point N [--runs 300] [--lost-sales]` | Simulate the reorder policy for many years to see the service it really gives. |
+| `kikolens inventory-plan FILE ITEM DATE QUANTITY --lead-time N [--service-level 0.95] [--order-cost N --holding-cost N]` | A reorder policy for every item in a table of sales. |
 | `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 
 ## Monitoring

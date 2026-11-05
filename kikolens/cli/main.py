@@ -2649,6 +2649,111 @@ def shift_detect(file: str, value: str, target: Optional[float] = typer.Option(N
     console.print(f"EWMA: {two['summary']}")
 
 
+@app.command("abc-xyz")
+def abc_xyz(file: str, item: str, quantity: str, date: Optional[str] = typer.Option(None, help="Date column: needed for XYZ and the demand classes."),
+            value: Optional[str] = typer.Option(None, help="Column with the value of each sale (default: the quantity)."), freq: str = typer.Option("W", help="D, W or M periods."),
+            output: Optional[Path] = typer.Option(None, help="Write the classification to this file.")):
+    """Classify items by value (ABC), by how much their demand varies (XYZ) and by pattern (smooth, erratic, intermittent, lumpy)."""
+    from kikolens.analyze import inventory
+
+    df = _load(file)
+    try:
+        res = inventory.classify_items(df, item, quantity, date, value, freq)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    if res["matrix"] is not None:
+        _print_frame(res["matrix"].reset_index(), "Items by ABC and XYZ")
+    _print_frame(res["table"].head(15).round(3), "Highest-value items")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        _write_frame(res["table"], output)
+        console.print(f"Classification written to {output}")
+
+
+@app.command()
+def newsvendor(cost: float = typer.Option(..., help="Unit cost."), price: float = typer.Option(..., help="Selling price."), salvage: float = typer.Option(0.0, help="Value of an unsold unit."),
+               mean: Optional[float] = typer.Option(None, help="Mean demand."), sd: Optional[float] = typer.Option(None, help="Standard deviation of demand.")):
+    """How much to order of something sold once (a season, a perishable), from the critical ratio."""
+    from kikolens.analyze import inventory
+
+    try:
+        res = inventory.newsvendor(cost, price, salvage, mean, sd)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def eoq(demand: float = typer.Option(..., help="Demand per year."), order_cost: float = typer.Option(..., help="Cost of placing one order."),
+        holding_cost: float = typer.Option(..., help="Cost of holding one unit for a year."), unit_cost: float = typer.Option(0.0, help="Cost per unit, to include the purchase in the total.")):
+    """Economic order quantity: the order size that minimises ordering plus holding cost."""
+    from kikolens.analyze import inventory
+
+    try:
+        res = inventory.eoq(demand, order_cost, holding_cost, unit_cost)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command()
+def reorder(mean: float = typer.Option(..., help="Mean demand per period."), sd: float = typer.Option(..., help="Standard deviation of demand per period."),
+            lead_time: float = typer.Option(..., help="Delivery time, in the same periods."), lead_time_sd: float = typer.Option(0.0, help="Its standard deviation."),
+            service_level: float = typer.Option(0.95, help="Chance of no stockout in a cycle."), order_quantity: Optional[float] = typer.Option(None, help="To also get the fill rate.")):
+    """Safety stock and reorder point for a service level."""
+    from kikolens.analyze import inventory
+
+    try:
+        res = inventory.reorder_policy(mean, sd, lead_time, lead_time_sd, service_level, order_quantity)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command("stock-simulate")
+def stock_simulate(mean: float = typer.Option(..., help="Mean demand per day."), sd: float = typer.Option(..., help="Standard deviation of daily demand."),
+                   lead_time: int = typer.Option(..., help="Delivery time in days."), order_quantity: float = typer.Option(..., help="Units per order."),
+                   reorder_point: float = typer.Option(..., help="Order when stock plus open orders falls to this."), lead_time_sd: float = typer.Option(0.0, help="Its standard deviation."),
+                   days: int = typer.Option(365, help="Days per run."), runs: int = typer.Option(300, help="Number of simulated years."),
+                   lost_sales: bool = typer.Option(False, "--lost-sales", help="Unmet demand is lost instead of waiting.")):
+    """Simulate a reorder policy for many years to see the service it really gives."""
+    from kikolens.analyze import inventory
+
+    try:
+        res = inventory.simulate_policy(mean, sd, lead_time, order_quantity, reorder_point, lead_time_sd, days, runs, lost_sales)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+
+
+@app.command("inventory-plan")
+def inventory_plan(file: str, item: str, date: str, quantity: str, lead_time: float = typer.Option(..., help="Delivery time in days."),
+                   service_level: float = typer.Option(0.95, help="Chance of no stockout in a cycle."), order_cost: Optional[float] = typer.Option(None, help="Cost of one order, for the EOQ."),
+                   holding_cost: Optional[float] = typer.Option(None, help="Cost of holding a unit a year, for the EOQ."), lead_time_sd: float = typer.Option(0.0, help="Delivery time standard deviation in days."),
+                   freq: str = typer.Option("D", help="D or W: the period of the demand figures."), output: Optional[Path] = typer.Option(None, help="Write the plan to this file.")):
+    """A reorder policy (safety stock, reorder point, order quantity) for every item in a table of sales."""
+    from kikolens.analyze import inventory
+
+    df = _load(file)
+    try:
+        res = inventory.plan(df, item, date, quantity, lead_time, service_level, order_cost, holding_cost, lead_time_sd, freq)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].head(20).round(2), "Policy by item")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+    if output:
+        _write_frame(res["table"], output)
+        console.print(f"Plan written to {output}")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

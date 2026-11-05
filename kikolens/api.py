@@ -634,6 +634,42 @@ def shift_detection(df: pd.DataFrame, value: str, target: float | None = None, s
     return _wrap("shift detection", {"cusum": one, "ewma": two, "notes": [], "summary": f"CUSUM: {one['summary']} EWMA: {two['summary']}"})
 
 
+def abc_xyz(df: pd.DataFrame, item: str, quantity: str, date: str | None = None, value: str | None = None, freq: str = "W") -> Result:
+    """Clasificación ABC (valor) y, con `date`, XYZ (variación de la demanda) y clase de demanda de cada artículo."""
+    from kikolens.analyze import inventory
+    return _wrap("abc xyz", inventory.classify_items(df, item, quantity, date, value, freq))
+
+
+def newsvendor(unit_cost: float, price: float, salvage: float = 0.0, mean: float | None = None, sd: float | None = None, samples=None) -> Result:
+    """Cuánto pedir de un producto de una sola venta (con demanda normal o con ventas pasadas en `samples`)."""
+    from kikolens.analyze import inventory
+    return _wrap("newsvendor", inventory.newsvendor(unit_cost, price, salvage, mean, sd, samples))
+
+
+def eoq(annual_demand: float, order_cost: float, holding_cost: float, unit_cost: float = 0.0) -> Result:
+    """Lote económico de pedido."""
+    from kikolens.analyze import inventory
+    return _wrap("eoq", inventory.eoq(annual_demand, order_cost, holding_cost, unit_cost))
+
+
+def reorder_policy(demand_mean: float, demand_sd: float, lead_time: float, lead_time_sd: float = 0.0, service_level: float = 0.95, order_quantity: float | None = None) -> Result:
+    """Stock de seguridad y punto de pedido para un nivel de servicio."""
+    from kikolens.analyze import inventory
+    return _wrap("reorder policy", inventory.reorder_policy(demand_mean, demand_sd, lead_time, lead_time_sd, service_level, order_quantity))
+
+
+def simulate_stock_policy(demand_mean: float, demand_sd: float, lead_time: int, order_quantity: float, reorder_point: float, **kwargs) -> Result:
+    """Simula una política (s, Q) durante muchos años para ver el servicio real."""
+    from kikolens.analyze import inventory
+    return _wrap("stock simulation", inventory.simulate_policy(demand_mean, demand_sd, lead_time, order_quantity, reorder_point, **kwargs))
+
+
+def inventory_plan(df: pd.DataFrame, item: str, date: str, quantity: str, lead_time_days: float, **kwargs) -> Result:
+    """Una política de reposición para cada artículo de una tabla de ventas."""
+    from kikolens.analyze import inventory
+    return _wrap("inventory plan", inventory.plan(df, item, date, quantity, lead_time_days, **kwargs))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan")
