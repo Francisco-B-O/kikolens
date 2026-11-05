@@ -719,6 +719,19 @@ def response_quality(df: pd.DataFrame, items: list, time_seconds: str | None = N
     return _wrap("response quality", survey.response_quality(df, items, time_seconds))
 
 
+def concepts() -> pd.DataFrame:
+    """Los conceptos del laboratorio: simulaciones que enseñan por qué la estadística funciona como funciona."""
+    from kikolens.analyze import concepts as cp
+    return pd.DataFrame([{"concept": k, "title": v["title"], "question": v["question"], "parameters": ", ".join(v["params"])} for k, v in cp.CONCEPTS.items()])
+
+
+def concept(name: str, seed: int = 0, **params) -> Result:
+    """Ejecuta un concepto del laboratorio (`kl.concepts()` los lista): `res.summary`, `res.lesson`, `res.figure` y los números de la simulación."""
+    from kikolens.analyze import concepts as cp
+    res = cp.run(name, seed, **params)
+    return _wrap("concept", res, table=res["table"] if res.get("table") is not None else None)
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped", "control_chart", "process_capability", "shift_detection", "abc_xyz", "newsvendor", "eoq", "reorder_policy", "simulate_stock_policy", "inventory_plan", "attribution", "likert", "cronbach", "nps", "crosstab", "key_drivers", "compare_items", "response_quality", "concepts", "concept")

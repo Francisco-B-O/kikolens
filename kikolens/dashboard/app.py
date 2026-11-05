@@ -7,7 +7,7 @@ import streamlit as st
 from kikolens.dashboard import components as ui
 from kikolens import config, demo, plugins
 from kikolens.dashboard import i18n, state, theme
-from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, classic_series, clusters, compare, customers, dimensions, distribution, drivers, experiments, explore, export, geography,
+from kikolens.dashboard.views import (analyst, anomalies, ask, autopilot, causal_effect, classic_series, clusters, concept_lab, compare, customers, dimensions, distribution, drivers, experiments, explore, export, geography,
                                       features, gallery, governance_view, health, history, home, impact, inventory, lab, linkage, marketing, models, monitoring, survival, multivariate, recommender, segment_explorer, selection, sequential, synthetic,
                                       neural, network_view, overview, patterns, plugins_view, predict, privacy, process_control, project, quality, panel, regression, report, simulation, statistics,
                                       story, survey, text, timeseries, transform)
@@ -27,6 +27,7 @@ GROUPS = {
                  "Why it changed": drivers},
     "Models": {"Models": models, "Model lab": lab, "Feature ideas": features, "Feature selection": selection, "Forecast with drivers": multivariate, "Run history": history, "Regression": regression, "Neural network": neural, "Time series": timeseries, "Classical series": classic_series, "Model governance": governance_view,
                "Predict": predict, "Model health": health, "Monitoring": monitoring},
+    "Learn": {"Concept lab": concept_lab},
     "Share": {"Panel": panel, "Report": report, "Export": export, "Synthetic data": synthetic, "Project": project},
 }
 PAGES = {name: view for pages in GROUPS.values() for name, view in pages.items()}
@@ -130,6 +131,10 @@ def _welcome() -> None:
     for column, name in zip(columns, demo.GENERATORS):
         column.button(t(name.capitalize()), key=f"demo_{name}", on_click=_load_demo, args=(name,), width="stretch",
                       help=t(demo.DESCRIPTIONS[name]))
+    st.markdown(f'<div style="text-align:center;margin-top:1.2rem" class="kl-label">{html.escape(t("Or learn without data"))}</div>', unsafe_allow_html=True)
+    if st.columns([2, 1, 2])[1].button(t("Open the concept lab"), key="open_lab", width="stretch", help=t("Simulations that show why statistics works the way it does. They need no data.")):
+        st.session_state["learn_only"] = True
+        st.rerun()
 
 
 def _go_to_group() -> None:
@@ -186,6 +191,14 @@ def main() -> None:
         st.rerun()
 
     df = st.session_state.df
+    if df is None and st.session_state.get("learn_only"):
+        if st.sidebar.button(i18n.t("Back to loading data"), key="leave_lab"):
+            st.session_state["learn_only"] = False
+            st.rerun()
+        _language_picker()
+        ui.header(concept_lab.TITLE, concept_lab.SUBTITLE)
+        concept_lab.render(None)
+        return
     if df is None:
         _welcome()
         _language_picker()

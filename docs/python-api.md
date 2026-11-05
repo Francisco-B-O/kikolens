@@ -69,6 +69,7 @@ An unknown field raises an error that lists what is available. Text from your da
 | `attribution(df, user, time, channel, converted, value=None)` | Multi-touch attribution; `res.credit` (conversions or value per channel and model), `res.shares`, `res.top_paths`. |
 | `likert(df, items)` / `cronbach(df, items)` / `nps(df, score, group=None)` / `crosstab(df, row, column)` | Survey basics: scale summary, reliability, Net Promoter Score, cross-tab with residuals. |
 | `key_drivers(df, outcome, items)` / `compare_items(df, items, group)` / `response_quality(df, items)` | What matters most for an overall rating (`res.table` with importance and `priority`); questions that differ between groups; answer-quality flags. |
+| `concepts()` / `concept(name, seed=0, **params)` | The concept lab: a table of simulations, and one run with `res.summary`, `res.lesson`, `res.figure` and its numbers. |
 | `budget(model, total=None, low=0.5, high=2.0)` | A split of the spend per period from a `marketing_mix` result; `res.table`, `res.gain`. |
 | `elasticity(df, quantity, price, controls=None, group=None, instrument=None, unit_cost=None)` | Price elasticity (log-log); `res.elasticity`, `res.interval`, `res.groups`, `res.optimal_price`. |
 | `panel(df, path=None, definition=None, where=None)` | A panel of metrics, charts and tables. With a `path` ending in `.html`, `.pptx` or `.docx` it writes the file; without one it returns the `Panel` to add tiles to. |

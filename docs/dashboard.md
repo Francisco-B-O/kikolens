@@ -248,6 +248,18 @@ Four tabs. **Which items matter** ranks items by value (class A covers the first
 ### Survey
 Seven tabs for questionnaire data (one row per respondent). **Questions** summarises the scale questions (numbers such as 1 to 5, or texts such as "Agree" and "Strongly agree", in English or Spanish): average, share favourable, neutral and unfavourable, and the spread of answers; questions worded the other way round can be reversed. **Reliability** gives Cronbach's alpha for a group of questions that measure the same thing, its 95 % range, how well each question moves with the rest and what alpha would be without it, and points at questions that look reversed. **NPS** computes promoters minus detractors with its range and, by group, which groups stand out from the rest. **Cross-tab** crosses two questions with the chi-square test, Cramér's V and residuals that show which cells have more or fewer answers than chance. **What matters most** uses relative weights to share the explained part of an overall rating between the questions that may drive it, even when they overlap, and crosses importance with score: important and low-scoring means improve first. **Between groups** finds the questions that score differently, using tests for ordered answers and a correction for the number of questions. **Answer quality** counts people who gave the same answer to everything, left most blank or answered too fast.
 
+### Concept lab
+An area of its own ("Learn") for understanding the ideas behind the other sections, with simulations instead of formulas. It needs no data and can be opened from the welcome screen. Pick a concept, move its controls and the simulation redraws; **Draw new random data** repeats it with another sample so you see what changes (the numbers) and what does not (the lesson). Each concept ends with what to take from it and something to try:
+
+* **The central limit theorem:** choose a skewed, two-humped or heavy-tailed population and see the averages of n values turn into a bell as n grows.
+* **What a p-value is:** with no real effect, about 5 experiments in 100 look significant, and checking the result ten times and stopping at the first success raises that to about 20.
+* **What "confidence" means:** draw 100 intervals and count the ones that miss the truth; with tiny, skewed samples the promise of 95 % is not kept.
+* **How many people are enough:** the power curve, the sample needed for the effect you choose (64 per group for half a standard deviation) and why half the effect needs four times the people.
+* **Bias, variance and overfitting:** polynomials of growing complexity fitted to noisy data, with the error on the data used and on new data split into bias, variance and noise.
+* **Simpson's paradox:** a trend that goes up in every group and down in the whole data.
+* **Regression to the mean:** why the best of one year fall back the next with no change in anyone.
+* **Why testing many things finds something:** twenty tests with nothing real still give a false alarm in two studies out of three, and what two corrections do about it.
+
 ### Run history
 Every training of the model lab (dashboard or `kikolens lab`) is recorded with its data, target, parameters and metrics. See them over time with the best so far, sort by any metric, and compare runs side by side (only what differs). The lab can also tune with **Bayesian optimisation**, which learns from each attempt to choose the next one and shows how the search went.
 
