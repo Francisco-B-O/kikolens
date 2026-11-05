@@ -676,3 +676,19 @@ def test_geography_page_runs_every_tab():
     assert_clean(at)
     assert at.session_state["geo_zones"][1]["zones"] == 2 and at.session_state["geo_spatial"][1]["moran"] != 0
     assert at.session_state["geo_dist"][1]["median_km"] >= 0 and at.session_state["geo_grid"][1]["cells"] > 1
+
+
+def test_experiments_page_checks_that_the_test_is_sound():
+    from tests.test_experiment import trial
+    d = trial(2500)
+    at = open_page(d, "Experiments")
+    assert_clean(at)
+    assert [t.label for t in at.tabs][-1] == "Is the test sound?"
+    at.selectbox(key="xq_group").set_value("g").run()
+    at.selectbox(key="xq_control").set_value("control").run()
+    at.selectbox(key="xq_outcome").set_value("y").run()
+    at.selectbox(key="xq_pre").set_value("pre").run()
+    at.button(key="xq_go").click().run()
+    assert_clean(at)
+    res = at.session_state["xq_res"][1]
+    assert res["verdict"].startswith("new beats control") and "cuped" in res

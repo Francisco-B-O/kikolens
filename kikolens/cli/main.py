@@ -2533,6 +2533,62 @@ def geo_grid(file: str, lat: Optional[str] = None, lon: Optional[str] = None, va
         console.print(f"Cells written to {output}")
 
 
+@app.command()
+def experiment(
+    file: str, group: str, outcome: str, control: str,
+    pre: Optional[str] = typer.Option(None, help="The same measure before the experiment, to reduce noise (CUPED)."),
+    date: Optional[str] = typer.Option(None, help="A date column, to see whether the effect holds over time."),
+    segments: Optional[str] = typer.Option(None, help="Comma-separated columns to look for different effects in."),
+    expected: Optional[str] = typer.Option(None, help="Planned split such as control=50,new=50 (default: equal)."),
+):
+    """Full analysis of an A/B test: split check, effect of each group against the control, noise reduction, effect over time and by segment."""
+    from kikolens.analyze import experiment as ex
+
+    df = _load(file)
+    try:
+        plan = {k.strip(): float(v) for k, v in (pair.split("=") for pair in expected.split(","))} if expected else None
+        res = ex.analyze_experiment(df, group, outcome, control, pre, date, _names(segments) or None, plan)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "Each group against the control")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def srm(file: str, group: str, expected: Optional[str] = typer.Option(None, help="Planned split such as control=50,new=50 (default: equal).")):
+    """Did each group get the share of users that was planned? A broken split invalidates the test."""
+    from kikolens.analyze import experiment as ex
+
+    df = _load(file)
+    try:
+        plan = {k.strip(): float(v) for k, v in (pair.split("=") for pair in expected.split(","))} if expected else None
+        res = ex.srm(df, group, plan)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "Rows by group")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
+@app.command()
+def cuped(file: str, group: str, outcome: str, pre: str, control: str):
+    """Reduce the noise of an experiment with what each row did before it (CUPED)."""
+    from kikolens.analyze import experiment as ex
+
+    df = _load(file)
+    try:
+        res = ex.cuped(df, group, outcome, pre, control)
+    except ValueError as e:
+        _fail(e)
+    console.print(res["summary"])
+    _print_frame(res["table"].round(4), "Raw and adjusted effect")
+    for note in res["notes"]:
+        console.print(f"[yellow]{note}[/yellow]")
+
+
 def _typed(df: pd.DataFrame, column: str, value: Optional[str]):
     """Convierte un valor escrito en la terminal al tipo de la columna (para elegir qué valor cuenta como tratado)."""
     if value is None or column not in df.columns:

@@ -105,6 +105,8 @@ Six tabs that answer "is this real or chance?" in plain language. Each result sh
 
 ![Experiments](images/experiments-light.png)
 
+**Is the test sound?** (the last tab) reads an A/B test the careful way. It first checks that each group got the share of users that was planned (a sample ratio mismatch, which usually means a bug and invalidates the test; if it fails, the page refuses to name a winner). It then gives the effect of every group against the control with its 95 % range (several variants are corrected with Holm), uses an earlier measure of the same outcome to remove noise (CUPED) and shows how much narrower the range becomes, plots the effect week by week and warns when it is fading or growing, and looks for segments whose effect differs from the rest of the rows, corrected for the number of segments examined. When nothing is significant it tells you the smallest effect the test could have found, so a small real effect is not mistaken for no effect.
+
 ### Anomalies
 Choose columns, a method and the share of rows to flag. Methods: Isolation Forest (general purpose), Local Outlier Factor (odd rows inside dense groups), Robust z-score (one column at a time, easiest to explain) and Mahalanobis distance (accounts for correlated columns). Every flagged row comes with the reason, such as "income is 8.2 robust SDs above typical". You can download the rows or remove them (undoable; removal is not stored in the recipe, because the rows are specific to this data).
 

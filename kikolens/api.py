@@ -596,6 +596,25 @@ def geo_grid(df: pd.DataFrame, value: str | None = None, lat: str | None = None,
     return _wrap("geo grid", geo.grid_summary(df, *_geo_pair(df, lat, lon), value, **kwargs))
 
 
+def experiment(df: pd.DataFrame, group: str, outcome: str, control, pre: str | None = None, date: str | None = None, segments: list | None = None,
+               expected: dict | None = None) -> Result:
+    """Análisis completo de un experimento: reparto (SRM), efecto de cada grupo frente al control (con CUPED si das `pre`), efecto en el tiempo y por segmento, y una conclusión."""
+    from kikolens.analyze import experiment as ex
+    return _wrap("experiment", ex.analyze_experiment(df, group, outcome, control, pre, date, segments, expected))
+
+
+def srm(df: pd.DataFrame, group: str, expected: dict | None = None) -> Result:
+    """¿Llegó a cada grupo la proporción planeada? Un reparto roto invalida el experimento."""
+    from kikolens.analyze import experiment as ex
+    return _wrap("sample ratio", ex.srm(df, group, expected))
+
+
+def cuped(df: pd.DataFrame, group: str, outcome: str, pre: str, control) -> Result:
+    """Reduce el ruido de un experimento con lo que cada fila hacía antes (CUPED)."""
+    from kikolens.analyze import experiment as ex
+    return _wrap("cuped", ex.cuped(df, group, outcome, pre, control))
+
+
 FUNCTIONS = ("load", "query", "ask", "profile", "dictionary", "scan_privacy", "autopilot", "lab", "forecast", "anomalies", "spikes",
              "drift", "why", "regress", "survival", "cohorts", "rfm", "distribution", "link", "score", "save_model", "Result", "select_features", "segment", "ab_sequential", "granger", "forecast_drivers",
-             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid")
+             "recommender", "synthesize", "runs", "chart", "analyst", "classify_text", "formula", "effect", "uplift", "discontinuity", "synthetic_control", "instrumental", "simulate", "optimize", "marketing_mix", "budget", "elasticity", "panel", "run", "list_plugins", "stationarity", "autocorrelation", "decompose_stl", "arima", "governance", "model_card", "topics", "near_duplicates", "similar", "text_patterns", "keyphrases", "readability", "network", "network_path", "suggest_links", "network_robustness", "geo_check", "geo_distances", "geo_hotspots", "spatial_autocorrelation", "geo_grid", "experiment", "srm", "cuped")

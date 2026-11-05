@@ -4,8 +4,10 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from kikolens.analyze import bayes
+from kikolens.analyze import experiment as exq
 from kikolens.analyze import stattests as sx
 from kikolens.dashboard import components as ui
+from kikolens.dashboard.i18n import t
 
 TITLE = "Experiments"
 SUBTITLE = "Statistical tests explained in plain language, with effect sizes and A/B testing."
@@ -203,8 +205,56 @@ def _screen(df: pd.DataFrame) -> None:
     ui.download_csv(table, "associations.csv", "Download results")
 
 
+def _trustworthy(df: pd.DataFrame) -> None:
+    st.caption(t("Checks the experiment is sound before reading the result: the split of users, the effect with less noise, whether it holds over time and where it differs."))
+    numeric = list(df.select_dtypes("number").columns)
+    groups = [c for c in df.columns if 2 <= df[c].nunique(dropna=True) <= 10]
+    if not groups or not numeric:
+        ui.note("This needs a column with the group of each row (2 to 10 values) and a numeric outcome (use 0 and 1 for conversions).", "low")
+        return
+    c1, c2, c3 = st.columns(3)
+    group = c1.selectbox("Group", groups, key="xq_group")
+    control = c2.selectbox("Control group", sorted(df[group].dropna().astype(str).unique()), key="xq_control")
+    outcome = c3.selectbox("Outcome", [c for c in numeric if c != group], key="xq_outcome")
+    d1, d2, d3 = st.columns(3)
+    pre = d1.selectbox("Same measure before the experiment (optional)", ["(none)"] + [c for c in numeric if c not in (group, outcome)], key="xq_pre")
+    dates = [c for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])]
+    date = d2.selectbox("Date (optional)", ["(none)"] + dates, key="xq_date")
+    segs = d3.multiselect("Look for different effects by", [c for c in df.columns if c not in (group, outcome) and 2 <= df[c].nunique() <= 30 and not pd.api.types.is_float_dtype(df[c])], key="xq_segs")
+    pre = None if pre.startswith("(") else pre
+    date = None if date.startswith("(") else date
+    signature = (group, control, outcome, pre, date, tuple(segs))
+    if st.button("Analyse the experiment", key="xq_go", type="primary"):
+        try:
+            st.session_state["xq_res"] = (signature, exq.analyze_experiment(df, group, outcome, control, pre, date, segs or None))
+        except ValueError as e:
+            st.session_state.pop("xq_res", None)
+            ui.note(str(e), "high")
+    cached = st.session_state.get("xq_res")
+    if not cached or cached[0] != signature:
+        return
+    res = cached[1]
+    ui.note(res["verdict"], "high" if res["srm"]["broken"] else "ok")
+    ui.chart(res["srm"]["figure"], 260)
+    ui.table(res["table"].round(4))
+    if len(res["table"]) and "figure" in res:
+        ui.chart(res["figure"], 260)
+    for note in res["notes"]:
+        ui.note(note, "medium")
+    if "cuped" in res:
+        st.subheader(t("Less noise with the earlier measure"))
+        ui.note(res["cuped"]["summary"], "accent")
+        ui.table(res["cuped"]["table"].round(4))
+    if "over_time" in res:
+        st.subheader(t("Over time"))
+        ui.chart(res["over_time"]["figure"], 320)
+    if "segments" in res:
+        st.subheader(t("By segment"))
+        ui.table(res["segments"]["table"].round(4))
+
+
 def render(df: pd.DataFrame) -> None:
-    tabs = st.tabs(["Compare groups", "Two categories", "Correlation", "A/B test", "A/B (Bayesian)", "What relates to..."])
-    for tab, body in zip(tabs, (_groups, _association, _correlation, _ab, _bayes, _screen)):
+    tabs = st.tabs(["Compare groups", "Two categories", "Correlation", "A/B test", "A/B (Bayesian)", "What relates to...", "Is the test sound?"])
+    for tab, body in zip(tabs, (_groups, _association, _correlation, _ab, _bayes, _screen, _trustworthy)):
         with tab:
             body(df)

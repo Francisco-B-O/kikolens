@@ -793,4 +793,13 @@ ES = {
     "Moran's I": "I de Moran",
     "Hot spots": "Focos calientes",
     "Cold spots": "Focos fríos",
+    "Checks the experiment is sound before reading the result: the split of users, the effect with less noise, whether it holds over time and where it differs.": "Comprueba que el experimento es sólido antes de leer el resultado: el reparto de usuarios, el efecto con menos ruido, si se mantiene en el tiempo y dónde difiere.",
+    "This needs a column with the group of each row (2 to 10 values) and a numeric outcome (use 0 and 1 for conversions).": "Hace falta una columna con el grupo de cada fila (de 2 a 10 valores) y un resultado numérico (usa 0 y 1 para conversiones).",
+    "Is the test sound?": "¿Es sólido el test?",
+    "Less noise with the earlier measure": "Menos ruido con la medida anterior",
+    "By segment": "Por segmento",
+    "Same measure before the experiment (optional)": "La misma medida antes del experimento (opcional)",
+    "Date (optional)": "Fecha (opcional)",
+    "Look for different effects by": "Buscar efectos distintos por",
+    "Analyse the experiment": "Analizar el experimento",
 }

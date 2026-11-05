@@ -111,6 +111,8 @@ Every command accepts a local file, an `http(s)` link or a database URI (`sqlite
 | `kikolens select-features SOURCE TARGET [--exclude a,b] [--output FILE]` | Which columns are worth keeping: consensus of four methods and a cross-validated curve. |
 | `kikolens runs [--target COL] [--best] [--compare id,id] [--delete id]` | The history of model lab runs. |
 | `kikolens ab-bayes SOURCE GROUP OUTCOME CONTROL [--success VALUE]` | Bayesian A/B: the probability a variant is better and the cost of choosing wrongly. |
+| `kikolens experiment FILE GROUP OUTCOME CONTROL [--pre COL] [--date COL] [--segments a,b] [--expected control=50,new=50]` | Full A/B analysis: split check, effect of each group against the control (CUPED with `--pre`), effect over time and by segment, and a verdict. |
+| `kikolens srm FILE GROUP [--expected a=50,b=50]` / `cuped FILE GROUP OUTCOME PRE CONTROL` | Only the split check; only the noise reduction. |
 | `kikolens features SOURCE TARGET [--max-new 5] [--apply FILE] [--recipe FILE]` | Search for ratios, products and other new columns that improve a model; `--apply` writes the data with them and `--recipe` the steps. |
 
 ## Monitoring
