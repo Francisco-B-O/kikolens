@@ -976,4 +976,13 @@ ES = {
     "Two humps": "Dos jorobas",
     "Coin with 10% heads": "Moneda con un 10 % de caras",
     "Heavy tails (t with 3 degrees of freedom)": "Colas pesadas (t con 3 grados de libertad)",
+    "How to read this page": "Cómo leer esta página",
+    "What to look at": "Qué mirar",
+    "Watch out": "Ojo con",
+    "Words that help": "Palabras que ayudan",
+    "Glossary": "Glosario",
+    "What the technical words mean, with what to watch out for. Search for a word or browse the list.": "Qué significan las palabras técnicas, con lo que hay que vigilar. Busca una palabra o recorre la lista.",
+    "Nothing matches that. Try a shorter word.": "No hay nada que coincida. Prueba con una palabra más corta.",
+    "terms": "términos",
+    "See also": "Ver también",
 }

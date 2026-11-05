@@ -260,6 +260,9 @@ An area of its own ("Learn") for understanding the ideas behind the other sectio
 * **Regression to the mean:** why the best of one year fall back the next with no change in anyone.
 * **Why testing many things finds something:** twenty tests with nothing real still give a false alarm in two studies out of three, and what two corrections do about it.
 
+### Glossary and reading guides
+**Glossary** (Learn area) lists 74 terms, from p-value to Cpk, each with a plain definition, a "watch out" line with the usual misreading, and related terms. Search matches names first and then definitions, and the language follows the one you chose for the dashboard. At the end of 27 sections (experiments, causal effect, regression, model lab, time series, text, network, survey and others) a closed box called **How to read this page** says what to look at first, what to be careful about and defines the words that help for that page. The same glossary is available as `kikolens glossary` and `kl.glossary`.
+
 ### Run history
 Every training of the model lab (dashboard or `kikolens lab`) is recorded with its data, target, parameters and metrics. See them over time with the best so far, sort by any metric, and compare runs side by side (only what differs). The lab can also tune with **Bayesian optimisation**, which learns from each attempt to choose the next one and shows how the search went.
 

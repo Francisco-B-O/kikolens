@@ -79,6 +79,7 @@ The dashboard groups its sections into four areas.
 | | Process control | Control charts (individuals, subgroups, p, u, c) with signal rules, capability indices against a specification, and CUSUM and EWMA for small drifts. |
 | | Model governance | Owners, risk and model cards for saved models; draft, staging, production and archived stages with checks before each move, approvals, rollback, and an audit log that detects edits. |
 | | Monitoring | Watch a source over time: drift against a baseline, quality, validation rules and the model's predictions, with alerts, history and the command to schedule it. |
+| **Learn** | Glossary | 74 terms in English and Spanish with a definition, what to watch out for and related terms; every main section also ends with a "How to read this page" box. |
 | **Learn** | Concept lab | Simulations that teach why statistics works: the central limit theorem, p-values and peeking, what confidence means, power, overfitting, Simpson's paradox, regression to the mean and multiple testing. No data needed. |
 | **Share** | Panel | Pin metrics, charts and tables with global filters, click a chart to filter the others, and export to a web page, PowerPoint (native charts) or Word. |
 | | Report | One self-contained HTML page, or a PDF with quality, distributions, correlations, the model and the forecast. |
